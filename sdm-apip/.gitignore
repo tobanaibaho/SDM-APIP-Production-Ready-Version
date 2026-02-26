@@ -1,0 +1,36 @@
+# Go binaries
+backend/server
+backend/server.exe
+*.exe
+*.dll
+*.so
+backend/tmp/
+backend/tmp_gocache/
+
+# Node.js
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Environment & Secrets — NEVER commit these
+.env
+.env.*
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.local
+frontend/.env.*
+
+# Logs
+*.log
+backend/logs/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

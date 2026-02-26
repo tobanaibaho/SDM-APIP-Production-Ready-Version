@@ -1,0 +1,7 @@
+server
+server.exe
+tmp
+tmp_gocache
+.env
+*.log
+cmd/

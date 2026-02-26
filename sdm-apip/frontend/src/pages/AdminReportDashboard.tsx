@@ -1,0 +1,609 @@
+import React, { useState, useEffect } from 'react';
+import {
+    LineChart, Line,
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+} from 'recharts';
+import {
+    TrendingUp, Users, Award, Filter, Search,
+    ChevronLeft, ChevronRight, FileText, FileSpreadsheet,
+    Star, UserCheck, Eye, X, History, ClipboardCheck
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import reportService, { DashboardData, AssessmentDetailRow, ReportFilter, UserReportRow } from '../services/reportService';
+import { toast } from 'react-hot-toast';
+import Layout from '../components/Layout';
+
+const AdminReportDashboard: React.FC = () => {
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [userReports, setUserReports] = useState<UserReportRow[]>([]);
+    const [activeTab, setActiveTab] = useState<'analytics' | 'users'>('users');
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [unitKerjaOptions, setUnitKerjaOptions] = useState<string[]>([]);
+    const [filter, setFilter] = useState<ReportFilter>({
+        sort_by: 'peer_assessments.created_at',
+        order: 'DESC',
+        page: 1,
+        page_size: 10
+    });
+    const [showFilters, setShowFilters] = useState(false);
+
+    // User Detail Selection
+    const [selectedUser, setSelectedUser] = useState<UserReportRow | null>(null);
+    const [selectedUserDetails, setSelectedUserDetails] = useState<{ received: AssessmentDetailRow[] }>({
+        received: []
+    });
+    const [detailLoading, setDetailLoading] = useState(false);
+
+    useEffect(() => {
+        if (activeTab === 'analytics') {
+            fetchAnalyticsData();
+        } else {
+            fetchUserListData();
+        }
+    }, [filter, page, activeTab]);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const options = await reportService.getUnitKerjaOptions();
+                setUnitKerjaOptions(options);
+            } catch (error) {
+                console.error('Failed to fetch unit kerja options', error);
+            }
+        };
+        fetchOptions();
+    }, []);
+
+    const fetchAnalyticsData = async () => {
+        try {
+            const dash = await reportService.getDashboard(filter);
+            setDashboardData(dash || null);
+        } catch (error) {
+            toast.error('Gagal mengambil data analitik');
+        }
+    };
+
+    const fetchUserListData = async () => {
+        try {
+            const res = await reportService.getUsers({ ...filter, page });
+            setUserReports(res?.data || []);
+            setTotal(res?.total || 0);
+        } catch (error) {
+            toast.error('Gagal mengambil daftar pegawai');
+        }
+    };
+
+    const handleUserClick = async (user: UserReportRow) => {
+        setSelectedUser(user);
+        setDetailLoading(true);
+        try {
+            const received = await reportService.getDetails({ user_id: user.user_id, page: 1, page_size: 100 });
+            setSelectedUserDetails({
+                received: received?.data || []
+            });
+        } catch (error) {
+            toast.error('Gagal memuat detail penilaian');
+        } finally {
+            setDetailLoading(false);
+        }
+    };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage < 1 || newPage > Math.ceil(total / (filter.page_size || 10))) return;
+        setPage(newPage);
+    };
+
+    const handleExportExcel = async () => {
+        toast.promise(reportService.exportExcel(filter), {
+            loading: 'Menyiapkan Excel...',
+            success: 'Excel berhasil diunduh',
+            error: 'Gagal mengunduh Excel'
+        });
+    };
+
+    const handleExportPDF = async () => {
+        toast.promise(reportService.exportPDF(filter), {
+            loading: 'Menyiapkan PDF...',
+            success: 'PDF berhasil diunduh',
+            error: 'Gagal mengunduh PDF'
+        });
+    };
+
+    const StatsCard = ({ title, value, icon: Icon, color }: any) => (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4"
+        >
+            <div className={`p-4 rounded-xl ${color} bg-opacity-10 text-${color.split('-')[1]}-600`}>
+                <Icon size={24} />
+            </div>
+            <div>
+                <p className="text-slate-500 text-sm font-medium">{title}</p>
+                <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
+            </div>
+        </motion.div>
+    );
+
+    return (
+        <Layout
+            title="Dashboard Laporan"
+            subtitle="Analisis performa pegawai dan ringkasan penilaian."
+        >
+            <div className="space-y-8">
+
+                {/* Tab Switcher & Header Actions */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                    <div className="flex bg-slate-100 p-1.5 rounded-2xl w-fit">
+                        <button
+                            onClick={() => setActiveTab('users')}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            <Users size={18} />
+                            Monitor Pegawai
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('analytics')}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'analytics' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            <TrendingUp size={18} />
+                            Analisis Statistik
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <label className="flex items-center cursor-pointer gap-2 mr-2 group" title="Sertakan data dari Grup/Pegawai yang dihapus (Arsip)">
+                            <div className="relative">
+                                <input type="checkbox" className="sr-only" checked={filter.include_archived || false} onChange={(e) => setFilter({ ...filter, include_archived: e.target.checked })} />
+                                <div className={`block w-10 h-6 rounded-full transition-colors ${filter.include_archived ? 'bg-red-500' : 'bg-slate-200 group-hover:bg-slate-300'}`}></div>
+                                <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${filter.include_archived ? 'transform translate-x-4' : ''}`}></div>
+                            </div>
+                            <span className="text-sm font-bold text-slate-500 hidden sm:block">Arsip Data</span>
+                        </label>
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 transition-all shadow-sm font-bold text-sm"
+                        >
+                            <Filter size={18} />
+                            Filter
+                        </button>
+                        <div className="flex items-center gap-2 bg-indigo-600 p-1 rounded-xl shadow-lg shadow-indigo-200">
+                            <button
+                                onClick={handleExportPDF}
+                                className="flex items-center gap-2 px-4 py-2 text-white hover:bg-indigo-700 rounded-lg transition-all text-sm font-bold"
+                            >
+                                <FileText size={18} />
+                                PDF
+                            </button>
+                            <div className="w-[1px] h-6 bg-indigo-400 opacity-30"></div>
+                            <button
+                                onClick={handleExportExcel}
+                                className="flex items-center gap-2 px-4 py-2 text-white hover:bg-indigo-700 rounded-lg transition-all text-sm font-bold"
+                            >
+                                <FileSpreadsheet size={18} />
+                                Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Filter Panel */}
+                <AnimatePresence>
+                    {showFilters && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm overflow-hidden"
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700 block">Cari Pegawai</label>
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                        <input
+                                            type="text"
+                                            placeholder="Nama atau NIP..."
+                                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                            value={filter.search || ''}
+                                            onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700 block">Unit Kerja</label>
+                                    <select
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        value={filter.unit_kerja || ''}
+                                        onChange={(e) => setFilter({ ...filter, unit_kerja: e.target.value })}
+                                    >
+                                        <option value="">Semua Unit</option>
+                                        {unitKerjaOptions.map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700 block">Mulai Tanggal</label>
+                                    <input
+                                        type="date"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        value={filter.start_date || ''}
+                                        onChange={(e) => setFilter({ ...filter, start_date: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700 block">Akhir Tanggal</label>
+                                    <input
+                                        type="date"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        value={filter.end_date || ''}
+                                        onChange={(e) => setFilter({ ...filter, end_date: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {activeTab === 'analytics' ? (
+                    <div className="space-y-8 animate-fade-in">
+                        {/* KPI Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <StatsCard title="Total Penilaian" value={dashboardData?.summary?.total_assessments || 0} icon={FileText} color="bg-indigo-600" />
+                            <StatsCard title="Rata-rata Nilai" value={dashboardData?.summary?.average_score?.toFixed(2) || '0.00'} icon={TrendingUp} color="bg-emerald-600" />
+                            <StatsCard title="Skor Tertinggi" value={dashboardData?.summary?.highest_score?.toFixed(2) || '0.00'} icon={Award} color="bg-amber-600" />
+                            <StatsCard title="User Dinilai" value={dashboardData?.summary?.total_users || 0} icon={Users} color="bg-purple-600" />
+                        </div>
+
+                        {/* Charts Row 1 */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm h-[400px]">
+                                <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                                    <TrendingUp className="text-indigo-600" size={20} />
+                                    Tren Performa (6 Bulan Terakhir)
+                                </h3>
+                                <ResponsiveContainer width="100%" height="85%">
+                                    <LineChart data={dashboardData?.performance_trend}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dx={-10} domain={[0, 100]} />
+                                        <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                        <Line type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={4} dot={{ r: 6, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm h-[400px]">
+                                <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                                    <Star className="text-amber-500" size={20} />
+                                    Analisis BerAKHLAK (0-100)
+                                </h3>
+                                <ResponsiveContainer width="100%" height="85%">
+                                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={dashboardData?.category_breakdown}>
+                                        <PolarGrid stroke="#f1f5f9" />
+                                        <PolarAngleAxis dataKey="category" tick={{ fill: '#64748b', fontSize: 10 }} />
+                                        <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                                        <Radar name="Skor Rata-rata" dataKey="average" stroke="#6366f1" fill="#6366f1" fillOpacity={0.4} />
+                                        <Tooltip contentStyle={{ borderRadius: '12px' }} />
+                                    </RadarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* Top Performers Row */}
+                        <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                            <h3 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-2">
+                                <Award className="text-indigo-600" size={24} />
+                                Pegawai Berprestasi (Top & Low)
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <div className="space-y-4">
+                                    <p className="text-xs font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-lg w-fit">Top 5 Performa</p>
+                                    {(dashboardData?.top_performers || []).map((p, i) => (
+                                        <div key={p.user_id} className="flex items-center justify-between p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 hover:scale-[1.02] transition-transform cursor-pointer">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-lg shadow-emerald-200">#{i + 1}</div>
+                                                <div>
+                                                    <p className="font-bold text-slate-900">{p.name}</p>
+                                                    <p className="text-xs text-slate-500">{p.unit_kerja}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-lg font-black text-emerald-700">{p.score.toFixed(2)}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="space-y-4">
+                                    <p className="text-xs font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-3 py-1.5 rounded-lg w-fit">Bottom 5 Performa</p>
+                                    {(dashboardData?.low_performers || []).map((p, i) => (
+                                        <div key={p.user_id} className="flex items-center justify-between p-4 bg-rose-50/50 rounded-2xl border border-rose-100 hover:scale-[1.02] transition-transform cursor-pointer">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold shadow-lg shadow-rose-200">#{i + 1}</div>
+                                                <div>
+                                                    <p className="font-bold text-slate-900">{p.name}</p>
+                                                    <p className="text-xs text-slate-500">{p.unit_kerja}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-lg font-black text-rose-700">{p.score.toFixed(2)}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
+                        <div className="p-8 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900">Monitor Penilaian Pegawai</h3>
+                                <p className="text-sm text-slate-500 mt-1">Pantau siapa saja yang sudah dinilai dan siapa yang melakukan penilaian.</p>
+                            </div>
+                            <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-600">
+                                Total: {total} Pegawai
+                            </div>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-50/80 text-slate-600 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
+                                    <tr>
+                                        <th className="px-8 py-4">Pegawai (NIP)</th>
+                                        <th className="px-8 py-4">Peran</th>
+                                        <th className="px-8 py-4">Unit Kerja</th>
+                                        <th className="px-8 py-4 text-center">Dinilai</th>
+                                        <th className="px-8 py-4 text-center">Menilai</th>
+                                        <th className="px-8 py-4 text-center">Skor Rerata</th>
+                                        <th className="px-8 py-4 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {userReports.map((user) => (
+                                        <tr key={user.user_id} className="group hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-8 py-5">
+                                                <button
+                                                    onClick={() => handleUserClick(user)}
+                                                    className="text-left font-bold text-slate-900 hover:text-indigo-600 transition-colors"
+                                                >
+                                                    {user.name}
+                                                    <p className="text-[10px] text-slate-400 font-mono mt-0.5">{user.nip}</p>
+                                                </button>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <span className={`inline-flex px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter border ${user.group_role === 'Inspektur' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                                    user.group_role === 'Dalnis' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                                        user.group_role === 'KT' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                            user.group_role === 'AT' ? 'bg-green-50 text-green-600 border-green-100' :
+                                                                'bg-slate-100 text-slate-600 border-slate-200'
+                                                    }`}>
+                                                    {user.group_role || 'Anggota'}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 text-sm text-slate-600 font-medium">{user.unit_kerja}</td>
+                                            <td className="px-8 py-5 text-center">
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${user.assessments_received > 0 ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                    <ClipboardCheck size={12} /> {user.assessments_received} Kali
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 text-center">
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${user.assessments_given > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                    <UserCheck size={12} /> {user.assessments_given} Kali
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 text-center">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <div className="text-sm font-black text-slate-900">{user.average_score.toFixed(2)}</div>
+                                                    <div className="flex gap-0.5">
+                                                        {[1, 2, 3, 4, 5].map(s => (
+                                                            <div key={s} className={`h-1 w-3 rounded-full ${user.average_score >= s ? 'bg-indigo-500' : 'bg-slate-200'}`} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-5 text-right">
+                                                <button
+                                                    onClick={() => handleUserClick(user)}
+                                                    className="p-2 rounded-lg bg-slate-100 text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm"
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {userReports.length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} className="px-8 py-20 text-center">
+                                                <Users size={48} className="mx-auto text-slate-200 mb-4" />
+                                                <p className="text-slate-400 font-bold">Data pegawai tidak ditemukan.</p>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* User List Pagination */}
+                        <div className="p-8 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
+                            <button
+                                onClick={() => handlePageChange(page - 1)}
+                                disabled={page === 1}
+                                className={`flex items-center gap-2 px-6 py-2.5 bg-white border rounded-xl text-sm font-bold transition-all shadow-sm ${page === 1 ? 'border-slate-100 text-slate-300' : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95'}`}
+                            >
+                                <ChevronLeft size={18} /> Sebelumnya
+                            </button>
+                            <div className="flex items-center gap-3">
+                                <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Halaman</span>
+                                <span className="h-8 w-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg font-black shadow-lg shadow-indigo-100">{page}</span>
+                                <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Dari {Math.ceil(total / (filter.page_size || 10)) || 1}</span>
+                            </div>
+                            <button
+                                onClick={() => handlePageChange(page + 1)}
+                                disabled={page >= Math.ceil(total / (filter.page_size || 10))}
+                                className={`flex items-center gap-2 px-6 py-2.5 bg-white border rounded-xl text-sm font-bold transition-all shadow-sm ${page >= Math.ceil(total / (filter.page_size || 10)) ? 'border-slate-100 text-slate-300' : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95'}`}
+                            >
+                                Selanjutnya <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* User Detail Modal */}
+                <AnimatePresence>
+                    {selectedUser && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="bg-white rounded-[2rem] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+                            >
+                                <div className="px-10 py-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-16 w-16 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                                            {selectedUser.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-black text-slate-900">{selectedUser.name}</h3>
+                                            <div className="flex items-center gap-3 mt-1.5">
+                                                <span className="text-xs font-mono bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-slate-500">{selectedUser.nip}</span>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter border ${selectedUser.group_role === 'Inspektur' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                                    selectedUser.group_role === 'Dalnis' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                                        selectedUser.group_role === 'KT' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                            selectedUser.group_role === 'AT' ? 'bg-green-50 text-green-600 border-green-100' :
+                                                                'bg-slate-100 text-slate-600 border-slate-200'
+                                                    }`}>
+                                                    {selectedUser.group_role || 'Anggota'}
+                                                </span>
+                                                <span className="text-xs font-bold text-slate-400">{selectedUser.unit_kerja}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setSelectedUser(null)}
+                                        className="h-12 w-12 rounded-2xl bg-white text-slate-400 hover:text-slate-600 hover:shadow-md transition-all flex items-center justify-center border border-slate-100"
+                                    >
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto p-10 space-y-8">
+                                    {detailLoading ? (
+                                        <div className="flex flex-col items-center justify-center h-64">
+                                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-indigo-600 mb-4"></div>
+                                            <p className="text-slate-400 font-bold">Memuat detail penilaian...</p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {/* Summary for Modal */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div className="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100">
+                                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Skor Rerata Keseluruhan</p>
+                                                    <div className="text-3xl font-black text-indigo-900">{selectedUser.average_score.toFixed(2)}</div>
+                                                </div>
+                                                <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100">
+                                                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Penilaian Diberikan</p>
+                                                    <div className="text-3xl font-black text-emerald-900">{selectedUser.assessments_given}</div>
+                                                </div>
+                                                <div className="bg-amber-50/50 p-6 rounded-3xl border border-amber-100">
+                                                    <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Penilaian Diterima</p>
+                                                    <div className="text-3xl font-black text-amber-900">{selectedUser.assessments_received}</div>
+                                                </div>
+                                            </div>
+
+                                            {/* Detailed History Table in Modal */}
+                                            <div className="space-y-6">
+                                                <h4 className="flex items-center gap-2 text-xl font-black text-slate-900">
+                                                    <History size={22} className="text-indigo-600" />
+                                                    Rincian Penilaian BerAKHLAK
+                                                </h4>
+
+                                                <div className="space-y-6">
+                                                    {selectedUserDetails.received.map(row => (
+                                                        <motion.div
+                                                            key={row.id}
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                                                        >
+                                                            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                                                        <UserCheck size={20} />
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-sm font-bold text-slate-900">Penilai: {row.evaluator_name}</p>
+                                                                        <p className="text-[10px] text-slate-400 font-medium">{new Date(row.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Rerata Skor</span>
+                                                                    <span className="text-lg font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-xl">{row.average_score.toFixed(2)}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="p-6">
+                                                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+                                                                    {[
+                                                                        { label: 'Berorientasi Pelayanan', value: row.berorientasi_pelayanan },
+                                                                        { label: 'Akuntabel', value: row.akuntabel },
+                                                                        { label: 'Kompeten', value: row.kompeten },
+                                                                        { label: 'Harmonis', value: row.harmonis },
+                                                                        { label: 'Loyal', value: row.loyal },
+                                                                        { label: 'Adaptif', value: row.adaptif },
+                                                                        { label: 'Kolaboratif', value: row.kolaboratif },
+                                                                    ].map((indicator, idx) => (
+                                                                        <div key={idx} className="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50/50 border border-slate-100">
+                                                                            <p className="text-[9px] font-bold text-slate-400 uppercase leading-tight h-8 flex items-center justify-center mb-2 px-1">
+                                                                                {indicator.label}
+                                                                            </p>
+                                                                            <div className="flex gap-0.5 mb-1.5">
+                                                                                {[1, 2, 3, 4, 5].map(star => (
+                                                                                    <Star
+                                                                                        key={star}
+                                                                                        size={10}
+                                                                                        className={star <= indicator.value ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}
+                                                                                    />
+                                                                                ))}
+                                                                            </div>
+                                                                            <span className="text-sm font-black text-slate-700">{indicator.value}</span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+
+                                                                <div className="p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100/50">
+                                                                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                                                        <ClipboardCheck size={12} /> Komentar & Feedback
+                                                                    </p>
+                                                                    <p className="text-sm text-slate-600 italic leading-relaxed">
+                                                                        "{row.comment || 'Tidak ada komentar tambahan.'}"
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </motion.div>
+                                                    ))}
+
+                                                    {selectedUserDetails.received.length === 0 && (
+                                                        <div className="py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                                                            <History size={48} className="mx-auto text-slate-200 mb-4" />
+                                                            <h5 className="text-lg font-bold text-slate-400">Belum Ada Riwayat</h5>
+                                                            <p className="text-sm text-slate-400">User ini belum menerima penilaian dari rekan manapun.</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
+            </div>
+        </Layout>
+    );
+};
+
+export default AdminReportDashboard;
