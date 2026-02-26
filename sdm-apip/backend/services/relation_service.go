@@ -38,16 +38,8 @@ func (s *AssessmentService) CreateAssessmentRelation(req models.CreateRelationRe
 		FirstOrCreate(&relation).Error
 	if err != nil {
 		logger.Error("Failed to create assessment relation: %v", err)
+		return ErrInternalServer
 	}
-
-	// Update existing assessments to reflect any new relation type
-	s.db.Model(&models.PeerAssessment{}).
-		Where("period_id = ? AND evaluator_id = ? AND target_user_id = ?", req.PeriodID, req.EvaluatorID, req.TargetUserID).
-		Updates(map[string]interface{}{
-			"relation_type":   req.RelationType,
-			"target_position": req.TargetPosition,
-		})
-
 	return nil
 }
 
@@ -97,28 +89,7 @@ func (s *AssessmentService) CreateGroupRelations(req models.BulkCreateRelationsR
 			if err := tx.Create(&relation).Error; err != nil {
 				return err
 			}
-
-			// Update matching peer_assessments with the new RelationType
-			tx.Model(&models.PeerAssessment{}).
-				Where("period_id = ? AND evaluator_id = ? AND target_user_id = ?", req.PeriodID, r.EvaluatorID, r.TargetUserID).
-				Updates(map[string]interface{}{
-					"relation_type":   r.RelationType,
-					"target_position": r.TargetPosition,
-				})
 		}
-
-		// Delete orphaned peer_assessments for this group & period
-		tx.Exec(`
-			DELETE FROM peer_assessments 
-			WHERE period_id = ? AND group_id = ? 
-			AND NOT EXISTS (
-				SELECT 1 FROM assessment_relations 
-				WHERE assessment_relations.period_id = peer_assessments.period_id 
-				AND assessment_relations.evaluator_id = peer_assessments.evaluator_id 
-				AND assessment_relations.target_user_id = peer_assessments.target_user_id
-			)
-		`, req.PeriodID, req.GroupID)
-
 		return nil
 	})
 }
@@ -144,20 +115,12 @@ func (s *AssessmentService) GetCrossGroupRelations(periodID uint) ([]models.Asse
 }
 
 func (s *AssessmentService) DeleteAssessmentRelation(id uint) error {
-	var relation models.AssessmentRelation
-	if err := s.db.First(&relation, id).Error; err != nil {
-		return errors.New("relation not found")
-	}
-
-	result := s.db.Delete(&relation)
+	result := s.db.Delete(&models.AssessmentRelation{}, id)
 	if result.Error != nil {
 		return ErrInternalServer
 	}
-
-	// Hard delete matching peer_assessments when the relation is deleted
-	s.db.Unscoped().Where("period_id = ? AND evaluator_id = ? AND target_user_id = ?",
-		relation.PeriodID, relation.EvaluatorID, relation.TargetUserID).
-		Delete(&models.PeerAssessment{})
-
+	if result.RowsAffected == 0 {
+		return errors.New("relation not found")
+	}
 	return nil
 }

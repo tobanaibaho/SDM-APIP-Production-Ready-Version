@@ -90,19 +90,17 @@ func (uc *UserController) GetByID(c *gin.Context) {
 
 	// Get SDM data
 	var sdm models.SDM
-	userResp := user.ToResponse()
 	if user.NIP != nil {
-		if err := config.DB.Where("nip = ?", *user.NIP).First(&sdm).Error; err == nil {
-			userResp.Name = sdm.Nama
-			userResp.Foto = sdm.Foto
-			userResp.Jabatan = sdm.Jabatan
+		if err := config.DB.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm).Error; err == nil {
+			user.Name = sdm.Nama
+			user.Foto = sdm.Foto
 		}
 	} else if user.RoleID == models.RoleSuperAdmin && user.Username != nil {
-		userResp.Name = *user.Username
+		user.Name = *user.Username
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, "User retrieved", gin.H{
-		"user": userResp,
+		"user": user.ToResponse(),
 		"sdm":  sdm.ToResponse(),
 	})
 }
@@ -144,19 +142,16 @@ func (uc *UserController) UpdateStatus(c *gin.Context) {
 	}
 
 	config.DB.Preload("Role").First(&user, id)
-
-	userResp := user.ToResponse()
 	if user.NIP != nil {
 		var sdm models.SDM
 		if err := config.DB.Where("nip = ?", *user.NIP).First(&sdm).Error; err == nil {
-			userResp.Name = sdm.Nama
-			userResp.Foto = sdm.Foto
+			user.Name = sdm.Nama
+			user.Foto = sdm.Foto
 		}
 	} else if user.RoleID == models.RoleSuperAdmin && user.Username != nil {
-		userResp.Name = *user.Username
+		user.Name = *user.Username
 	}
-
-	utils.SuccessResponse(c, http.StatusOK, "User status updated successfully", userResp)
+	utils.SuccessResponse(c, http.StatusOK, "User status updated successfully", user.ToResponse())
 }
 
 // UpdateRole updates user role
@@ -204,19 +199,16 @@ func (uc *UserController) UpdateRole(c *gin.Context) {
 	}
 
 	config.DB.Preload("Role").First(&user, id)
-
-	userResp := user.ToResponse()
 	if user.NIP != nil {
 		var sdm models.SDM
 		if err := config.DB.Where("nip = ?", *user.NIP).First(&sdm).Error; err == nil {
-			userResp.Name = sdm.Nama
-			userResp.Foto = sdm.Foto
+			user.Name = sdm.Nama
+			user.Foto = sdm.Foto
 		}
 	} else if user.RoleID == models.RoleSuperAdmin && user.Username != nil {
-		userResp.Name = *user.Username
+		user.Name = *user.Username
 	}
-
-	utils.SuccessResponse(c, http.StatusOK, "User role updated successfully", userResp)
+	utils.SuccessResponse(c, http.StatusOK, "User role updated successfully", user.ToResponse())
 }
 
 // Delete deletes a user

@@ -78,6 +78,7 @@ export interface UserReportRow {
     name: string;
     nip: string;
     unit_kerja: string;
+    jabatan: string;
     group_role: string;
     assessments_received: number;
     assessments_given: number;

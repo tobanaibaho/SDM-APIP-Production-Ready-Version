@@ -251,10 +251,7 @@ func (s *ReportService) GetDetailedReports(filter models.ReportFilter) ([]models
 		sdm.nama as target_user_name,
 		sdm.nip as target_nip,
 		groups.name as group_name,
-		CASE 
-			WHEN sdm.jabatan ILIKE '%Inspektur%' THEN 'Inspektur'
-			ELSE COALESCE(target_ug.role, 'Anggota')
-		END as group_role,
+		COALESCE(target_ug.role, 'Anggota') as group_role,
 		sdm.unit_kerja,
 		berorientasi_pelayanan, akuntabel, kompeten, harmonis, loyal, adaptif, kolaboratif,
 		(berorientasi_pelayanan + akuntabel + kompeten + harmonis + loyal + adaptif + kolaboratif) / 7.0 as average_score,
@@ -421,7 +418,7 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 
 	// Base query starts from Users who have an NIP (Employee data)
 	query := s.db.Table("users").
-		Select("users.id as user_id, sdm.nama as name, sdm.nip as nip, sdm.unit_kerja").
+		Select("users.id as user_id, sdm.nama as name, sdm.nip as nip, sdm.jabatan as jabatan, sdm.unit_kerja").
 		Joins("Join sdm_apip as sdm ON sdm.nip = users.nip")
 
 	if filter.UnitKerja != "" {
@@ -480,10 +477,8 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 		users.id as user_id, 
 		sdm.nama as name, 
 		sdm.nip as nip, 
-		CASE 
-			WHEN sdm.jabatan ILIKE '%%Inspektur%%' THEN 'Inspektur'
-			ELSE (SELECT role FROM user_groups WHERE user_id = users.id %[1]s LIMIT 1)
-		END as group_role,
+		sdm.jabatan as jabatan,
+		(SELECT role FROM user_groups WHERE user_id = users.id %[1]s LIMIT 1) as group_role,
 		sdm.unit_kerja,
 		(SELECT COUNT(*) FROM peer_assessments WHERE target_user_id = users.id %[1]s) as assessments_received,
 		(SELECT COUNT(*) FROM peer_assessments WHERE evaluator_id = users.id %[1]s) as assessments_given,

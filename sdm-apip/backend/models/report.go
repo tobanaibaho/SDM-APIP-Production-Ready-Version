@@ -91,6 +91,7 @@ type UserReportRow struct {
 	Name                string  `json:"name"`
 	NIP                 string  `json:"nip"`
 	GroupRole           string  `json:"group_role"`
+	Jabatan             string  `json:"jabatan"`
 	UnitKerja           string  `json:"unit_kerja"`
 	AssessmentsReceived int64   `json:"assessments_received"`
 	AssessmentsGiven    int64   `json:"assessments_given"`

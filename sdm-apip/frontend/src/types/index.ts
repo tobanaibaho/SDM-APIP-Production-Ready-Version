@@ -28,8 +28,8 @@ export interface User {
     email: string;
     name?: string;
     foto?: string;
-    role: string;
     jabatan?: string;
+    role: string;
     status: string;
     mfa_enabled: boolean;
     last_login_at?: string;

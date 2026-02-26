@@ -32,6 +32,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (storedToken && storedUser) {
             setToken(storedToken);
             setUser(JSON.parse(storedUser));
+
+            // Refresh profile silently to ensure data (like name) is updated
+            import('../services/authService').then(({ getProfile }) => {
+                getProfile().then(data => {
+                    if (data.user) {
+                        setUser(data.user);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                    }
+                }).catch(console.error);
+            });
         }
         setLoading(false);
     }, []);

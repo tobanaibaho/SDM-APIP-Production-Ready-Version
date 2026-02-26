@@ -276,20 +276,16 @@ func (ac *AuthController) GetProfile(c *gin.Context) {
 		utils.ErrorResponse(c, http.StatusNotFound, "User not found", "Failed to get user profile")
 		return
 	}
-
 	var sdm models.SDM
-	userResp := user.ToResponse()
 	if user.NIP != nil {
-		if err := config.DB.Where("nip = ?", *user.NIP).First(&sdm).Error; err == nil {
-			userResp.Name = sdm.Nama
-			userResp.Foto = sdm.Foto
-			userResp.Jabatan = sdm.Jabatan
+		if err := config.DB.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm).Error; err == nil {
+			user.Name = sdm.Nama
+			user.Foto = sdm.Foto
 		}
 	} else if user.RoleID == models.RoleSuperAdmin && user.Username != nil {
-		userResp.Name = *user.Username
+		user.Name = *user.Username
 	}
-
-	utils.SuccessResponse(c, http.StatusOK, "Profile retrieved", gin.H{"user": userResp, "sdm": sdm.ToResponse()})
+	utils.SuccessResponse(c, http.StatusOK, "Profile retrieved", gin.H{"user": user.ToResponse(), "sdm": sdm.ToResponse()})
 }
 
 // UpdateProfileRequest for updating user profile.
@@ -314,7 +310,7 @@ func (ac *AuthController) UpdateProfile(c *gin.Context) {
 		return
 	}
 	var sdm models.SDM
-	hasSDM := user.NIP != nil && config.DB.Where("nip = ?", *user.NIP).First(&sdm).Error == nil
+	hasSDM := user.NIP != nil && config.DB.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm).Error == nil
 	if !hasSDM && user.RoleID != models.RoleSuperAdmin {
 		utils.ErrorResponse(c, http.StatusNotFound, "SDM not found", "SDM record not found for this user")
 		return
@@ -360,18 +356,15 @@ func (ac *AuthController) UpdateProfile(c *gin.Context) {
 	tx.Commit()
 
 	config.DB.First(&user, userID)
-
-	userResp := user.ToResponse()
 	if user.NIP != nil {
-		if err := config.DB.Where("nip = ?", *user.NIP).First(&sdm).Error; err == nil {
-			userResp.Name = sdm.Nama
-			userResp.Foto = sdm.Foto
+		if err := config.DB.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm).Error; err == nil {
+			user.Name = sdm.Nama
+			user.Foto = sdm.Foto
 		}
 	} else if user.RoleID == models.RoleSuperAdmin && user.Username != nil {
-		userResp.Name = *user.Username
+		user.Name = *user.Username
 	}
-
-	utils.SuccessResponse(c, http.StatusOK, "Profile updated successfully", gin.H{"user": userResp, "sdm": sdm.ToResponse()})
+	utils.SuccessResponse(c, http.StatusOK, "Profile updated successfully", gin.H{"user": user.ToResponse(), "sdm": sdm.ToResponse()})
 }
 
 // RefreshToken performs secure refresh-token rotation.

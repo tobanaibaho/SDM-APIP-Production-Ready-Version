@@ -26,6 +26,7 @@ interface MatrixRow {
     user_id: number;
     name: string;
     nip: string;
+    jabatan?: string;
     status: number;
     done_count?: number;
     total_required?: number;
@@ -284,7 +285,13 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                                                         </div>
                                                         <div>
                                                             <p className="font-black text-slate-900 text-sm">{row.name}</p>
-                                                            <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{row.nip}</p>
+                                                            {row.jabatan?.toLowerCase().includes('inspektur') ? (
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[9px] font-black uppercase tracking-wider border border-indigo-200 mt-0.5">
+                                                                    ★ Inspektur
+                                                                </span>
+                                                            ) : (
+                                                                <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{row.nip}</p>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </td>

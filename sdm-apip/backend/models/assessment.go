@@ -90,7 +90,6 @@ type AssessmentSummary struct {
 	Details      map[string]float64 `json:"details"`
 }
 
-
 // IndicatorReference holds aggregated scores for one BerAKHLAK indicator.
 type IndicatorReference struct {
 	PeerAvg    float64 `json:"peer_avg"`
@@ -118,6 +117,7 @@ type AssessmentReference struct {
 	IsReady    bool                          `json:"is_ready"`
 	Warning    string                        `json:"warning"`
 }
+
 // AssessmentRelation defines who evaluates whom and in what capacity
 type AssessmentRelation struct {
 	ID             uint             `gorm:"primaryKey" json:"id"`
@@ -165,7 +165,7 @@ type GroupRelationItem struct {
 // independently — an evaluator must submit once per month per target.
 type AssessmentTarget struct {
 	Relation       AssessmentRelation `json:"relation"`
-	IsDone         bool               `json:"is_done"`          // true ONLY when ALL months are submitted
-	MonthsDone     []int              `json:"months_done"`      // e.g. [1, 2] = Bulan 1 & 2 done, Bulan 3 pending
-	MonthsRequired int                `json:"months_required"`  // total months in the period (1, 3, 6, or 12)
+	IsDone         bool               `json:"is_done"`         // true ONLY when ALL months are submitted
+	MonthsDone     []int              `json:"months_done"`     // e.g. [1, 2] = Bulan 1 & 2 done, Bulan 3 pending
+	MonthsRequired int                `json:"months_required"` // total months in the period (1, 3, 6, or 12)
 }

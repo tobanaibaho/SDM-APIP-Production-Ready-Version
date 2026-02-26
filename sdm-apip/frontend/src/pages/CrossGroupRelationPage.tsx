@@ -25,6 +25,7 @@ interface UserOption {
     nip: string;
     name?: string;
     email: string;
+    jabatan?: string;
     group_name?: string;
     role?: string;
 }
@@ -105,14 +106,18 @@ const CrossGroupRelationPage: React.FC = () => {
 
             // Map user data from paginated response
             const usersData = usersResponse?.data || [];
-            // Filter out admin users (role 'admin' or ID 1)
+            // Filter out admin/super admin (role 'admin'/'super admin' or ID 1)
             const mapped: UserOption[] = usersData
-                .filter((u: any) => u.role !== 'admin' && u.id !== 1)
+                .filter((u: any) => {
+                    const r = u.role?.toLowerCase() || '';
+                    return r !== 'admin' && r !== 'super admin' && u.id !== 1;
+                })
                 .map((u: any) => ({
                     id: u.id,
                     nip: u.nip,
                     name: u.name || u.nip,
                     email: u.email,
+                    jabatan: u.jabatan || '',
                     group_name: u.group_name || '-',
                     role: u.role,
                 }));
@@ -313,7 +318,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                                     }}
                                                 >
                                                     <p className="text-xs font-black text-slate-900">{u.name}</p>
-                                                    <p className="text-[10px] text-slate-400 font-mono">{u.nip} · {u.email}</p>
+                                                    <p className="text-[10px] text-slate-400 font-mono">{u.nip} · {u.jabatan || u.email}</p>
                                                 </button>
                                             ))}
                                         </div>
@@ -392,7 +397,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                                     }}
                                                 >
                                                     <p className="text-xs font-black text-slate-900">{u.name}</p>
-                                                    <p className="text-[10px] text-slate-400 font-mono">{u.nip} · {u.email}</p>
+                                                    <p className="text-[10px] text-slate-400 font-mono">{u.nip} · {u.jabatan || u.email}</p>
                                                 </button>
                                             ))}
                                         </div>

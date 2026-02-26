@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import {
     BarChart3,
     AlertTriangle,
@@ -78,13 +79,14 @@ const ScoreBadge: React.FC<{ value: number; label: string }> = ({ value, label }
 };
 
 const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, relationType }) => {
+    const { user } = useAuth();
     const [data, setData] = useState<AssessmentReference | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(true);
 
-    // Only relevant for Atasan evaluators
-    const isAtasan = relationType === 'Atasan';
+    // Only relevant for Atasan evaluators whose jabatan includes "inspektur"
+    const isAtasan = relationType === 'Atasan' && user?.jabatan?.toLowerCase().includes('inspektur');
 
     useEffect(() => {
         if (!isAtasan || !targetUserId || !periodId) return;
@@ -175,7 +177,7 @@ const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, rel
                     </div>
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">
-                            Panel Referensi Inspektur
+                            Panel Referensi
                         </p>
                         <h4 className="font-black text-slate-900 text-base">
                             Akumulasi Nilai Peer &amp; Bawahan

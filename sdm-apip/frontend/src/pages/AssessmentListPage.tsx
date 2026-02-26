@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import { AssessmentPeriod } from '../services/assessmentService';
+import AssessmentReferencePanel from '../components/AssessmentReferencePanel';
+import { useAuth } from '../context/AuthContext';
 import {
     ClipboardCheck,
     ArrowUpRight,
@@ -13,6 +15,8 @@ import {
 import toast from 'react-hot-toast';
 
 const AssessmentListPage: React.FC = () => {
+    const { user } = useAuth();
+    const isInspektur = user?.jabatan?.toLowerCase().includes('inspektur') ?? false;
     const navigate = useNavigate();
     const [periods, setPeriods] = useState<AssessmentPeriod[]>([]);
     const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
@@ -125,7 +129,7 @@ const AssessmentListPage: React.FC = () => {
                                 </h3>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className={`grid gap-6 ${isInspektur ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
                                 {targets.map((t) => {
                                     const monthsDone: number[] = t.months_done || [];
                                     const monthsRequired: number = t.months_required || 1;
@@ -157,6 +161,13 @@ const AssessmentListPage: React.FC = () => {
 
                                                 <h4 className="font-black text-slate-900 text-lg mb-0.5 truncate">{t.relation?.target_user?.name || 'Unknown User'}</h4>
                                                 <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-4">{t.relation?.target_user?.jabatan || 'Personil APIP'}</p>
+
+                                                {/* Panel Referensi Inspektur — hanya tampil untuk Inspektur dengan relasi Atasan */}
+                                                <AssessmentReferencePanel
+                                                    targetUserId={t.relation?.target_user_id ? String(t.relation.target_user_id) : null}
+                                                    periodId={selectedPeriod ? String(selectedPeriod) : null}
+                                                    relationType={t.relation?.relation_type ?? null}
+                                                />
 
                                                 {/* Monthly progress bubbles — shown for multi-month periods */}
                                                 {monthsRequired > 1 && (

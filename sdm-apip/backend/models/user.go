@@ -131,8 +131,8 @@ type UserResponse struct {
 	Foto      string `json:"foto"`
 	Email     string `json:"email"`
 	Role      string `json:"role"`
-	Status    string `json:"status"`
 	Jabatan   string `json:"jabatan"`
+	Status    string `json:"status"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
@@ -143,7 +143,7 @@ func (u *User) AfterFind(tx *gorm.DB) (err error) {
 		if u.Username != nil && *u.Username != "" {
 			u.Name = *u.Username
 		} else {
-			u.Name = "User Tanpa Nama"
+			u.Name = ""
 		}
 	}
 	if u.Jabatan == "" {
@@ -179,7 +179,7 @@ func (u *User) ToResponse() UserResponse {
 		if u.Username != nil && *u.Username != "" {
 			name = *u.Username
 		} else {
-			name = "Nama Pegawai Kosong"
+			name = ""
 		}
 	}
 
@@ -191,8 +191,8 @@ func (u *User) ToResponse() UserResponse {
 		Foto:      u.Foto,
 		Email:     u.Email,
 		Role:      roleName,
-		Status:    string(u.Status),
 		Jabatan:   u.Jabatan,
+		Status:    string(u.Status),
 		CreatedAt: u.CreatedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt: u.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}

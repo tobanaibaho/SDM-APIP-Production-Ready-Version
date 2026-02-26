@@ -69,10 +69,7 @@ func (s *AuthService) Login(
 ) (*models.LoginResponse, error) {
 	// 1. Find user by NIP
 	var user models.User
-	if err := s.db.Table("users").
-		Select("users.*, sdm.nama as name, sdm.foto as foto, sdm.jabatan as jabatan").
-		Joins("LEFT JOIN sdm_apip sdm ON sdm.nip = users.nip").
-		Preload("Role").Where("users.nip = ?", nip).First(&user).Error; err != nil {
+	if err := s.db.Preload("Role").Where("nip = ?", nip).First(&user).Error; err != nil {
 		models.CreateAuditLog(s.db, nil, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, fmt.Sprintf("Login failed: NIP not found %s", nip), nil)
 		return nil, ErrInvalidCredentials
 	}
@@ -178,7 +175,7 @@ func (s *AuthService) Login(
 	userResp := user.ToResponse()
 	if user.NIP != nil {
 		var sdm models.SDM
-		s.db.Where("nip = ?", *user.NIP).First(&sdm)
+		s.db.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm)
 		userResp.Name = sdm.Nama
 		userResp.Foto = sdm.Foto
 	} else if user.RoleID == models.RoleSuperAdmin && user.Username != nil {
@@ -197,10 +194,8 @@ func (s *AuthService) SuperAdminLogin(
 ) (*models.LoginResponse, error) {
 	// 1. Find user by Username (Case Insensitive)
 	var user models.User
-	if err := s.db.Table("users").
-		Select("users.*, sdm.nama as name, sdm.foto as foto, sdm.jabatan as jabatan").
-		Joins("LEFT JOIN sdm_apip sdm ON sdm.nip = users.nip").
-		Preload("Role").Where("users.username = ?", username).First(&user).Error; err != nil {
+
+	if err := s.db.Preload("Role").Where("LOWER(username) = LOWER(?)", username).First(&user).Error; err != nil {
 		models.CreateAuditLog(s.db, nil, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, fmt.Sprintf("Admin login failed: Username not found %s", username), nil)
 		return nil, ErrInvalidCredentials
 	}
@@ -452,7 +447,7 @@ func (s *AuthService) ResendVerification(email, ip, ua string) (*models.User, st
 	nama := "User"
 	if user.NIP != nil {
 		var sdm models.SDM
-		s.db.Where("nip = ?", *user.NIP).First(&sdm)
+		s.db.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm)
 		nama = sdm.Nama
 	}
 

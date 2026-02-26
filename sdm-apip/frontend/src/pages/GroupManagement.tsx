@@ -84,9 +84,9 @@ const GroupManagement: React.FC = () => {
         try {
             const res = await userService.getAllUsers(1, 1000);
             setUsers(res.data.filter((u: any) => {
-                const isSuperAdmin = u.role?.toLowerCase() === 'super admin' || u.role?.toLowerCase() === 'superadmin' || u.role?.toLowerCase() === 'admin';
-                const isInspektur = u.jabatan?.toLowerCase().includes('inspektur');
-                return !isSuperAdmin && !isInspektur;
+                const r = u.role?.toLowerCase() || '';
+                const j = u.jabatan?.toLowerCase() || '';
+                return r !== 'admin' && r !== 'super admin' && u.id !== 1 && !j.includes('inspektur');
             }));
         } catch { /* ignore */ }
     };

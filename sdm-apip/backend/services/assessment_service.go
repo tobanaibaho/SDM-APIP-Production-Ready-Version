@@ -247,6 +247,7 @@ func (s *AssessmentService) GetAssessmentMatrix(periodID uint, viewerID uint) ([
 			"user_id":        u.ID,
 			"nip":            u.NIP,
 			"name":           u.Name,
+			"jabatan":        u.Jabatan,
 			"status":         status,
 			"raters":         raters,
 			"can_assess":     canAssess,

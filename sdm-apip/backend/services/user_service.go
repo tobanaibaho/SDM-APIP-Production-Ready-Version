@@ -135,6 +135,8 @@ func (s *UserService) GetAll(page, limit int, search, status, sortBy, order stri
 				trimmedSDMNIP := strings.TrimSpace(sdm.NIP)
 				if u, ok := userMap[trimmedSDMNIP]; ok {
 					u.Name = sdm.Nama
+					u.Jabatan = sdm.Jabatan
+					u.Foto = sdm.Foto
 				}
 			}
 		}
@@ -156,7 +158,7 @@ func (s *UserService) GetByID(id uint) (*models.User, *models.SDM, error) {
 
 	var sdm models.SDM
 	if user.NIP != nil {
-		s.db.Where("nip = ?", *user.NIP).First(&sdm)
+		s.db.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm)
 	}
 
 	return &user, &sdm, nil

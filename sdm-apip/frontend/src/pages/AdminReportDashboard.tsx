@@ -373,14 +373,19 @@ const AdminReportDashboard: React.FC = () => {
                                                 </button>
                                             </td>
                                             <td className="px-8 py-5">
-                                                <span className={`inline-flex px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter border ${user.group_role === 'Inspektur' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                                                    user.group_role === 'Dalnis' ? 'bg-purple-50 text-purple-600 border-purple-100' :
-                                                        user.group_role === 'KT' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                            user.group_role === 'AT' ? 'bg-green-50 text-green-600 border-green-100' :
-                                                                'bg-slate-100 text-slate-600 border-slate-200'
-                                                    }`}>
-                                                    {user.group_role || 'Anggota'}
-                                                </span>
+                                                {(() => {
+                                                    const role = user.jabatan?.toLowerCase().includes('inspektur') ? 'Inspektur' : (user.group_role || 'Anggota');
+                                                    return (
+                                                        <span className={`inline-flex px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter border ${role === 'Inspektur' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                                            role === 'Dalnis' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                                                role === 'KT' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                                    role === 'AT' ? 'bg-green-50 text-green-600 border-green-100' :
+                                                                        'bg-slate-100 text-slate-600 border-slate-200'
+                                                            }`}>
+                                                            {role}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-8 py-5 text-sm text-slate-600 font-medium">{user.unit_kerja}</td>
                                             <td className="px-8 py-5 text-center">
@@ -469,14 +474,19 @@ const AdminReportDashboard: React.FC = () => {
                                             <h3 className="text-2xl font-black text-slate-900">{selectedUser.name}</h3>
                                             <div className="flex items-center gap-3 mt-1.5">
                                                 <span className="text-xs font-mono bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-slate-500">{selectedUser.nip}</span>
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter border ${selectedUser.group_role === 'Inspektur' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                                                    selectedUser.group_role === 'Dalnis' ? 'bg-purple-50 text-purple-600 border-purple-100' :
-                                                        selectedUser.group_role === 'KT' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                            selectedUser.group_role === 'AT' ? 'bg-green-50 text-green-600 border-green-100' :
-                                                                'bg-slate-100 text-slate-600 border-slate-200'
-                                                    }`}>
-                                                    {selectedUser.group_role || 'Anggota'}
-                                                </span>
+                                                {(() => {
+                                                    const role = selectedUser.jabatan?.toLowerCase().includes('inspektur') ? 'Inspektur' : (selectedUser.group_role || 'Anggota');
+                                                    return (
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter border ${role === 'Inspektur' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                                            role === 'Dalnis' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                                                role === 'KT' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                                    role === 'AT' ? 'bg-green-50 text-green-600 border-green-100' :
+                                                                        'bg-slate-100 text-slate-600 border-slate-200'
+                                                            }`}>
+                                                            {role}
+                                                        </span>
+                                                    );
+                                                })()}
                                                 <span className="text-xs font-bold text-slate-400">{selectedUser.unit_kerja}</span>
                                             </div>
                                         </div>

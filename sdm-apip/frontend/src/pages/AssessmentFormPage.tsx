@@ -12,11 +12,9 @@ import {
     ShieldCheck
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
 
 const AssessmentFormPage: React.FC = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [targetName, setTargetName] = useState('');
     const [periodInfo, setPeriodInfo] = useState<any>(null);
@@ -200,14 +198,12 @@ const AssessmentFormPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Inspektur Reference Panel — visible only for Atasan evaluators who are Inspektur */}
-                {user?.jabatan?.toLowerCase().includes('inspektur') && (
-                    <AssessmentReferencePanel
-                        targetUserId={targetUserId}
-                        periodId={periodId}
-                        relationType={relationType}
-                    />
-                )}
+                {/* Inspektur Reference Panel — visible only for Atasan evaluators */}
+                <AssessmentReferencePanel
+                    targetUserId={targetUserId}
+                    periodId={periodId}
+                    relationType={relationType}
+                />
 
                 {/* Validation Note */}
                 <div className="flex items-start gap-4 p-6 bg-blue-50 border-2 border-blue-100 rounded-3xl">
