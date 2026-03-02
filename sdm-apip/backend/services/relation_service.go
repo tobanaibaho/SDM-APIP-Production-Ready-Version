@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sdm-apip-backend/logger"
 	"sdm-apip-backend/models"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -111,6 +112,57 @@ func (s *AssessmentService) GetCrossGroupRelations(periodID uint) ([]models.Asse
 	if err != nil {
 		return nil, ErrInternalServer
 	}
+
+	// Hydrate names from SDM APIP
+	var nips []string
+	userMap := make(map[string]*models.User)
+
+	// Collect all Evaluator and TargetUser NIPs and map them
+	for i := range relations {
+		if relations[i].Evaluator.ID != 0 && relations[i].Evaluator.NIP != nil {
+			trimmedNIP := strings.TrimSpace(*relations[i].Evaluator.NIP)
+			if trimmedNIP != "" {
+				nips = append(nips, trimmedNIP)
+				// Evaluator might be the same user for multiple relations
+				userMap[trimmedNIP+"_eval_"+fmt.Sprint(relations[i].ID)] = &relations[i].Evaluator
+			}
+		}
+		if relations[i].TargetUser.ID != 0 && relations[i].TargetUser.NIP != nil {
+			trimmedNIP := strings.TrimSpace(*relations[i].TargetUser.NIP)
+			if trimmedNIP != "" {
+				nips = append(nips, trimmedNIP)
+				userMap[trimmedNIP+"_target_"+fmt.Sprint(relations[i].ID)] = &relations[i].TargetUser
+			}
+		}
+	}
+
+	if len(nips) > 0 {
+		var sdmList []models.SDM
+		if err := s.db.Where("TRIM(nip) IN ?", nips).Find(&sdmList).Error; err == nil {
+			// Create a quick lookup for SDM models based on NIP
+			sdmLookup := make(map[string]models.SDM)
+			for _, sdm := range sdmList {
+				sdmLookup[strings.TrimSpace(sdm.NIP)] = sdm
+			}
+
+			// Assign Name and Jabatan to the preloaded User structs
+			for i := range relations {
+				if relations[i].Evaluator.ID != 0 && relations[i].Evaluator.NIP != nil {
+					if sdm, ok := sdmLookup[strings.TrimSpace(*relations[i].Evaluator.NIP)]; ok {
+						relations[i].Evaluator.Name = sdm.Nama
+						relations[i].Evaluator.Jabatan = sdm.Jabatan
+					}
+				}
+				if relations[i].TargetUser.ID != 0 && relations[i].TargetUser.NIP != nil {
+					if sdm, ok := sdmLookup[strings.TrimSpace(*relations[i].TargetUser.NIP)]; ok {
+						relations[i].TargetUser.Name = sdm.Nama
+						relations[i].TargetUser.Jabatan = sdm.Jabatan
+					}
+				}
+			}
+		}
+	}
+
 	return relations, nil
 }
 

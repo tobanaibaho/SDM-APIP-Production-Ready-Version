@@ -15,7 +15,8 @@ import {
     AlertCircle,
     CheckCircle2,
     Info,
-    Search
+    Search,
+    X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -69,18 +70,18 @@ const CrossGroupRelationPage: React.FC = () => {
 
     const [form, setForm] = useState<{
         evaluator_id: number | '';
-        target_user_id: number | '';
+        target_user_ids: number[];
         relation_type: string;
         createReciprocal: boolean;
     }>({
         evaluator_id: '',
-        target_user_id: '',
+        target_user_ids: [],
         relation_type: 'Peer',
         createReciprocal: true,
     });
 
     const [selectedEvaluator, setSelectedEvaluator] = useState<UserOption | null>(null);
-    const [selectedTarget, setSelectedTarget] = useState<UserOption | null>(null);
+    const [selectedTargets, setSelectedTargets] = useState<UserOption[]>([]);
 
     useEffect(() => {
         loadInitialData();
@@ -141,7 +142,7 @@ const CrossGroupRelationPage: React.FC = () => {
     }, [selectedPeriodId]);
 
     const filteredEvaluators = allUsers.filter(u =>
-        u.id !== (form.target_user_id || 0) &&
+        !form.target_user_ids.includes(u.id) &&
         (u.name?.toLowerCase().includes(evaluatorSearch.toLowerCase()) ||
             u.nip?.includes(evaluatorSearch) ||
             u.email?.toLowerCase().includes(evaluatorSearch.toLowerCase()))
@@ -149,6 +150,7 @@ const CrossGroupRelationPage: React.FC = () => {
 
     const filteredTargets = allUsers.filter(u =>
         u.id !== (form.evaluator_id || 0) &&
+        !form.target_user_ids.includes(u.id) &&
         (u.name?.toLowerCase().includes(targetSearch.toLowerCase()) ||
             u.nip?.includes(targetSearch) ||
             u.email?.toLowerCase().includes(targetSearch.toLowerCase()))
@@ -156,12 +158,8 @@ const CrossGroupRelationPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedPeriodId || !form.evaluator_id || !form.target_user_id) {
+        if (!selectedPeriodId || !form.evaluator_id || form.target_user_ids.length === 0) {
             toast.error('Lengkapi semua field terlebih dahulu');
-            return;
-        }
-        if (form.evaluator_id === form.target_user_id) {
-            toast.error('Penilai dan target tidak boleh sama');
             return;
         }
 
@@ -169,35 +167,40 @@ const CrossGroupRelationPage: React.FC = () => {
         try {
             const reciprocalType = RECIPROCAL_MAP[form.relation_type] || 'Peer';
 
-            // Create main relation: A → B
-            await groupService.createCrossGroupRelation({
-                period_id: Number(selectedPeriodId),
-                evaluator_id: Number(form.evaluator_id),
-                target_user_id: Number(form.target_user_id),
-                relation_type: form.relation_type,
-                target_position: reciprocalType,
-            });
-
-            // Create reciprocal relation: B → A (if enabled)
-            if (form.createReciprocal) {
+            const promises = form.target_user_ids.map(async (targetId) => {
+                // Create main relation: A → B
                 await groupService.createCrossGroupRelation({
                     period_id: Number(selectedPeriodId),
-                    evaluator_id: Number(form.target_user_id),
-                    target_user_id: Number(form.evaluator_id),
-                    relation_type: reciprocalType,
-                    target_position: form.relation_type,
+                    evaluator_id: Number(form.evaluator_id),
+                    target_user_id: targetId,
+                    relation_type: form.relation_type,
+                    target_position: reciprocalType,
                 });
-            }
+
+                // Create reciprocal relation: B → A (if enabled)
+                if (form.createReciprocal) {
+                    await groupService.createCrossGroupRelation({
+                        period_id: Number(selectedPeriodId),
+                        evaluator_id: targetId,
+                        target_user_id: Number(form.evaluator_id),
+                        relation_type: reciprocalType,
+                        target_position: form.relation_type,
+                    });
+                }
+            });
+
+            await Promise.all(promises);
 
             toast.success(`Relasi berhasil ${form.createReciprocal ? 'dua arah ' : ''}dibuat`);
-            setForm({ evaluator_id: '', target_user_id: '', relation_type: 'Peer', createReciprocal: true });
+            setForm({ evaluator_id: '', target_user_ids: [], relation_type: form.relation_type, createReciprocal: form.createReciprocal });
             setSelectedEvaluator(null);
-            setSelectedTarget(null);
+            setSelectedTargets([]);
             setEvaluatorSearch('');
             setTargetSearch('');
             loadCrossRelations();
         } catch (error: any) {
-            toast.error(error.response?.data?.error || 'Gagal membuat relasi');
+            toast.error(error.response?.data?.error || 'Sedikitnya satu relasi gagal dibuat. Cek daftar relasi aktif.');
+            loadCrossRelations();
         } finally {
             setSaving(false);
         }
@@ -212,6 +215,11 @@ const CrossGroupRelationPage: React.FC = () => {
         } catch {
             toast.error('Gagal menghapus relasi');
         }
+    };
+
+    const removeTarget = (idToRemove: number) => {
+        setSelectedTargets(prev => prev.filter(t => t.id !== idToRemove));
+        setForm(f => ({ ...f, target_user_ids: f.target_user_ids.filter(id => id !== idToRemove) }));
     };
 
     const getRelationBadge = (type: string) => {
@@ -360,30 +368,52 @@ const CrossGroupRelationPage: React.FC = () => {
                             </div>
 
                             {/* Target Picker */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
-                                    Target yang Dinilai
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center justify-between">
+                                    <span>Target yang Dinilai (Bisa Lebih Dari Satu)</span>
+                                    {selectedTargets.length > 0 && (
+                                        <span className="bg-primary-100 text-primary-600 px-2 py-0.5 rounded-md text-[10px]">{selectedTargets.length} Orang Terpilih</span>
+                                    )}
                                 </label>
+
+                                {selectedTargets.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-2 p-3 bg-slate-50 border border-slate-100 rounded-xl max-h-48 overflow-y-auto shadow-inner">
+                                        {selectedTargets.map(t => (
+                                            <div key={t.id} className="flex items-center gap-1.5 bg-white border shadow-sm px-2.5 py-1.5 rounded-lg text-[10px] font-black group">
+                                                <div className="flex flex-col">
+                                                    <span className="text-slate-800">{t.name}</span>
+                                                    <span className="text-slate-400 font-normal">{t.jabatan || t.nip}</span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeTarget(t.id)}
+                                                    className="ml-1 text-slate-300 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div className="relative">
                                     <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="text"
                                         className="form-input pl-10"
-                                        placeholder="Cari nama / NIP..."
-                                        value={selectedTarget ? `${selectedTarget.name} (${selectedTarget.nip})` : targetSearch}
+                                        placeholder="Cari dan klik nama/NIP untuk menambahkan..."
+                                        value={targetSearch}
                                         onChange={e => {
                                             setTargetSearch(e.target.value);
-                                            setSelectedTarget(null);
-                                            setForm(f => ({ ...f, target_user_id: '' }));
                                             setShowTargetDropdown(true);
                                         }}
                                         onFocus={() => setShowTargetDropdown(true)}
                                         onBlur={() => setTimeout(() => setShowTargetDropdown(false), 150)}
                                     />
-                                    {showTargetDropdown && targetSearch && !selectedTarget && (
-                                        <div className="absolute z-20 mt-1 w-full bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden">
+                                    {showTargetDropdown && targetSearch && (
+                                        <div className="absolute z-20 mt-1 w-full bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden max-h-60 overflow-y-auto">
                                             {filteredTargets.length === 0 ? (
-                                                <div className="p-3 text-xs text-slate-400 text-center">Tidak ditemukan</div>
+                                                <div className="p-3 text-xs text-slate-400 text-center">Tidak ditemukan atau sudah ditambahkan</div>
                                             ) : filteredTargets.map(u => (
                                                 <button
                                                     key={u.id}
@@ -391,8 +421,11 @@ const CrossGroupRelationPage: React.FC = () => {
                                                     className="w-full text-left px-4 py-3 hover:bg-primary-50 transition-colors border-b border-slate-50 last:border-0"
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
-                                                        setSelectedTarget(u);
-                                                        setForm(f => ({ ...f, target_user_id: u.id }));
+                                                        if (!form.target_user_ids.includes(u.id)) {
+                                                            setSelectedTargets(prev => [...prev, u]);
+                                                            setForm(f => ({ ...f, target_user_ids: [...f.target_user_ids, u.id] }));
+                                                        }
+                                                        setTargetSearch(''); // Reset search
                                                         setShowTargetDropdown(false);
                                                     }}
                                                 >
@@ -403,9 +436,6 @@ const CrossGroupRelationPage: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
-                                {selectedTarget && (
-                                    <p className="text-[10px] text-primary-600 font-bold">✓ {selectedTarget.email}</p>
-                                )}
                             </div>
 
                             {/* Reciprocal toggle */}
@@ -434,7 +464,7 @@ const CrossGroupRelationPage: React.FC = () => {
 
                             <button
                                 type="submit"
-                                disabled={saving || !selectedPeriodId || !form.evaluator_id || !form.target_user_id}
+                                disabled={saving || !selectedPeriodId || !form.evaluator_id || form.target_user_ids.length === 0}
                                 className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {saving ? <RefreshCw size={16} className="animate-spin" /> : <Plus size={16} />}

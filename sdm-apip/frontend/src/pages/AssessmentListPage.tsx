@@ -5,6 +5,7 @@ import api from '../services/api';
 import { AssessmentPeriod } from '../services/assessmentService';
 import AssessmentReferencePanel from '../components/AssessmentReferencePanel';
 import { useAuth } from '../context/AuthContext';
+import { getProfile } from '../services/authService';
 import {
     ClipboardCheck,
     ArrowUpRight,
@@ -16,8 +17,17 @@ import toast from 'react-hot-toast';
 
 const AssessmentListPage: React.FC = () => {
     const { user } = useAuth();
-    const isInspektur = user?.jabatan?.toLowerCase().includes('inspektur') ?? false;
     const navigate = useNavigate();
+    // Jabatan fresh dari SDM — dipakai oleh AssessmentReferencePanel untuk mendeteksi Inspektur
+    const [evaluatorJabatan, setEvaluatorJabatan] = useState<string>(user?.jabatan || '');
+    const isInspektur = evaluatorJabatan.toLowerCase().includes('inspektur');
+
+    useEffect(() => {
+        getProfile().then(data => {
+            if (data?.sdm?.jabatan) setEvaluatorJabatan(data.sdm.jabatan);
+            else if (data?.user?.jabatan) setEvaluatorJabatan(data.user.jabatan);
+        }).catch(() => {/* silent */ });
+    }, []);
     const [periods, setPeriods] = useState<AssessmentPeriod[]>([]);
     const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
     const [matrix, setMatrix] = useState<any[]>([]);
@@ -75,13 +85,17 @@ const AssessmentListPage: React.FC = () => {
     const getStatusBadge = (status: number) => {
         if (status === 0) return <span className="text-slate-400">-</span>;
 
-        const results = [];
-        // Bitwise check based on status logic: Atasan=1, Peer=2, Bawahan=4
-        if (status & 1) results.push(<span key="atasan" className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold">Atasan</span>);
-        if (status & 2) results.push(<span key="peer" className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">Peer</span>);
-        if (status & 4) results.push(<span key="bawahan" className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-bold">Bawahan</span>);
+        let count = 0;
+        if (status & 1) count++;
+        if (status & 2) count++;
+        if (status & 4) count++;
 
-        return <div className="flex gap-1 flex-wrap">{results}</div>;
+        return (
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                {count} Kategori Penilai
+            </div>
+        );
     };
 
     return (
@@ -151,12 +165,7 @@ const AssessmentListPage: React.FC = () => {
                                                     <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 flex items-center justify-center font-bold text-2xl shadow-inner uppercase">
                                                         {t.relation?.target_user?.name ? t.relation.target_user.name.charAt(0) : '?'}
                                                     </div>
-                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${t.relation?.relation_type === 'Atasan' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                        t.relation?.relation_type === 'Peer' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                                                            'bg-purple-100 text-purple-700 border-purple-200'
-                                                        }`}>
-                                                        {t.relation?.relation_type || 'N/A'}
-                                                    </span>
+
                                                 </div>
 
                                                 <h4 className="font-black text-slate-900 text-lg mb-0.5 truncate">{t.relation?.target_user?.name || 'Unknown User'}</h4>
@@ -167,6 +176,7 @@ const AssessmentListPage: React.FC = () => {
                                                     targetUserId={t.relation?.target_user_id ? String(t.relation.target_user_id) : null}
                                                     periodId={selectedPeriod ? String(selectedPeriod) : null}
                                                     relationType={t.relation?.relation_type ?? null}
+                                                    evaluatorJabatan={evaluatorJabatan || null}
                                                 />
 
                                                 {/* Monthly progress bubbles — shown for multi-month periods */}

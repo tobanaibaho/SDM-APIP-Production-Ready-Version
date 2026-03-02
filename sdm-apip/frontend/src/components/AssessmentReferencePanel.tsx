@@ -41,6 +41,7 @@ interface Props {
     targetUserId: string | null;
     periodId: string | null;
     relationType: string | null;  // only show for 'Atasan'
+    evaluatorJabatan?: string | null; // jabatan penilai — dikirim dari parent untuk bypass cache localStorage
 }
 
 const INDICATOR_ORDER = [
@@ -78,15 +79,17 @@ const ScoreBadge: React.FC<{ value: number; label: string }> = ({ value, label }
     );
 };
 
-const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, relationType }) => {
+const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, relationType, evaluatorJabatan }) => {
     const { user } = useAuth();
     const [data, setData] = useState<AssessmentReference | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(true);
 
+    // Gunakan evaluatorJabatan dari prop (dari sdmData yang fresh) ATAU jabatan dari user di AuthContext
+    const jabatan = evaluatorJabatan || user?.jabatan || '';
     // Only relevant for Atasan evaluators whose jabatan includes "inspektur"
-    const isAtasan = relationType === 'Atasan' && user?.jabatan?.toLowerCase().includes('inspektur');
+    const isAtasan = relationType === 'Atasan' && jabatan.toLowerCase().includes('inspektur');
 
     useEffect(() => {
         if (!isAtasan || !targetUserId || !periodId) return;
@@ -285,7 +288,7 @@ const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, rel
                         <Info size={16} className="text-indigo-400 shrink-0 mt-0.5" />
                         <p className="text-[11px] font-semibold text-indigo-600 leading-relaxed">
                             Data referensi ini berasal dari penilaian anonim oleh Peer dan Bawahan.
-                            Penilaian Anda sebagai Atasan bersifat <strong>independen dan rahasia</strong>.
+                            Penilaian Anda bersifat <strong>independen dan rahasia</strong>.
                             Gunakan data ini sebagai panduan, bukan patokan mutlak.
                         </p>
                     </div>

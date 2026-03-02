@@ -281,6 +281,7 @@ func (ac *AuthController) GetProfile(c *gin.Context) {
 		if err := config.DB.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm).Error; err == nil {
 			user.Name = sdm.Nama
 			user.Foto = sdm.Foto
+			user.Jabatan = sdm.Jabatan
 		}
 	} else if user.RoleID == models.RoleSuperAdmin && user.Username != nil {
 		user.Name = *user.Username

@@ -171,13 +171,14 @@ func (s *AuthService) Login(
 	// 11. Audit Log Success
 	models.CreateAuditLog(s.db, &user.ID, models.AuditActionLogin, models.AuditStatusSuccess, ip, ua, "User login successful", &user.ID)
 
-	// 11. Fetch SDM Data for Name and Foto
+	// 11. Fetch SDM Data for Name, Foto, and Jabatan
 	userResp := user.ToResponse()
 	if user.NIP != nil {
 		var sdm models.SDM
 		s.db.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm)
 		userResp.Name = sdm.Nama
 		userResp.Foto = sdm.Foto
+		userResp.Jabatan = sdm.Jabatan
 	} else if user.RoleID == models.RoleSuperAdmin && user.Username != nil {
 		userResp.Name = *user.Username
 	}

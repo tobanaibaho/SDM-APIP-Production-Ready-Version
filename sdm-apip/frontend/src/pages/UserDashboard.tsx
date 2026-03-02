@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getProfile } from '../services/authService';
 import groupService from '../services/groupService';
 import assessmentService, { AssessmentPeriod } from '../services/assessmentService';
+import AssessmentReferencePanel from '../components/AssessmentReferencePanel';
 import api from '../services/api';
 import { SDM, Group } from '../types';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +33,7 @@ interface AssessmentTarget {
         id: number;
         target_user_id: number;
         relation_type: 'Atasan' | 'Peer' | 'Bawahan';
+        target_position: 'Atasan' | 'Peer' | 'Bawahan';
         target_user: {
             id: number;
             name: string;
@@ -45,11 +47,7 @@ interface AssessmentTarget {
 }
 
 /* ─────────────────────── Helpers ─────────────────────── */
-const RELATION_COLOR: Record<string, string> = {
-    Atasan: 'bg-green-100 text-green-700 border-green-200',
-    Peer: 'bg-blue-100 text-blue-700 border-blue-200',
-    Bawahan: 'bg-purple-100 text-purple-700 border-purple-200',
-};
+
 
 const ROLE_BADGE: Record<string, JSX.Element> = {
     Dalnis: <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-black uppercase border border-purple-200">Dalnis</span>,
@@ -343,7 +341,6 @@ const UserDashboard: React.FC = () => {
                                                 const isPartial = months_done.length > 0 && !is_done;
                                                 const nextMonth = Array.from({ length: months_required }, (_, i) => i + 1)
                                                     .find(m => !months_done.includes(m)) ?? 1;
-                                                const relType = relation?.relation_type ?? 'Peer';
                                                 const userName = relation?.target_user?.name ?? 'Unknown';
                                                 const jabatan = relation?.target_user?.jabatan ?? '';
 
@@ -366,11 +363,17 @@ const UserDashboard: React.FC = () => {
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex flex-wrap items-center gap-2">
                                                                 <p className="font-bold text-slate-900 text-sm truncate">{userName}</p>
-                                                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${RELATION_COLOR[relType]}`}>
-                                                                    {relType}
-                                                                </span>
                                                             </div>
                                                             {jabatan && <p className="text-xs text-slate-400 truncate mt-0.5">{jabatan}</p>}
+
+                                                            <div className="mt-4">
+                                                                <AssessmentReferencePanel
+                                                                    targetUserId={relation?.target_user_id ? String(relation.target_user_id) : null}
+                                                                    periodId={selectedPeriodId ? String(selectedPeriodId) : null}
+                                                                    relationType={relation?.relation_type ?? null}
+                                                                    evaluatorJabatan={sdmData?.jabatan ?? null}
+                                                                />
+                                                            </div>
                                                         </div>
 
                                                         {/* Monthly bubbles */}
@@ -403,7 +406,7 @@ const UserDashboard: React.FC = () => {
                                                         ) : (
                                                             <button
                                                                 onClick={() => navigate(
-                                                                    `/user/assessments/new?target_id=${relation?.target_user_id}&period_id=${selectedPeriodId}&relation=${relType}`
+                                                                    `/user/assessments/new?target_id=${relation?.target_user_id}&period_id=${selectedPeriodId}&relation=${relation?.relation_type}`
                                                                 )}
                                                                 className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all hover:scale-105 active:scale-95 ${isPartial
                                                                     ? 'bg-amber-500 text-white hover:bg-amber-400'

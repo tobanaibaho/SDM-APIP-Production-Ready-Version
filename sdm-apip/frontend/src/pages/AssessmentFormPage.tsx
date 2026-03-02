@@ -8,8 +8,7 @@ import {
     ArrowRightCircle,
     ArrowLeft,
     Target,
-    MessageSquare,
-    ShieldCheck
+    MessageSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -152,10 +151,6 @@ const AssessmentFormPage: React.FC = () => {
                             <div>
                                 <p className="text-primary-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Menilai Pegawai</p>
                                 <h3 className="text-3xl font-black tracking-tight">{targetName || 'Memuat Nama...'}</h3>
-                                <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold border border-white/10">
-                                    <ShieldCheck size={14} className="text-primary-400" />
-                                    Peran Anda: <span className="text-primary-400 uppercase">{relationType}</span>
-                                </div>
                             </div>
                         </div>
                         <button
