@@ -5,11 +5,10 @@ import {
     BarChart3,
     AlertTriangle,
     CheckCircle2,
-    Users,
-    ChevronDown,
-    ChevronUp,
     Loader2,
-    Info
+    Info,
+    Eye,
+    EyeOff,
 } from 'lucide-react';
 
 interface IndicatorReference {
@@ -40,8 +39,8 @@ interface AssessmentReference {
 interface Props {
     targetUserId: string | null;
     periodId: string | null;
-    relationType: string | null;  // only show for 'Atasan'
-    evaluatorJabatan?: string | null; // jabatan penilai — dikirim dari parent untuk bypass cache localStorage
+    relationType: string | null;
+    evaluatorJabatan?: string | null;
 }
 
 const INDICATOR_ORDER = [
@@ -54,30 +53,17 @@ const INDICATOR_ORDER = [
     'Kolaboratif',
 ];
 
-const ProgressBar: React.FC<{ value: number; color?: string }> = ({ value, color = 'bg-primary-500' }) => (
-    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-        <div
-            className={`h-full rounded-full transition-all duration-700 ${color}`}
-            style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
-        />
-    </div>
-);
+/* Warna progress bar berdasarkan nilai */
+const barBg = (v: number) =>
+    v >= 80 ? 'bg-emerald-500' : v >= 65 ? 'bg-amber-400' : 'bg-indigo-400';
 
-const ScoreBadge: React.FC<{ value: number; label: string }> = ({ value, label }) => {
-    const color = value >= 80 ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
-        : value >= 65 ? 'text-amber-600 bg-amber-50 border-amber-200'
-            : value > 0 ? 'text-slate-600 bg-slate-50 border-slate-200'
-                : 'text-slate-300 bg-slate-50 border-slate-100';
+/* Warna teks skor */
+const scoreColor = (v: number) =>
+    v >= 80 ? 'text-emerald-600' : v >= 65 ? 'text-amber-600' : v > 0 ? 'text-slate-700' : 'text-slate-300';
 
-    return (
-        <div className={`flex flex-col items-center px-3 py-2 rounded-xl border ${color}`}>
-            <span className="text-[9px] font-black uppercase tracking-widest opacity-70">{label}</span>
-            <span className="text-lg font-black leading-tight">
-                {value > 0 ? value.toFixed(1) : '-'}
-            </span>
-        </div>
-    );
-};
+/* Label kategori nilai */
+const scoreLabel = (v: number) =>
+    v >= 80 ? 'Baik' : v >= 65 ? 'Cukup' : v > 0 ? 'Kurang' : '—';
 
 const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, relationType, evaluatorJabatan }) => {
     const { user } = useAuth();
@@ -86,210 +72,186 @@ const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, rel
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(true);
 
-    // Gunakan evaluatorJabatan dari prop (dari sdmData yang fresh) ATAU jabatan dari user di AuthContext
     const jabatan = evaluatorJabatan || user?.jabatan || '';
-    // Only relevant for Atasan evaluators whose jabatan includes "inspektur"
     const isAtasan = relationType === 'Atasan' && jabatan.toLowerCase().includes('inspektur');
 
     useEffect(() => {
         if (!isAtasan || !targetUserId || !periodId) return;
-
         const fetchReference = async () => {
             setLoading(true);
             setError(null);
             try {
-                const res = await api.get(
-                    `/user/assessments/reference/${targetUserId}?period_id=${periodId}`
-                );
+                const res = await api.get(`/user/assessments/reference/${targetUserId}?period_id=${periodId}`);
                 setData(res.data?.data || null);
             } catch (err: any) {
-                // 403 means not Atasan — hide panel silently
                 if (err?.response?.status === 403) {
                     setData(null);
                 } else {
-                    setError('Tidak dapat memuat data referensi saat ini.');
+                    setError('Tidak dapat memuat data referensi.');
                 }
             } finally {
                 setLoading(false);
             }
         };
-
         fetchReference();
     }, [targetUserId, periodId, isAtasan]);
 
-    // Don't render for non-Atasan evaluators
     if (!isAtasan) return null;
 
-    // Loading state
+    /* ── Loading ── */
     if (loading) {
         return (
-            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-100 rounded-[2rem] p-8 flex items-center gap-4">
-                <Loader2 size={24} className="text-indigo-400 animate-spin shrink-0" />
-                <div>
-                    <p className="font-black text-indigo-900 text-sm uppercase tracking-widest">
-                        Memuat Referensi Penilaian...
-                    </p>
-                    <p className="text-xs text-indigo-500 font-medium mt-0.5">
-                        Mengambil akumulasi nilai dari rekan dan bawahan
-                    </p>
-                </div>
+            <div className="mt-3 flex items-center gap-3 px-4 py-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                <Loader2 size={16} className="text-indigo-400 animate-spin shrink-0" />
+                <p className="text-xs font-bold text-indigo-500">Memuat data referensi...</p>
             </div>
         );
     }
 
-    // Error state
+    /* ── Error ── */
     if (error) {
         return (
-            <div className="flex items-start gap-4 p-6 bg-red-50 border-2 border-red-100 rounded-[2rem]">
-                <AlertTriangle size={20} className="text-red-500 shrink-0 mt-0.5" />
-                <p className="text-sm font-semibold text-red-700">{error}</p>
+            <div className="mt-3 flex items-center gap-3 px-4 py-3 bg-red-50 rounded-xl border border-red-100">
+                <AlertTriangle size={15} className="text-red-400 shrink-0" />
+                <p className="text-xs font-semibold text-red-600">{error}</p>
             </div>
         );
     }
 
-    // No data (not authorized or no assessments yet — show placeholder)
+    /* ── No data ── */
     if (!data) {
         return (
-            <div className="flex items-start gap-4 p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2rem]">
-                <Info size={20} className="text-slate-400 shrink-0 mt-0.5" />
+            <div className="mt-3 flex items-start gap-3 px-4 py-3 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <Info size={15} className="text-slate-400 shrink-0 mt-0.5" />
                 <div>
-                    <p className="text-sm font-black text-slate-600 uppercase tracking-widest">
-                        Panel Referensi Tidak Tersedia
-                    </p>
-                    <p className="text-xs text-slate-400 font-medium mt-0.5">
-                        Belum ada penilaian Peer/Bawahan yang masuk untuk pegawai ini pada periode ini.
-                    </p>
+                    <p className="text-xs font-black text-slate-600 uppercase tracking-wide">Referensi Belum Tersedia</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Belum ada penilaian rekan yang masuk pada periode ini.</p>
                 </div>
             </div>
         );
     }
 
-    const barColor = (val: number) =>
-        val >= 80 ? 'bg-emerald-500' : val >= 65 ? 'bg-amber-400' : 'bg-primary-500';
+    const { summary, indicators, is_ready, warning } = data;
+    const totalPenilai = summary.peer_count + summary.bawahan_count;
 
     return (
-        <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 border-2 border-indigo-100 rounded-[2rem] overflow-hidden shadow-lg">
-            {/* Header */}
-            <div
-                className="flex items-center justify-between px-8 py-5 cursor-pointer hover:bg-indigo-50/50 transition-colors"
-                onClick={() => setExpanded(!expanded)}
+        <div className="mt-4 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 overflow-hidden shadow-sm">
+
+            {/* ── Header ── */}
+            <button
+                type="button"
+                onClick={() => setExpanded(v => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-indigo-50/50 transition-colors"
             >
-                <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-200">
-                        <BarChart3 size={20} />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">
-                            Panel Referensi
-                        </p>
-                        <h4 className="font-black text-slate-900 text-base">
-                            Akumulasi Nilai Peer &amp; Bawahan
-                        </h4>
+                <div className="flex items-center gap-2.5">
+                    <span className="flex items-center justify-center h-7 w-7 rounded-lg bg-indigo-600 text-white shadow-sm">
+                        <BarChart3 size={14} />
+                    </span>
+                    <div className="text-left">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400 leading-none">Referensi Penilaian</p>
+                        <p className="text-sm font-black text-slate-800 leading-tight mt-0.5">Nilai Gabungan Rekan</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    {data.is_ready ? (
-                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full text-[10px] font-black uppercase tracking-widest">
-                            <CheckCircle2 size={12} /> Data Lengkap
+                <div className="flex items-center gap-2">
+                    {is_ready ? (
+                        <span className="flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-600 border border-emerald-200 rounded-full text-[9px] font-black uppercase">
+                            <CheckCircle2 size={10} /> Lengkap
                         </span>
                     ) : (
-                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 border border-amber-200 rounded-full text-[10px] font-black uppercase tracking-widest">
-                            <AlertTriangle size={12} /> Sebagian
+                        <span className="flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-600 border border-amber-200 rounded-full text-[9px] font-black uppercase">
+                            <AlertTriangle size={10} /> Sebagian
                         </span>
                     )}
-                    {expanded ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                    {expanded
+                        ? <EyeOff size={14} className="text-slate-400" />
+                        : <Eye size={14} className="text-slate-400" />
+                    }
                 </div>
-            </div>
+            </button>
 
+            {/* ── Body ── */}
             {expanded && (
-                <div className="px-8 pb-8 space-y-6 border-t border-indigo-100">
+                <div className="border-t border-indigo-100 px-4 pb-4 pt-3 space-y-3">
 
-                    {/* Warning if not ready */}
-                    {!data.is_ready && data.warning && (
-                        <div className="flex items-start gap-3 mt-5 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
-                            <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" />
-                            <p className="text-xs font-semibold text-amber-700">{data.warning}</p>
+                    {/* Warning */}
+                    {!is_ready && warning && (
+                        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                            <AlertTriangle size={13} className="text-amber-500 shrink-0 mt-0.5" />
+                            <p className="text-[11px] font-semibold text-amber-700 leading-relaxed">{warning}</p>
                         </div>
                     )}
 
-                    {/* Summary Stats */}
-                    <div className="mt-5 grid grid-cols-3 gap-4">
-                        <div className="bg-white rounded-2xl p-4 border border-indigo-100 shadow-sm text-center">
-                            <div className="flex items-center justify-center gap-1.5 mb-2">
-                                <Users size={14} className="text-blue-400" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-500">
-                                    Peer ({data.summary.peer_count} penilai)
-                                </span>
-                            </div>
-                            <p className="text-3xl font-black text-blue-600">
-                                {data.summary.peer_avg > 0 ? data.summary.peer_avg.toFixed(1) : '-'}
+                    {/* ── Overall Score — satu angka besar yang mencolok ── */}
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-indigo-100">
+                        {/* Score besar */}
+                        <div className="flex flex-col items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 shadow-md shadow-indigo-200/50 shrink-0">
+                            <p className={`text-2xl font-black leading-none text-white`}>
+                                {summary.overall_avg > 0 ? summary.overall_avg.toFixed(1) : '—'}
                             </p>
-                            <span className="text-[9px] text-slate-400 font-bold uppercase">rata-rata</span>
+                            <p className="text-[8px] font-black uppercase tracking-widest text-indigo-200 mt-0.5">
+                                {scoreLabel(summary.overall_avg)}
+                            </p>
                         </div>
-                        <div className="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm text-center">
-                            <div className="flex items-center justify-center gap-1.5 mb-2">
-                                <Users size={14} className="text-purple-400" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-purple-500">
-                                    Bawahan ({data.summary.bawahan_count} penilai)
-                                </span>
-                            </div>
-                            <p className="text-3xl font-black text-purple-600">
-                                {data.summary.bawahan_avg > 0 ? data.summary.bawahan_avg.toFixed(1) : '-'}
+                        {/* Konteks */}
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs font-black text-slate-700">Nilai Gabungan</p>
+                            <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                                Rata-rata dari <strong className="text-slate-600">{totalPenilai} penilai</strong> yang telah mengisi kuesioner BerAKHLAK pada periode ini.
                             </p>
-                            <span className="text-[9px] text-slate-400 font-bold uppercase">rata-rata</span>
-                        </div>
-                        <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl p-4 border-0 shadow-lg text-center">
-                            <div className="flex items-center justify-center gap-1.5 mb-2">
-                                <BarChart3 size={14} className="text-indigo-200" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-200">
-                                    Gabungan
-                                </span>
+                            {/* Mini progress bar */}
+                            <div className="mt-2 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full transition-all duration-1000 ${barBg(summary.overall_avg)}`}
+                                    style={{ width: `${Math.max(0, Math.min(100, summary.overall_avg))}%` }}
+                                />
                             </div>
-                            <p className="text-3xl font-black text-white">
-                                {data.summary.overall_avg > 0 ? data.summary.overall_avg.toFixed(1) : '-'}
+                            <p className={`text-[9px] font-black mt-1 ${scoreColor(summary.overall_avg)}`}>
+                                {summary.overall_avg > 0 ? `${summary.overall_avg.toFixed(1)} / 100` : 'Belum ada data'}
                             </p>
-                            <span className="text-[9px] text-indigo-200 font-bold uppercase">rata-rata total</span>
                         </div>
                     </div>
 
-                    {/* Indicators Breakdown */}
-                    <div className="bg-white rounded-[1.5rem] border border-indigo-100 overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 bg-slate-50 border-b border-slate-100">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-                                Rincian Per Indikator BerAKHLAK
+                    {/* ── Rincian per Indikator BerAKHLAK ── */}
+                    <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
+                        <div className="px-4 py-2 bg-slate-50 border-b border-slate-100">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">
+                                Rincian per Indikator BerAKHLAK
                             </p>
                         </div>
                         <div className="divide-y divide-slate-50">
                             {INDICATOR_ORDER.map((ind) => {
-                                const indData = data.indicators[ind];
-                                if (!indData) return null;
+                                const d = indicators[ind];
+                                if (!d) return null;
+                                const val = d.overall_avg;
                                 return (
-                                    <div key={ind} className="px-6 py-4 hover:bg-slate-50/50 transition-colors">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-black text-slate-800">{ind}</span>
-                                            <div className="flex gap-2">
-                                                <ScoreBadge value={indData.peer_avg} label="Peer" />
-                                                <ScoreBadge value={indData.bawahan_avg} label="Bwhn" />
-                                                <ScoreBadge value={indData.overall_avg} label="Total" />
+                                    <div key={ind} className="px-4 py-2.5 flex items-center gap-3">
+                                        {/* Nama indikator */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <p className="text-xs font-bold text-slate-700 truncate">{ind}</p>
+                                                <span className={`text-xs font-black ml-2 shrink-0 ${scoreColor(val)}`}>
+                                                    {val > 0 ? val.toFixed(1) : '—'}
+                                                </span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full transition-all duration-700 ${barBg(val)}`}
+                                                    style={{ width: `${Math.max(0, Math.min(100, val))}%` }}
+                                                />
                                             </div>
                                         </div>
-                                        <ProgressBar
-                                            value={indData.overall_avg}
-                                            color={barColor(indData.overall_avg)}
-                                        />
                                     </div>
                                 );
                             })}
                         </div>
                     </div>
 
-                    {/* Disclaimer */}
-                    <div className="flex items-start gap-3 p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
-                        <Info size={16} className="text-indigo-400 shrink-0 mt-0.5" />
-                        <p className="text-[11px] font-semibold text-indigo-600 leading-relaxed">
-                            Data referensi ini berasal dari penilaian anonim oleh Peer dan Bawahan.
-                            Penilaian Anda bersifat <strong>independen dan rahasia</strong>.
-                            Gunakan data ini sebagai panduan, bukan patokan mutlak.
+                    {/* ── Disclaimer ── */}
+                    <div className="flex items-start gap-2 px-3 py-2.5 bg-indigo-50 border border-indigo-100 rounded-xl">
+                        <Info size={12} className="text-indigo-400 shrink-0 mt-0.5" />
+                        <p className="text-[10px] font-medium text-indigo-600 leading-relaxed">
+                            Data ini adalah nilai gabungan anonim. Identitas penilai tidak ditampilkan.
+                            Gunakan sebagai <strong>panduan</strong> objektif, bukan patokan mutlak.
                         </p>
                     </div>
                 </div>

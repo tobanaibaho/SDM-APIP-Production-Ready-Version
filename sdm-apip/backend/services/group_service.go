@@ -1,4 +1,4 @@
-package services
+﻿package services
 
 import (
 	"errors"
@@ -110,9 +110,13 @@ func (s *GroupService) GetGroupByID(id uint) (*models.Group, []map[string]interf
 		return nil, nil, ErrInternalServer
 	}
 
-	// 1. Fetch active member relationships (even if group is archived, we can show its archived members if needed, but let's just use Unscoped for user_groups too to see who was in it)
+	// 1. Fetch member relationships. If group is archived, we use Unscoped to see who was in it
 	var userGroups []models.UserGroup
-	if err := s.db.Unscoped().Where("group_id = ?", id).Find(&userGroups).Error; err != nil {
+	ugQuery := s.db.Where("group_id = ?", id)
+	if group.DeletedAt.Valid {
+		ugQuery = ugQuery.Unscoped()
+	}
+	if err := ugQuery.Find(&userGroups).Error; err != nil {
 		logger.Error("Database error in GetGroupByID (UserGroup lookup): %v", err)
 		return nil, nil, ErrInternalServer
 	}

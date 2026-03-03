@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS peer_assessments (
     id SERIAL PRIMARY KEY,
     evaluator_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     target_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    group_id INTEGER NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+    group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE, -- Nullable: NULL for cross-group relations
     period_id INTEGER NOT NULL REFERENCES assessment_periods(id) ON DELETE CASCADE,
     assessment_month INTEGER NOT NULL DEFAULT 1,
     

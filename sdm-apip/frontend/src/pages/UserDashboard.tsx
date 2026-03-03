@@ -347,26 +347,72 @@ const UserDashboard: React.FC = () => {
                                                 return (
                                                     <div
                                                         key={relation?.id}
-                                                        className={`flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl border transition-all ${is_done
+                                                        className={`rounded-2xl border transition-all overflow-hidden ${is_done
                                                             ? 'bg-emerald-50/60 border-emerald-100'
                                                             : isPartial
                                                                 ? 'bg-amber-50/50 border-amber-200 hover:border-amber-300'
                                                                 : 'bg-white border-slate-100 hover:border-primary-200 hover:shadow-md'
                                                             }`}
                                                     >
-                                                        {/* Avatar */}
-                                                        <div className="shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center uppercase">
-                                                            {userName.charAt(0)}
+                                                        {/* Top row: Avatar + Nama + Bulan + Action */}
+                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4">
+                                                            {/* Avatar */}
+                                                            <div className="shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center uppercase">
+                                                                {userName.charAt(0)}
+                                                            </div>
+
+                                                            {/* Name + jabatan */}
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="font-bold text-slate-900 text-sm truncate">{userName}</p>
+                                                                {jabatan && <p className="text-xs text-slate-400 truncate mt-0.5">{jabatan}</p>}
+                                                            </div>
+
+                                                            {/* Monthly bubbles */}
+                                                            {months_required > 1 && (
+                                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                                    {Array.from({ length: months_required }, (_, i) => i + 1).map(m => (
+                                                                        <div
+                                                                            key={m}
+                                                                            title={months_done.includes(m) ? `Bulan ${m} ✓` : `Bulan ${m} — belum diisi`}
+                                                                            className={`flex flex-col items-center gap-0.5 w-10 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all ${months_done.includes(m)
+                                                                                ? 'bg-emerald-500 text-white'
+                                                                                : m === nextMonth && !is_done
+                                                                                    ? 'bg-amber-400 text-white ring-2 ring-amber-300 ring-offset-1 animate-pulse'
+                                                                                    : 'bg-slate-100 text-slate-400'
+                                                                                }`}
+                                                                        >
+                                                                            <span>Bln</span>
+                                                                            <span>{m}</span>
+                                                                            {months_done.includes(m) && <span>✓</span>}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Action */}
+                                                            {is_done ? (
+                                                                <div className="shrink-0 flex items-center gap-1.5 text-emerald-600 bg-emerald-100 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase">
+                                                                    <CheckCircle2 size={13} /> Selesai
+                                                                </div>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={() => navigate(
+                                                                        `/user/assessments/new?target_id=${relation?.target_user_id}&period_id=${selectedPeriodId}&relation=${relation?.relation_type}`
+                                                                    )}
+                                                                    className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all hover:scale-105 active:scale-95 ${isPartial
+                                                                        ? 'bg-amber-500 text-white hover:bg-amber-400'
+                                                                        : 'bg-slate-900 text-white hover:bg-primary-600'
+                                                                        }`}
+                                                                >
+                                                                    {isPartial ? `Lanjut Bln ${nextMonth}` : 'Isi Sekarang'}
+                                                                    <ChevronRight size={14} />
+                                                                </button>
+                                                            )}
                                                         </div>
 
-                                                        {/* Name + jabatan */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex flex-wrap items-center gap-2">
-                                                                <p className="font-bold text-slate-900 text-sm truncate">{userName}</p>
-                                                            </div>
-                                                            {jabatan && <p className="text-xs text-slate-400 truncate mt-0.5">{jabatan}</p>}
-
-                                                            <div className="mt-4">
+                                                        {/* Panel Referensi — full width di bawah, hanya untuk relasi Atasan */}
+                                                        {relation?.relation_type === 'Atasan' && sdmData?.jabatan?.toLowerCase().includes('inspektur') && (
+                                                            <div className="px-4 pb-4 border-t border-slate-100">
                                                                 <AssessmentReferencePanel
                                                                     targetUserId={relation?.target_user_id ? String(relation.target_user_id) : null}
                                                                     periodId={selectedPeriodId ? String(selectedPeriodId) : null}
@@ -374,48 +420,6 @@ const UserDashboard: React.FC = () => {
                                                                     evaluatorJabatan={sdmData?.jabatan ?? null}
                                                                 />
                                                             </div>
-                                                        </div>
-
-                                                        {/* Monthly bubbles */}
-                                                        {months_required > 1 && (
-                                                            <div className="flex items-center gap-1.5 shrink-0">
-                                                                {Array.from({ length: months_required }, (_, i) => i + 1).map(m => (
-                                                                    <div
-                                                                        key={m}
-                                                                        title={months_done.includes(m) ? `Bulan ${m} ✓` : `Bulan ${m} — belum diisi`}
-                                                                        className={`flex flex-col items-center gap-0.5 w-10 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all ${months_done.includes(m)
-                                                                            ? 'bg-emerald-500 text-white'
-                                                                            : m === nextMonth && !is_done
-                                                                                ? 'bg-amber-400 text-white ring-2 ring-amber-300 ring-offset-1 animate-pulse'
-                                                                                : 'bg-slate-100 text-slate-400'
-                                                                            }`}
-                                                                    >
-                                                                        <span>Bln</span>
-                                                                        <span>{m}</span>
-                                                                        {months_done.includes(m) && <span>✓</span>}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
-
-                                                        {/* Action */}
-                                                        {is_done ? (
-                                                            <div className="shrink-0 flex items-center gap-1.5 text-emerald-600 bg-emerald-100 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase">
-                                                                <CheckCircle2 size={13} /> Selesai
-                                                            </div>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => navigate(
-                                                                    `/user/assessments/new?target_id=${relation?.target_user_id}&period_id=${selectedPeriodId}&relation=${relation?.relation_type}`
-                                                                )}
-                                                                className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all hover:scale-105 active:scale-95 ${isPartial
-                                                                    ? 'bg-amber-500 text-white hover:bg-amber-400'
-                                                                    : 'bg-slate-900 text-white hover:bg-primary-600'
-                                                                    }`}
-                                                            >
-                                                                {isPartial ? `Lanjut Bln ${nextMonth}` : 'Isi Sekarang'}
-                                                                <ChevronRight size={14} />
-                                                            </button>
                                                         )}
                                                     </div>
                                                 );
