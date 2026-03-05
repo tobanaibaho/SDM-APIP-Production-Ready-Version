@@ -47,7 +47,8 @@ export interface LoginRequest {
 
 export interface LoginResponse {
     token?: string;
-    refreshToken?: string;
+    refresh_token?: string;   // snake_case dari backend JSON response
+    refreshToken?: string;    // camelCase legacy (untuk kompatibilitas)
     user?: User;
     requires_mfa?: boolean;
 }

@@ -44,10 +44,10 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		c.Set("email", claims.Email)
 		c.Set("role", claims.Role)
 
-		// Session Management: Update LastActivityAt and Check Inactivity (2 hours)
+		// Session Management: Update LastActivityAt dan cek inaktivitas (8 jam = 1 hari kerja)
 		var user models.User
 		if err := config.DB.First(&user, claims.UserID).Error; err == nil {
-			if user.LastActivityAt != nil && time.Since(*user.LastActivityAt) > 2*time.Hour {
+			if user.LastActivityAt != nil && time.Since(*user.LastActivityAt) > 8*time.Hour {
 				utils.ErrorResponse(c, http.StatusUnauthorized, "Session Expired", "Inactivity timeout. Please login again.")
 				c.Abort()
 				return

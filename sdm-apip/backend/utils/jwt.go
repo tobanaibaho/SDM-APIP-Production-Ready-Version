@@ -47,8 +47,8 @@ func GenerateJWT(user *models.User) (string, error) {
 	}
 
 	now := time.Now()
-	// Access token is short-lived (5 minutes)
-	expirationTime := now.Add(5 * time.Minute)
+	// Access token berlaku 15 menit (diperpanjang dari 5 menit agar sesi lebih nyaman)
+	expirationTime := now.Add(15 * time.Minute)
 
 	nip := ""
 	if user.NIP != nil {

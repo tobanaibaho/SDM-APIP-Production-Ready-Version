@@ -23,16 +23,16 @@ func RegisterAuthRoutes(api *gin.RouterGroup) {
 		auth.POST("/resend-verification", loginLimit, authController.ResendVerification)
 		auth.POST("/verify-email", loginLimit, authController.VerifyEmail)
 		auth.POST("/set-password", loginLimit, authController.SetPassword)
-		auth.POST("/refresh-token", authController.RefreshToken)
-		auth.POST("/forgot-password", authController.ForgotPassword)
-		auth.POST("/reset-password", authController.ResetPassword)
+		auth.POST("/refresh-token", loginLimit, authController.RefreshToken)
+		auth.POST("/forgot-password", loginLimit, authController.ForgotPassword)
+		auth.POST("/reset-password", loginLimit, authController.ResetPassword)
 
 		// Super admin auth
 		superAdmin := auth.Group("/super-admin")
 		{
 			superAdmin.POST("/login", loginLimit, authController.SuperAdminLogin)
-			superAdmin.POST("/forgot-password", authController.SuperAdminForgotPassword)
-			superAdmin.POST("/reset-to-default", authController.SuperAdminResetToDefault)
+			superAdmin.POST("/forgot-password", loginLimit, authController.SuperAdminForgotPassword)
+			superAdmin.POST("/reset-to-default", loginLimit, authController.SuperAdminResetToDefault)
 		}
 
 		// Protected MFA routes

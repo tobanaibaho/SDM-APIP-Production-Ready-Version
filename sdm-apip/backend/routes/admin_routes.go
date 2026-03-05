@@ -41,6 +41,9 @@ func RegisterAdminRoutes(api *gin.RouterGroup) {
 		middleware.SuperAdminOnly(),
 	)
 	{
+		// ===== AKUN ADMIN =====
+		admin.POST("/change-password", authController.ChangeAdminPassword)
+
 		// ===== AUDIT LOGS =====
 		admin.GET("/audit-logs", auditController.GetAll)
 

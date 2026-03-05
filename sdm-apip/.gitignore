@@ -1,36 +1,65 @@
-# Go binaries
+# =====================================================
+# .gitignore — SDM APIP Project
+# =====================================================
+
+# ─── Go Binaries & Build Output ───────────────────
+backend/*.exe
+backend/*.dll
+backend/*.so
+backend/main
 backend/server
 backend/server.exe
-*.exe
-*.dll
-*.so
 backend/tmp/
+backend/tmp_build.exe
 backend/tmp_gocache/
 
-# Node.js
+# ─── Node.js & Frontend Build ─────────────────────
 node_modules/
 frontend/node_modules/
 frontend/dist/
 
-# Environment & Secrets — NEVER commit these
+# ─── Environment & Secrets — NEVER COMMIT ─────────
 .env
 .env.*
+!.env.example
 backend/.env
 backend/.env.*
 frontend/.env
 frontend/.env.local
 frontend/.env.*
+.env.production
 
-# Logs
+# ─── SSL Certificates ─────────────────────────────
+nginx/ssl/
+
+# ─── Logs ─────────────────────────────────────────
 *.log
+*.log.*
 backend/logs/
+backend_logs.txt
 
-# IDEs
+# ─── IDEs & Editor ────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
-# OS
+# ─── OS Generated ─────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+
+# ─── Docker ───────────────────────────────────────
+# (docker-compose files tetap di-commit kecuali production secrets)
+
+# ─── Testing & Temporary ──────────────────────────
+backend/coverage.out
+backend/coverage.html
+*.test
+/tmp/

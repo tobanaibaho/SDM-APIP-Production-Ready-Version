@@ -40,7 +40,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         setUser(data.user);
                         localStorage.setItem('user', JSON.stringify(data.user));
                     }
-                }).catch(console.error);
+                }).catch(() => {
+                    // Jika gagal validasi profil, biarkan silent refresh yang menangani
+                    console.warn('Profile refresh failed, silent token refresh will handle it.');
+                });
             });
         }
         setLoading(false);
@@ -69,10 +72,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return response;
             }
 
-            // Store token and user
+            // Store token, refresh token, dan user
             if (response.token && response.user) {
                 localStorage.setItem('token', response.token);
                 localStorage.setItem('user', JSON.stringify(response.user));
+                if (response.refresh_token) {
+                    localStorage.setItem('refresh_token', response.refresh_token);
+                }
 
                 setToken(response.token);
                 setUser(response.user);
@@ -95,10 +101,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return response;
             }
 
-            // Store token and user
+            // Store token, refresh token, dan user
             if (response.token && response.user) {
                 localStorage.setItem('token', response.token);
                 localStorage.setItem('user', JSON.stringify(response.user));
+                if (response.refresh_token) {
+                    localStorage.setItem('refresh_token', response.refresh_token);
+                }
 
                 setToken(response.token);
                 setUser(response.user);
@@ -115,6 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
         setToken(null);
         setUser(null);

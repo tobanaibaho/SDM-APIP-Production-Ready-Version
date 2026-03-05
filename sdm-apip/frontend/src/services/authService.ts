@@ -38,6 +38,15 @@ export const superAdminResetToDefault = async (token: string): Promise<void> => 
     await api.post<ApiResponse<null>>('/auth/super-admin/reset-to-default', { token });
 };
 
+// Change Admin Password (saat sudah login)
+export const changeAdminPassword = async (data: {
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
+}): Promise<void> => {
+    await api.post<ApiResponse<null>>('/admin/change-password', data);
+};
+
 // Register
 export const register = async (data: RegisterRequest): Promise<any> => {
     const response = await api.post<ApiResponse<any>>('/auth/register', data);

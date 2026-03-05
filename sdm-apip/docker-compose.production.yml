@@ -1,0 +1,63 @@
+# =============================================
+# docker-compose.production.yml
+# Gunakan file ini untuk deployment production
+# dengan SSL/TLS via Let's Encrypt + Nginx
+#
+# CARA PAKAI:
+# docker compose -f docker-compose.yml -f docker-compose.production.yml up -d
+# =============================================
+
+services:
+  postgres:
+    # Port database TIDAK di-expose ke publik (hanya internal Docker network)
+    ports: !reset []
+    restart: always
+
+  backend:
+    # Port backend TIDAK di-expose langsung ke publik
+    # Nginx yang akan menjadi pintu masuk satu-satunya
+    ports: !reset []
+    environment:
+      - GIN_MODE=release
+      - ALLOWED_ORIGINS=https://${DOMAIN_NAME},https://www.${DOMAIN_NAME}
+      - FRONTEND_URL=https://${DOMAIN_NAME}
+    restart: always
+
+  frontend:
+    # Port frontend juga tidak di-expose langsung
+    ports: !reset []
+    restart: always
+
+  # ─────────────────────────────────────────────────
+  # NGINX — SSL Reverse Proxy (Pintu Utama)
+  # ─────────────────────────────────────────────────
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: sdm_apip_nginx
+    ports:
+      - "80:80" # HTTP  (untuk redirect & certbot challenge)
+      - "443:443" # HTTPS (traffic utama)
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: always
+
+  # ─────────────────────────────────────────────────
+  # CERTBOT — Otomatis perbarui sertifikat SSL
+  # ─────────────────────────────────────────────────
+  certbot:
+    image: certbot/certbot
+    container_name: sdm_apip_certbot
+    volumes:
+      - ./nginx/ssl:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    # Jalankan pembaruan setiap 12 jam (sertifikat Let's Encrypt berlaku 90 hari)
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done;'"
+    restart: unless-stopped
+
+volumes:
+  certbot_webroot:

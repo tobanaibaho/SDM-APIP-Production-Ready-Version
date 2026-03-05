@@ -1,32 +1,42 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
-// Pages
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import VerifyEmailPage from './pages/VerifyEmailPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import SetPasswordPage from './pages/SetPasswordPage';
-import AdminDashboard from './pages/AdminDashboard';
-import SDMManagement from './pages/SDMManagement';
-import UserManagement from './pages/UserManagement';
-import UserDashboard from './pages/UserDashboard';
-import AdminLoginPage from './pages/AdminLoginPage';
-import AdminResetPage from './pages/AdminResetPage';
-import GroupManagement from './pages/GroupManagement';
-import AssessmentPeriodManagement from './pages/AssessmentPeriodManagement';
-import MyGroupsPage from './pages/MyGroupsPage';
-import AdminReportDashboard from './pages/AdminReportDashboard';
-import ProfilePage from './pages/ProfilePage';
-import AssessmentListPage from './pages/AssessmentListPage';
-import AssessmentDetailPage from './pages/AssessmentDetailPage';
-import AssessmentFormPage from './pages/AssessmentFormPage';
-import AdminAuditLogs from './pages/AdminAuditLogs';
-import CrossGroupRelationPage from './pages/CrossGroupRelationPage';
-import AdminAssessmentMonitoringPage from './pages/AdminAssessmentMonitoringPage';
+// Loading Component for Suspense
+const PageLoader = () => (
+    <div className="flex items-center justify-center min-h-screen bg-slate-900">
+        <div className="relative w-12 h-12">
+            <div className="absolute top-0 left-0 w-full h-full border-4 border-emerald-500/20 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-full h-full border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+    </div>
+);
+
+// Lazy Loaded Pages
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const SetPasswordPage = lazy(() => import('./pages/SetPasswordPage'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const SDMManagement = lazy(() => import('./pages/SDMManagement'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
+const UserDashboard = lazy(() => import('./pages/UserDashboard'));
+const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
+const AdminResetPage = lazy(() => import('./pages/AdminResetPage'));
+const GroupManagement = lazy(() => import('./pages/GroupManagement'));
+const AssessmentPeriodManagement = lazy(() => import('./pages/AssessmentPeriodManagement'));
+const MyGroupsPage = lazy(() => import('./pages/MyGroupsPage'));
+const AdminReportDashboard = lazy(() => import('./pages/AdminReportDashboard'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const AssessmentListPage = lazy(() => import('./pages/AssessmentListPage'));
+const AssessmentDetailPage = lazy(() => import('./pages/AssessmentDetailPage'));
+const AssessmentFormPage = lazy(() => import('./pages/AssessmentFormPage'));
+const AdminAuditLogs = lazy(() => import('./pages/AdminAuditLogs'));
+const CrossGroupRelationPage = lazy(() => import('./pages/CrossGroupRelationPage'));
+const AdminAssessmentMonitoringPage = lazy(() => import('./pages/AdminAssessmentMonitoringPage'));
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({
@@ -267,7 +277,9 @@ const App: React.FC = () => {
                         },
                     }}
                 />
-                <AppRoutes />
+                <Suspense fallback={<PageLoader />}>
+                    <AppRoutes />
+                </Suspense>
             </AuthProvider>
         </BrowserRouter>
     );

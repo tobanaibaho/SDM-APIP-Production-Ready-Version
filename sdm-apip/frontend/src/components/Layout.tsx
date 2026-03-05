@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { changeAdminPassword } from '../services/authService';
 import Logo from '../assets/logo.png';
+import toast from 'react-hot-toast';
 import {
     LayoutDashboard,
     Users,
@@ -15,7 +17,11 @@ import {
     Building2,
     FileText,
     ShieldCheck,
-    Link2
+    Link2,
+    KeyRound,
+    Eye,
+    EyeOff,
+    Loader2
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -28,10 +34,34 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
     const { user, logout, isAdmin } = useAuth();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [showChangePassword, setShowChangePassword] = useState(false);
+    const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
+    const [showPw, setShowPw] = useState({ current: false, new_pw: false, confirm: false });
+    const [pwLoading, setPwLoading] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate('/login');
+    };
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (pwForm.new_password !== pwForm.confirm_password) {
+            toast.error('Password baru dan konfirmasi tidak cocok');
+            return;
+        }
+        setPwLoading(true);
+        try {
+            await changeAdminPassword(pwForm);
+            toast.success('Password berhasil diubah! Silakan login ulang.');
+            setShowChangePassword(false);
+            setPwForm({ current_password: '', new_password: '', confirm_password: '' });
+            setTimeout(() => { logout(); navigate('/super-admin/login'); }, 1500);
+        } catch (err: any) {
+            toast.error(err?.response?.data?.error || 'Gagal mengubah password');
+        } finally {
+            setPwLoading(false);
+        }
     };
 
     const navItems = isAdmin ? [
@@ -114,9 +144,18 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 <p className="text-[10px] text-primary-300 uppercase tracking-wide font-medium">{isAdmin ? 'Pengelola Sistem' : 'Pegawai ASN'}</p>
                             </div>
                         </div>
+                        {isAdmin && (
+                            <button
+                                onClick={() => setShowChangePassword(true)}
+                                className="mt-3 flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-blue-200 transition-colors hover:bg-blue-900/40 hover:text-blue-100 uppercase tracking-wider border border-transparent hover:border-blue-800/30"
+                            >
+                                <KeyRound size={14} />
+                                Ganti Password
+                            </button>
+                        )}
                         <button
                             onClick={handleLogout}
-                            className="mt-3 flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-red-200 transition-colors hover:bg-red-900/40 hover:text-red-100 uppercase tracking-wider border border-transparent hover:border-red-800/30"
+                            className="mt-2 flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-red-200 transition-colors hover:bg-red-900/40 hover:text-red-100 uppercase tracking-wider border border-transparent hover:border-red-800/30"
                         >
                             <LogOut size={14} />
                             Keluar Aplikasi
@@ -170,6 +209,100 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                     className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden transition-opacity"
                     onClick={() => setSidebarOpen(false)}
                 />
+            )}
+
+            {/* Modal Ganti Password Admin */}
+            {showChangePassword && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-500/20 rounded-lg">
+                                    <KeyRound size={20} className="text-blue-400" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-white">Ganti Password Admin</h2>
+                                    <p className="text-xs text-slate-400">Password lama diperlukan untuk verifikasi</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowChangePassword(false)} className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleChangePassword} className="p-6 space-y-4">
+                            {/* Password Lama */}
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-300 mb-1.5">Password Saat Ini</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPw.current ? 'text' : 'password'}
+                                        value={pwForm.current_password}
+                                        onChange={e => setPwForm(p => ({ ...p, current_password: e.target.value }))}
+                                        required
+                                        placeholder="Masukkan password saat ini"
+                                        className="w-full pr-10 pl-4 py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                    />
+                                    <button type="button" onClick={() => setShowPw(p => ({ ...p, current: !p.current }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+                                        {showPw.current ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                            </div>
+                            {/* Password Baru */}
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-300 mb-1.5">Password Baru</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPw.new_pw ? 'text' : 'password'}
+                                        value={pwForm.new_password}
+                                        onChange={e => setPwForm(p => ({ ...p, new_password: e.target.value }))}
+                                        required
+                                        placeholder="Min. 8 karakter, huruf besar, angka, simbol"
+                                        className="w-full pr-10 pl-4 py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                    />
+                                    <button type="button" onClick={() => setShowPw(p => ({ ...p, new_pw: !p.new_pw }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+                                        {showPw.new_pw ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                            </div>
+                            {/* Konfirmasi Password */}
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-300 mb-1.5">Konfirmasi Password Baru</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPw.confirm ? 'text' : 'password'}
+                                        value={pwForm.confirm_password}
+                                        onChange={e => setPwForm(p => ({ ...p, confirm_password: e.target.value }))}
+                                        required
+                                        placeholder="Ulangi password baru"
+                                        className={`w-full pr-10 pl-4 py-2.5 bg-slate-800 border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 text-sm ${pwForm.confirm_password && pwForm.new_password !== pwForm.confirm_password
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-slate-600 focus:ring-blue-500'
+                                            }`}
+                                    />
+                                    <button type="button" onClick={() => setShowPw(p => ({ ...p, confirm: !p.confirm }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+                                        {showPw.confirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                                {pwForm.confirm_password && pwForm.new_password !== pwForm.confirm_password && (
+                                    <p className="text-red-400 text-xs mt-1">Password tidak cocok</p>
+                                )}
+                            </div>
+
+                            <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                                <p className="text-yellow-300 text-xs">⚠️ Setelah password diubah, Anda akan otomatis logout dan harus login ulang dengan password baru.</p>
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button type="button" onClick={() => setShowChangePassword(false)} className="flex-1 py-2.5 border border-slate-600 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors text-sm font-semibold">
+                                    Batal
+                                </button>
+                                <button type="submit" disabled={pwLoading} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg transition-colors text-sm font-semibold flex items-center justify-center gap-2">
+                                    {pwLoading ? <><Loader2 size={16} className="animate-spin" /> Menyimpan...</> : 'Simpan Password'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </div>
     );
