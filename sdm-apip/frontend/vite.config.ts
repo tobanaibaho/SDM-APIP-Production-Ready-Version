@@ -20,19 +20,9 @@ export default defineConfig({
         },
     },
     build: {
-        chunkSizeWarningLimit: 1000,
-        rollupOptions: {
-            output: {
-                manualChunks(id) {
-                    if (id.includes('node_modules')) {
-                        // Pisahkan vendor libraries besar ke chunk tersendiri
-                        if (id.includes('lucide-react')) return 'icons';
-                        if (id.includes('react')) return 'vendor-react';
-                        if (id.includes('axios')) return 'vendor-api';
-                        return 'vendor';
-                    }
-                },
-            },
-        },
+        chunkSizeWarningLimit: 2000,
+        // Biarkan Vite mengelola chunking secara otomatis
+        // Manual chunks dihapus karena menyebabkan circular dependency
+        // yang membuat React.forwardRef undefined di production build
     },
 })
