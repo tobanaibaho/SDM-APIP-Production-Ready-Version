@@ -33,10 +33,19 @@ export const superAdminForgotPassword = async (username: string): Promise<string
     return response.data.data?.debug_token;
 };
 
-// Admin Reset to Default
-export const superAdminResetToDefault = async (token: string): Promise<void> => {
-    await api.post<ApiResponse<null>>('/auth/super-admin/reset-to-default', { token });
+// Admin Reset Password via Token (dengan password baru pilihan admin)
+export const superAdminResetToDefault = async (
+    token: string,
+    newPassword: string,
+    confirmPassword: string
+): Promise<void> => {
+    await api.post<ApiResponse<null>>('/auth/super-admin/reset-to-default', {
+        token,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+    });
 };
+
 
 // Change Admin Password (saat sudah login)
 export const changeAdminPassword = async (data: {

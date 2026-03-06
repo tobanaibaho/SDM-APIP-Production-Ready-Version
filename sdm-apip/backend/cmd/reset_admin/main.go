@@ -14,104 +14,104 @@ import (
 )
 
 func main() {
-	// Parse command-line flags
-	emergencyReset := flag.Bool("emergency-reset", false, "REQUIRED: Confirm this is an emergency password reset")
+	// Parse flag baris perintah (command-line)
+	emergencyReset := flag.Bool("emergency-reset", false, "WAJIB: Konfirmasi bahwa ini adalah reset password darurat")
 	flag.Parse()
 
-	// PARANOID SAFETY SWITCH: Require explicit environment variable
+	// SAKLAR KEAMANAN TINGKAT TINGGI: Membutuhkan environment variable secara eksplisit
 	if os.Getenv("ALLOW_EMERGENCY_RESET") != "true" {
-		logger.Fatal("❌ Emergency reset disabled (ALLOW_EMERGENCY_RESET=true required)")
+		logger.Fatal("❌ Reset darurat dinonaktifkan (Membutuhkan ALLOW_EMERGENCY_RESET=true)")
 		os.Exit(1)
 	}
 
-	// Require explicit emergency flag
+	// Membutuhkan flag darurat secara eksplisit
 	if !*emergencyReset {
-		logger.Error("❌ EMERGENCY FLAG REQUIRED")
-		logger.Error("❌ This tool is for EMERGENCY USE ONLY")
-		logger.Error("❌ Usage: ALLOW_EMERGENCY_RESET=true go run cmd/reset_admin/main.go --emergency-reset")
-		logger.Error("❌ For normal admin resets, use the secure API endpoint:")
+		logger.Error("❌ FLAG DARURAT (EMERGENCY FLAG) DIBUTUHKAN")
+		logger.Error("❌ Perangkat ini HANYA UNTUK KEADAAN DARURAT (EMERGENCY USE ONLY)")
+		logger.Error("❌ Cara Pakai: ALLOW_EMERGENCY_RESET=true go run cmd/reset_admin/main.go --emergency-reset")
+		logger.Error("❌ Untuk reset admin secara normal, gunakan endpoint API yang aman:")
 		logger.Error("❌   POST /api/admin/secure-reset/request")
 		logger.Error("❌   POST /api/admin/secure-reset/confirm")
 		os.Exit(1)
 	}
 
-	// ⚠️  DEPRECATION WARNING ⚠️
-	// This CLI tool is DEPRECATED and should ONLY be used for emergency/disaster recovery
-	// For normal admin password resets, use the secure API endpoint:
-	// POST /api/admin/secure-reset/request (protected by JWT + MFA)
+	// ⚠️  PERINGATAN PENGHENTIAN PENGGUNAAN (DEPRECATION WARNING) ⚠️
+	// Perangkat CLI ini SUDAH USANG (DEPRECATED) dan HANYA boleh digunakan untuk keadaan darurat / pemulihan bencana
+	// Untuk mereset password admin pada kondisi normal, gunakan endpoint API yang aman:
+	// POST /api/admin/secure-reset/request (dilindungi oleh JWT + MFA)
 	// POST /api/admin/secure-reset/confirm
-	logger.Warn("⚠️  ========== DEPRECATION WARNING ==========")
-	logger.Warn("⚠️  This CLI reset tool is DEPRECATED!")
-	logger.Warn("⚠️  Use the secure API endpoint instead:")
+	logger.Warn("⚠️  ========== PERINGATAN PENGHENTIAN PENGGUNAAN ==========")
+	logger.Warn("⚠️  Perangkat reset lewat CLI ini SUDAH USANG!")
+	logger.Warn("⚠️  Gunakan saja endpoint API yang lebih aman:")
 	logger.Warn("⚠️    POST /api/admin/secure-reset/request")
 	logger.Warn("⚠️    POST /api/admin/secure-reset/confirm")
-	logger.Warn("⚠️  ==========================================")
+	logger.Warn("⚠️  =======================================================")
 	logger.Info("")
-	logger.Info("⚠️  This tool should ONLY be used in emergency situations.")
-	logger.Info("⚠️  Press Ctrl+C to cancel, or wait 5 seconds to continue...")
+	logger.Info("⚠️  Perangkat ini HANYA boleh digunakan dalam situasi darurat penuh.")
+	logger.Info("⚠️  Tekan Ctrl+C untuk membatalkan, atau tunggu 5 detik untuk melanjutkan...")
 	logger.Info("")
 
-	// Give user time to cancel
+	// Beri jeda waktu bagi pengguna untuk membatalkan jika terjadi kesalahan
 	time.Sleep(5 * time.Second)
 
-	// 1. Load Config & Connect DB
+	// 1. Muat Konfigurasi Sistem & Sambungkan ke Database
 	if err := config.LoadConfig(); err != nil {
-		logger.Fatal("❌ Configuration error: %v", err)
+		logger.Fatal("❌ Terjadi kesalahan konfigurasi: %v", err)
 	}
 
 	if err := config.ConnectDatabase(); err != nil {
-		logger.Fatal("❌ Database connection failed: %v", err)
+		logger.Fatal("❌ Gagal menyambungkan ke Database: %v", err)
 	}
 	db := config.DB
 
-	logger.Info("🔧 Starting Admin Password Reset Tool...")
+	logger.Info("🔧 Memulai Perangkat Reset Password Admin...")
 
-	// 2. Load Admin Data from Environment Variables (NO HARDCODED CREDENTIALS)
+	// 2. Muat Data Admin dari Environment Variables (JANGAN PERNAH HARDCODE KREDENSIAL)
 	adminNIP := os.Getenv("EMERGENCY_RESET_NIP")
 	username := os.Getenv("EMERGENCY_RESET_USERNAME")
 	email := os.Getenv("EMERGENCY_RESET_EMAIL")
 	newPassword := os.Getenv("EMERGENCY_RESET_PASSWORD")
 
-	// Validate required environment variables
+	// Validasi apakah Environment Variables wajib sudah terisi
 	if adminNIP == "" || username == "" || email == "" || newPassword == "" {
-		logger.Fatal("❌ Missing required environment variables:")
+		logger.Fatal("❌ Ada Environment Variables wajib yang hilang:")
 		logger.Fatal("   EMERGENCY_RESET_NIP")
 		logger.Fatal("   EMERGENCY_RESET_USERNAME")
 		logger.Fatal("   EMERGENCY_RESET_EMAIL")
 		logger.Fatal("   EMERGENCY_RESET_PASSWORD")
 		logger.Fatal("")
-		logger.Fatal("Example usage:")
+		logger.Fatal("Contoh penggunaan:")
 		logger.Fatal("   EMERGENCY_RESET_NIP=000000000000000001 \\")
 		logger.Fatal("   EMERGENCY_RESET_USERNAME=admin \\")
 		logger.Fatal("   EMERGENCY_RESET_EMAIL=admin@example.com \\")
-		logger.Fatal("   EMERGENCY_RESET_PASSWORD='YourSecurePassword123!' \\")
+		logger.Fatal("   EMERGENCY_RESET_PASSWORD='PasswordAmanAnda123!' \\")
 		logger.Fatal("   go run cmd/reset_admin/main.go --emergency-reset")
 	}
 
-	logger.Info("📋 Target Admin:")
+	logger.Info("📋 Admin Target:")
 	logger.Info("   NIP: %s", adminNIP)
 	logger.Info("   Username: %s", username)
 	logger.Info("   Email: %s", email)
-	// ❌ DO NOT PRINT PASSWORD
-	logger.Info("   Password: [REDACTED FOR SECURITY]")
+	// ❌ JANGAN PERNAH MENCETAK PASSWORD KE LOG
+	logger.Info("   Password: [DISEMBUNYIKAN UNTUK KEAMANAN]")
 
-	// 3. Hash New Password
+	// 3. Hash Password Baru
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
-		logger.Fatal("❌ Failed to hash password: %v", err)
+		logger.Fatal("❌ Gagal melakukan hashing password: %v", err)
 	}
 
-	// 4. Update or Create Admin User
+	// 4. Update atau Buat User Admin Baru di Database
 	var user models.User
 	result := db.Where("nip = ?", adminNIP).First(&user)
 
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			logger.Warn("⚠️ Admin user not found, creating new one...")
-			// Must ensure SDM entry exists first
+			logger.Warn("⚠️ User admin tidak ditemukan, sedang membuat user baru...")
+			// Harus memastikan bahwa data SDM sudah ada terlebih dahulu
 			var sdm models.SDM
 			if err := db.Where("nip = ?", adminNIP).First(&sdm).Error; err != nil {
-				// Create SDM if not exists
+				// Buat data SDM jika belum ada
 				sdm = models.SDM{
 					NIP:       adminNIP,
 					Nama:      "Administrator",
@@ -120,7 +120,7 @@ func main() {
 					UnitKerja: "IT Department",
 				}
 				if err := db.Create(&sdm).Error; err != nil {
-					logger.Fatal("❌ Failed to create SDM record: %v", err)
+					logger.Fatal("❌ Gagal membuat rekaman SDM: %v", err)
 				}
 			}
 
@@ -133,48 +133,48 @@ func main() {
 				Status:   models.StatusActive,
 			}
 			if err := db.Create(&user).Error; err != nil {
-				logger.Fatal("❌ Failed to create admin user: %v", err)
+				logger.Fatal("❌ Gagal membuat user admin: %v", err)
 			}
-			logger.Info("✅ Admin user created successfully")
+			logger.Info("✅ User admin berhasil dibuat")
 		} else {
-			logger.Fatal("❌ Database error: %v", result.Error)
+			logger.Fatal("❌ Terjadi error pada database: %v", result.Error)
 		}
 	} else {
-		// User exists, update password
+		// Jika User sudah ada, perbarui password-nya
 		user.Password = string(hashedPassword)
 		user.RoleID = models.RoleSuperAdmin
 		user.Status = models.StatusActive
 
 		if err := db.Save(&user).Error; err != nil {
-			logger.Fatal("❌ Failed to update admin user: %v", err)
+			logger.Fatal("❌ Gagal membarui/mereset user admin: %v", err)
 		}
-		logger.Info("✅ Admin password updated successfully")
+		logger.Info("✅ Password admin berhasil diperbarui")
 	}
 
-	// AUDIT LOGGING: Record emergency reset
+	// AUDIT LOGGING: Mencatat log aktivitas reset darurat ini
 	hostname, _ := os.Hostname()
 	if hostname == "" {
-		hostname = "unknown"
+		hostname = "tidak.diketahui"
 	}
 
 	auditLog := models.AuditLog{
-		UserID:       nil, // CLI has no authenticated user
+		UserID:       nil, // Mode CLI tidak memiliki user yang terotentikasi (JWT)
 		Action:       "PASSWORD_RESET_CLI",
 		TargetUserID: &user.ID,
 		IPAddress:    hostname,
 		UserAgent:    "EMERGENCY_CLI",
 		Status:       models.AuditStatusSuccess,
-		Details:      fmt.Sprintf("Emergency password reset via CLI for NIP: %s, Username: %s, Hostname: %s", adminNIP, username, hostname),
+		Details:      fmt.Sprintf("Reset password darurat lewat CLI untuk NIP: %s, Username: %s, Hostname: %s", adminNIP, username, hostname),
 	}
 
 	if err := db.Create(&auditLog).Error; err != nil {
-		logger.Warn("⚠️ Failed to create audit log: %v", err)
+		logger.Warn("⚠️ Gagal membuat catatan audit log: %v", err)
 	} else {
-		logger.Info("📋 Audit log created successfully")
+		logger.Info("📋 Catatan Audit log berhasil dibuat di Database")
 	}
 
-	// ❌ DO NOT PRINT PASSWORD
-	logger.Info("✅ Emergency password reset completed successfully")
-	logger.Info("⚠️  Password has been set (not displayed for security)")
-	logger.Warn("⚠️  IMPORTANT: Change this password immediately using the secure API endpoint")
+	// ❌ SEKALI LAGI, JANGAN PERNAH MENCETAK PASSWORD
+	logger.Info("✅ Reset password darurat telah berhasil diselesaikan")
+	logger.Info("⚠️  Password baru telah ditetapkan (tidak ditampilkan demi keamanan)")
+	logger.Warn("⚠️  SANGAT PENTING: Segera ubah password ini untuk keamanan menggunakan endpoint API yang semestinya")
 }

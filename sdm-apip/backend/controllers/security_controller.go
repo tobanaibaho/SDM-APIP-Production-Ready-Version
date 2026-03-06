@@ -13,53 +13,106 @@ import (
 )
 
 // SuperAdminForgotPassword sends an admin password reset token via email.
-// POST /api/super-admin/forgot-password
+// POST /api/auth/super-admin/forgot-password
 func (ac *AuthController) SuperAdminForgotPassword(c *gin.Context) {
 	var req models.AdminForgotPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
 		return
 	}
+
 	var user models.User
 	if err := config.DB.Where("username = ? AND role_id = ?", req.Username, models.RoleSuperAdmin).First(&user).Error; err != nil {
-		// Avoid user enumeration
-		utils.SuccessResponse(c, http.StatusOK, "If the account exists, a reset link will be sent to your email", nil)
+		// Avoid user enumeration — always return 200
+		utils.SuccessResponse(c, http.StatusOK, "Jika akun ditemukan, instruksi reset telah dikirim ke email Admin", nil)
 		return
 	}
+
+	// Hapus token lama yang belum dipakai
 	config.DB.Where("user_id = ? AND token_type = ?", user.ID, "admin_reset").Delete(&models.VerificationToken{})
-	tokenString, _ := utils.GenerateRandomToken(32)
+
+	// Buat token reset baru (berlaku 1 jam)
+	tokenString, err := utils.GenerateRandomToken(32)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat token reset", "")
+		return
+	}
 	config.DB.Create(&models.VerificationToken{
 		UserID:    user.ID,
 		TokenHash: utils.HashToken(tokenString),
 		TokenType: "admin_reset",
 		ExpiresAt: time.Now().Add(1 * time.Hour),
 	})
-	utils.SuccessResponse(c, http.StatusOK, "Reset instructions sent to your email", nil)
+
+	// Kirim email reset ke Admin
+	resetURL := fmt.Sprintf("%s/super-admin/reset-password?token=%s", config.AppConfig.FrontendURL, tokenString)
+	adminName := "Administrator"
+	if user.Username != nil {
+		adminName = *user.Username
+	}
+	ac.emailService.AsyncSendAdminPasswordResetEmail(user.Email, adminName, resetURL)
+
+	utils.SuccessResponse(c, http.StatusOK, "Instruksi reset password telah dikirim ke email Admin", nil)
 }
 
-// SuperAdminResetToDefault resets admin password via token.
-// POST /api/super-admin/reset-to-default
-// DEPRECATED: Use SecureAdminReset instead.
+// SuperAdminResetToDefault completes admin password reset via token.
+// POST /api/auth/super-admin/reset-to-default
 func (ac *AuthController) SuperAdminResetToDefault(c *gin.Context) {
 	var req models.AdminResetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
 		return
 	}
+
+	if req.NewPassword == "" {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Password baru wajib diisi", "")
+		return
+	}
+	if valid, msg := utils.ValidatePassword(req.NewPassword); !valid {
+		utils.ErrorResponse(c, http.StatusBadRequest, msg, "")
+		return
+	}
+	if req.NewPassword != req.ConfirmPassword {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Konfirmasi password tidak cocok", "")
+		return
+	}
+
 	var token models.VerificationToken
 	if err := config.DB.Where("token_hash = ? AND token_type = ?", utils.HashToken(req.Token), "admin_reset").
 		First(&token).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid or expired token", "")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Token tidak valid atau sudah kadaluwarsa", "")
 		return
 	}
 	if token.IsExpired() || token.IsUsed() {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid or expired token", "")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Token sudah kadaluwarsa atau sudah digunakan", "")
 		return
 	}
-	hashed, _ := utils.HashPassword("Admin@123")
-	config.DB.Model(&models.User{}).Where("id = ?", token.UserID).Update("password", hashed)
-	token.MarkUsed(config.DB)
-	utils.SuccessResponse(c, http.StatusOK, "Password has been reset to default (Admin@123)", nil)
+
+	hashed, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal memproses password", "")
+		return
+	}
+
+	tx := config.DB.Begin()
+	if err := tx.Model(&models.User{}).Where("id = ?", token.UserID).Update("password", hashed).Error; err != nil {
+		tx.Rollback()
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mereset password", "")
+		return
+	}
+	if err := token.MarkUsed(tx); err != nil {
+		tx.Rollback()
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal memvalidasi token", "")
+		return
+	}
+	// Cabut semua sesi aktif admin untuk keamanan
+	tx.Model(&models.RefreshToken{}).Where("user_id = ?", token.UserID).Update("revoked_at", time.Now())
+	if err := tx.Commit().Error; err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Transaksi gagal", "")
+		return
+	}
+
+	utils.SuccessResponse(c, http.StatusOK, "Password Administrator berhasil direset. Semua sesi aktif telah dicabut.", nil)
 }
 
 // SecureAdminResetRequest initiates secure admin password reset (JWT + MFA).

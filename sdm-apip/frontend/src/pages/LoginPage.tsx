@@ -65,10 +65,10 @@ const LoginPage: React.FC = () => {
             <div className="w-full max-w-md z-10 animate-fade-in">
                 {/* Header Logo */}
                 <div className="text-center mb-8">
-                    <img src={Logo} alt="Logo Kemenko" className="h-24 w-24 mx-auto mb-4 drop-shadow-md" />
-                    <h1 className="text-xl font-bold text-primary-900 uppercase tracking-tight leading-snug">KEMENTERIAN KOORDINATOR<br />INFRASTRUKTUR & PEMBANGUNAN KEWILAYAHAN</h1>
-                    <div className="h-1 w-24 bg-accent-500 mx-auto mt-3 rounded-full"></div>
-                    <p className="text-slate-500 text-sm mt-3 font-medium uppercase tracking-widest">Sistem Informasi SDM APIP</p>
+                    <img src={Logo} alt="Logo Kemenko" className="h-24 w-24 mx-auto mb-5 drop-shadow-xl" />
+                    <h1 className="font-serif text-2xl font-bold text-primary-900 uppercase tracking-wide leading-snug drop-shadow-sm">KEMENTERIAN KOORDINATOR<br />INFRASTRUKTUR & PEMBANGUNAN KEWILAYAHAN</h1>
+                    <div className="h-1 w-24 bg-gradient-to-r from-accent-400 to-accent-600 mx-auto mt-4 rounded-full shadow-sm"></div>
+                    <p className="text-slate-600 font-serif text-sm mt-4 font-semibold uppercase tracking-[0.2em]">Sistem Informasi SDM APIP</p>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">

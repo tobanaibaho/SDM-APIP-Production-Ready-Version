@@ -70,6 +70,16 @@ func (s *EmailService) SendPasswordResetEmail(toEmail, toName, token, otp string
 	return s.sendEmail(toEmail, template.Subject, template.Body)
 }
 
+// AsyncSendAdminPasswordResetEmail sends admin password reset email (non-blocking)
+func (s *EmailService) AsyncSendAdminPasswordResetEmail(toEmail, adminName, resetURL string) {
+	template := utils.GetAdminPasswordResetEmailTemplate(adminName, resetURL)
+	go func() {
+		if err := s.sendEmail(toEmail, template.Subject, template.Body); err != nil {
+			logger.Error("📫 Admin reset email failed to %s: %v", toEmail, err)
+		}
+	}()
+}
+
 // AsyncSendEmail sends email in a separate goroutine (non-blocking)
 func (s *EmailService) AsyncSendEmail(toEmail, subject, htmlBody string) {
 	go func() {

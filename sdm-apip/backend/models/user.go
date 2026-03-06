@@ -72,9 +72,11 @@ type AdminForgotPasswordRequest struct {
 	Username string `json:"username" binding:"required"`
 }
 
-// AdminResetPasswordRequest for admin password reset
+// AdminResetPasswordRequest for admin password reset via email token
 type AdminResetPasswordRequest struct {
-	Token string `json:"token" binding:"required"`
+	Token           string `json:"token" binding:"required"`
+	NewPassword     string `json:"new_password" binding:"required,min=8"`
+	ConfirmPassword string `json:"confirm_password" binding:"required"`
 }
 
 // SecureAdminResetRequest for initiating secure admin reset with MFA

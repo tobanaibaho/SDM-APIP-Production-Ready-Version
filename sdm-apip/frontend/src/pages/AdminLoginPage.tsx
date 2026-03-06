@@ -91,11 +91,11 @@ const AdminLoginPage: React.FC = () => {
 
             <div className="w-full max-w-md z-10 animate-fade-in">
                 {/* Header Logo */}
-                <div className="text-center mb-8">
-                    <img src={Logo} alt="Logo Kemenko" className="h-20 w-20 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
-                    <h1 className="text-lg font-bold text-white uppercase tracking-tight leading-snug opacity-90">KEMENTERIAN KOORDINATOR<br />INFRASTRUKTUR & PEMBANGUNAN KEWILAYAHAN</h1>
-                    <div className="h-0.5 w-16 bg-accent-500 mx-auto mt-4 rounded-full"></div>
-                    <p className="text-slate-400 text-xs mt-2 uppercase tracking-[0.2em] font-bold">Portal Administrator</p>
+                <div className="text-center mb-10">
+                    <img src={Logo} alt="Logo Kemenko" className="h-24 w-24 mx-auto mb-5 drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]" />
+                    <h1 className="font-serif text-xl font-bold text-white uppercase tracking-wide leading-snug drop-shadow-md">KEMENTERIAN KOORDINATOR<br />INFRASTRUKTUR & PEMBANGUNAN KEWILAYAHAN</h1>
+                    <div className="h-1 w-24 bg-gradient-to-r from-accent-400 to-accent-600 mx-auto mt-4 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.5)]"></div>
+                    <p className="text-slate-300 font-serif text-sm mt-4 font-semibold uppercase tracking-[0.25em]">Portal Administrator</p>
                 </div>
 
                 <div className="bg-slate-800 rounded-xl shadow-2xl border border-slate-700 overflow-hidden">
@@ -140,7 +140,7 @@ const AdminLoginPage: React.FC = () => {
                                                 disabled={resetLoading}
                                             >
                                                 <HelpCircle size={12} />
-                                                {resetLoading ? '...' : 'Reset?'}
+                                                {resetLoading ? 'Mengirim...' : 'Lupa Password?'}
                                             </button>
                                         </div>
                                         <div className="relative group">
