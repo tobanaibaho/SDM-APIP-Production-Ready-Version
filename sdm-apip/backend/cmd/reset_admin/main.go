@@ -146,7 +146,7 @@ func main() {
 		user.Status = models.StatusActive
 
 		if err := db.Save(&user).Error; err != nil {
-			logger.Fatal("❌ Gagal membarui/mereset user admin: %v", err)
+			logger.Fatal("❌ Gagal memperbarui/mereset user admin: %v", err)
 		}
 		logger.Info("✅ Password admin berhasil diperbarui")
 	}
