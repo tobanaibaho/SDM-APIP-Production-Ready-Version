@@ -223,7 +223,7 @@ const UserDashboard: React.FC = () => {
                                 </div>
                                 <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2 rounded-xl text-sm border border-white/5">
                                     <Building2 size={16} className="text-accent-500" />
-                                    <span>{sdmData?.unit_kerja || 'Inspektorat Utama'}</span>
+                                    <span>{sdmData?.unit_kerja || 'Inspektorat Kemenko Infra'}</span>
                                 </div>
                             </div>
                         </div>
@@ -539,7 +539,7 @@ const UserDashboard: React.FC = () => {
                         <div className="px-7 py-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
                             <div>
                                 <h3 className="text-xl font-black text-slate-900">{selectedGroupDetail.group?.name}</h3>
-                                <p className="text-sm text-slate-400 mt-0.5">{selectedGroupDetail.group?.description || 'Koordinasi Personil SDM APIP'}</p>
+                                <p className="text-sm text-slate-400 mt-0.5">{selectedGroupDetail.group?.description || 'Tim Evaluasi Kinerja — Inspektorat Kemenko Infra'}</p>
                             </div>
                             <button
                                 onClick={() => setShowGroupDetailModal(false)}

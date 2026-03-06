@@ -93,7 +93,7 @@ const AdminLoginPage: React.FC = () => {
                 {/* Header Logo */}
                 <div className="text-center mb-10">
                     <img src={Logo} alt="Logo Kemenko" className="h-24 w-24 mx-auto mb-5 drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]" />
-                    <h1 className="font-serif text-xl font-bold text-white uppercase tracking-wide leading-snug drop-shadow-md">KEMENTERIAN KOORDINATOR<br />INFRASTRUKTUR & PEMBANGUNAN KEWILAYAHAN</h1>
+                    <h1 className="font-serif text-xl font-bold text-white uppercase tracking-wide leading-snug drop-shadow-md">INSPEKTORAT<br />KEMENKO INFRASTRUKTUR</h1>
                     <div className="h-1 w-24 bg-gradient-to-r from-accent-400 to-accent-600 mx-auto mt-4 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.5)]"></div>
                     <p className="text-slate-300 font-serif text-sm mt-4 font-semibold uppercase tracking-[0.25em]">Portal Administrator</p>
                 </div>

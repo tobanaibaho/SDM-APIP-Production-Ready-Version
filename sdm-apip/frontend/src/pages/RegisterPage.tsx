@@ -61,14 +61,14 @@ const RegisterPage: React.FC = () => {
                             <Building2 size={32} className="text-accent-400" />
                         </div>
                         <h1 className="text-2xl font-bold text-white tracking-tight">Daftar Akun Baru</h1>
-                        <p className="text-slate-300 text-sm mt-1 uppercase tracking-widest font-semibold opacity-80">SDM APIP Kemenko Infra</p>
+                        <p className="text-slate-300 text-sm mt-1 uppercase tracking-widest font-semibold opacity-80">Inspektorat &mdash; Kemenko Infra</p>
                     </div>
 
                     <div className="p-8">
                         <div className="mb-6 rounded-2xl bg-primary-50/50 p-4 border border-primary-100 flex gap-3 animate-slide-down">
                             <Info size={18} className="text-primary-600 shrink-0" />
                             <p className="text-xs text-primary-800 leading-relaxed font-medium">
-                                Pastikan NIP Anda sudah terdaftar dalam database SDM APIP untuk melanjutkan pendaftaran.
+                                Pastikan NIP Anda sudah terdaftar dalam database SDM Inspektorat untuk melanjutkan pendaftaran.
                             </p>
                         </div>
 

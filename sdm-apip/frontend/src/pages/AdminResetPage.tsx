@@ -201,7 +201,7 @@ const AdminResetPage: React.FC = () => {
                 </div>
 
                 <p className="mt-8 text-center text-slate-600 text-xs tracking-widest uppercase font-medium">
-                    © 2026 SDM APIP — Authorized Access Only
+                    © 2026 Inspektorat Kemenko Infra — Authorized Access Only
                 </p>
             </div>
         </div>

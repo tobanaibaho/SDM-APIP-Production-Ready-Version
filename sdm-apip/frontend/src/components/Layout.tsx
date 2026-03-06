@@ -95,8 +95,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                             <img src={Logo} alt="Logo Kemenko" className="h-full w-full object-contain" />
                         </div>
                         <div className="text-center space-y-1">
-                            <h2 className="text-sm font-bold tracking-wide text-white leading-tight uppercase">KEMENKO INFRASTRUKTUR</h2>
-                            <p className="text-[10px] uppercase tracking-wider text-primary-200 font-medium opacity-80">& PEMBANGUNAN KEWILAYAHAN</p>
+                            <h2 className="text-sm font-bold tracking-wide text-white leading-tight uppercase">INSPEKTORAT</h2>
+                            <p className="text-[10px] uppercase tracking-wider text-primary-200 font-medium opacity-80">KEMENKO INFRASTRUKTUR</p>
                         </div>
                     </div>
 
