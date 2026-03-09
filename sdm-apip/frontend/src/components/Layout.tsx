@@ -104,11 +104,11 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
             `}>
                 <div className="flex h-full flex-col">
                     {/* Sidebar Header */}
-                    <div className="flex flex-col items-center justify-center px-6 py-8 border-b border-primary-800/50 bg-primary-950/20">
-                        <div className="h-20 w-20 mb-4 bg-white rounded-full p-1 shadow-lg ring-4 ring-primary-700/30">
+                    <div className="flex border-b border-primary-800/50 bg-primary-950/20 px-6 py-6 items-center gap-4">
+                        <div className="h-12 w-12 shrink-0 bg-white rounded-full p-1 shadow-lg ring-2 ring-primary-700/30">
                             <img src={Logo} alt="Logo Kemenko" className="h-full w-full object-contain" />
                         </div>
-                        <div className="text-center space-y-1">
+                        <div className="space-y-0.5">
                             <h2 className="text-sm font-bold tracking-wide text-white leading-tight uppercase">INSPEKTORAT</h2>
                             <p className="text-[10px] uppercase tracking-wider text-primary-200 font-medium opacity-80">KEMENKO INFRA</p>
                         </div>
