@@ -97,7 +97,7 @@ const RegisterPage: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="form-label text-slate-400">Email Kedinasan</label>
+                                <label className="form-label text-slate-400">Email</label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary-500 transition-colors">
                                         <Mail size={18} />
