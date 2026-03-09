@@ -188,7 +188,7 @@ const LoginPage: React.FC = () => {
                                     <Loader2 className="h-5 w-5 animate-spin" />
                                 ) : (
                                     <span className="flex items-center gap-2">
-                                        {requiresMFA ? 'VERIFIKASI & MASUK' : 'MASUK APLIKASI'} <ArrowRight size={16} />
+                                        {requiresMFA ? 'VERIFIKASI & MASUK' : 'MASUK'} <ArrowRight size={16} />
                                     </span>
                                 )}
                             </button>
@@ -198,7 +198,7 @@ const LoginPage: React.FC = () => {
                             <p className="text-sm text-slate-600">
                                 Belum punya akun? {' '}
                                 <Link to="/register" className="font-bold text-primary-700 hover:text-primary-900 hover:underline transition-colors">
-                                    Registrasi Pegawai
+                                    Daftar
                                 </Link>
                             </p>
                             <div className="pt-2">
