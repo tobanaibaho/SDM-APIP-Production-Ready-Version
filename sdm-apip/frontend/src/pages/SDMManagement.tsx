@@ -222,32 +222,31 @@ const SDMManagement: React.FC = () => {
                     <div className="overflow-x-auto min-h-[400px]">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/50 border-b border-slate-200">
-                                    <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('nip')}>
-                                        <div className="flex items-center gap-2">NIP <ArrowUpDown size={12} /></div>
+                                <tr className="bg-slate-50 border-b border-slate-200">
+                                    <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:bg-slate-100 transition-colors rounded-tl-xl w-48" onClick={() => handleSort('nip')}>
+                                        <div className="flex items-center justify-between">NIP <ArrowUpDown size={12} className="text-slate-400" /></div>
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('nama')}>
-                                        <div className="flex items-center gap-2">Nama <ArrowUpDown size={12} /></div>
+                                    <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('nama')}>
+                                        <div className="flex items-center justify-between">Nama Pegawai <ArrowUpDown size={12} className="text-slate-400" /></div>
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('pangkat_golongan')}>
-                                        <div className="flex items-center gap-2">Pangkat/Golongan <ArrowUpDown size={12} /></div>
+                                    <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('pangkat_golongan')}>
+                                        <div className="flex items-center justify-between">Pangkat / Gol <ArrowUpDown size={12} className="text-slate-400" /></div>
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('pendidikan')}>
-                                        <div className="flex items-center gap-2">Pendidikan <ArrowUpDown size={12} /></div>
+                                    <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('pendidikan')}>
+                                        <div className="flex items-center justify-between">Pendidikan <ArrowUpDown size={12} className="text-slate-400" /></div>
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('jabatan')}>
-                                        <div className="flex items-center gap-2">Jabatan <ArrowUpDown size={12} /></div>
+                                    <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:bg-slate-100 transition-colors max-w-[200px]" onClick={() => handleSort('jabatan')}>
+                                        <div className="flex items-center justify-between">Jabatan <ArrowUpDown size={12} className="text-slate-400" /></div>
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('nomor_hp')}>
-                                        <div className="flex items-center gap-2">Nomor HP <ArrowUpDown size={12} /></div>
+                                    <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('nomor_hp')}>
+                                        <div className="flex items-center justify-between">Kontak <ArrowUpDown size={12} className="text-slate-400" /></div>
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('email')}>
-                                        <div className="flex items-center gap-2">Email <ArrowUpDown size={12} /></div>
+                                    <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer hover:bg-slate-100 transition-colors rounded-tr-xl w-24 text-right">
+                                        <div className="flex items-center justify-end">Aksi</div>
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-500 text-right">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-100 bg-white">
                                 {loading ? (
                                     Array(5).fill(0).map((_, i) => (
                                         <tr key={i} className="animate-pulse">
@@ -255,45 +254,41 @@ const SDMManagement: React.FC = () => {
                                         </tr>
                                     ))
                                 ) : sdmList.map((sdm) => (
-                                    <tr key={sdm.id} className="group hover:bg-primary-50/30 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <span className="font-mono text-sm font-bold text-slate-900 tracking-tight">{sdm.nip}</span>
+                                    <tr key={sdm.id} className="group hover:bg-slate-50/80 transition-all duration-200">
+                                        <td className="px-5 py-4 align-top">
+                                            <div className="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 inline-block px-2 py-1 rounded-md tracking-widest border border-slate-200">{sdm.nip}</div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="font-bold text-slate-900">{sdm.nama}</span>
+                                        <td className="px-5 py-4 align-top">
+                                            <div className="font-bold text-slate-900 text-sm leading-tight">{sdm.nama}</div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm text-slate-600">{sdm.pangkat_golongan || '-'}</span>
+                                        <td className="px-5 py-4 align-top">
+                                            <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-1 rounded-md">{sdm.pangkat_golongan || '-'}</span>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm text-slate-600">{sdm.pendidikan || '-'}</span>
+                                        <td className="px-5 py-4 align-top">
+                                            <span className="text-[11px] text-slate-600">{sdm.pendidikan || '-'}</span>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm text-slate-600">{sdm.jabatan || '-'}</span>
+                                        <td className="px-5 py-4 align-top max-w-[200px]">
+                                            <span className="text-xs font-medium text-slate-700 leading-snug block">{sdm.jabatan || '-'}</span>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                                                {sdm.nomor_hp ? (
-                                                    <>
-                                                        <Phone size={12} className="text-slate-400" />
-                                                        {sdm.nomor_hp}
-                                                    </>
-                                                ) : '-'}
+                                        <td className="px-5 py-4 align-top">
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center gap-2 text-[11px] text-slate-600">
+                                                    <Mail size={12} className="text-slate-400 shrink-0" />
+                                                    <span className="truncate">{sdm.email}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[11px] text-slate-600">
+                                                    <Phone size={12} className="text-slate-400 shrink-0" />
+                                                    <span>{sdm.nomor_hp || '-'}</span>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                                                <Mail size={12} className="text-slate-400" />
-                                                {sdm.email}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => openEditModal(sdm)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                                                    <Edit2 size={16} />
+                                        <td className="px-5 py-4 align-top text-right">
+                                            <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                                                <button onClick={() => openEditModal(sdm)} className="p-1.5 text-slate-400 hover:text-accent-600 hover:bg-accent-50 rounded-lg transition-colors border border-transparent hover:border-accent-200 shadow-sm hover:shadow-md" title="Edit Data">
+                                                    <Edit2 size={15} />
                                                 </button>
-                                                <button onClick={() => { setDeletingSDM(sdm); setShowDeleteModal(true); }} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                                    <Trash2 size={16} />
+                                                <button onClick={() => { setDeletingSDM(sdm); setShowDeleteModal(true); }} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200 shadow-sm hover:shadow-md" title="Hapus Data">
+                                                    <Trash2 size={15} />
                                                 </button>
                                             </div>
                                         </td>

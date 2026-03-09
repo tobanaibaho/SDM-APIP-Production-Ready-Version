@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { changeAdminPassword } from '../services/authService';
@@ -40,6 +40,18 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
     const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
     const [showPw, setShowPw] = useState({ current: false, new_pw: false, confirm: false });
     const [pwLoading, setPwLoading] = useState(false);
+
+    const settingsRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+                setShowSettingsMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -103,8 +115,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                     </div>
 
                     {/* Navigation */}
-                    <nav className="flex-1 space-y-1 px-3 py-6 overflow-y-auto">
-                        <div className="mb-3 px-3 text-[10px] font-bold uppercase tracking-widest text-primary-400">
+                    <nav className="flex-1 space-y-1.5 px-4 py-6 overflow-y-auto">
+                        <div className="mb-4 px-2 text-[10px] font-black uppercase tracking-widest text-primary-400/80">
                             Menu Utama
                         </div>
                         {navItems.map((item) => (
@@ -113,16 +125,21 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 to={item.to}
                                 end={item.end}
                                 className={({ isActive }: { isActive: boolean }) => `
-                                    flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200
+                                    flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-all duration-300 relative group
                                     ${isActive
-                                        ? 'bg-accent-500 text-primary-950 shadow-md font-bold'
-                                        : 'text-slate-300 hover:bg-primary-800 hover:text-white'} 
+                                        ? 'bg-accent-500/10 text-accent-400'
+                                        : 'text-slate-300 hover:bg-primary-800/50 hover:text-white'} 
                                 `}
                             >
                                 {({ isActive }: { isActive: boolean }) => (
                                     <>
-                                        <item.icon size={18} className={isActive ? "text-primary-900" : "text-primary-300"} />
-                                        {item.label}
+                                        {isActive && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-accent-400 rounded-r-full shadow-[0_0_10px_rgba(251,191,36,0.5)]"></div>
+                                        )}
+                                        <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-accent-500/20 text-accent-400' : 'bg-transparent text-primary-300 group-hover:bg-primary-700 group-hover:text-white'}`}>
+                                            <item.icon size={18} />
+                                        </div>
+                                        <span className={isActive ? "font-bold tracking-wide" : "tracking-wide"}>{item.label}</span>
                                     </>
                                 )}
                             </NavLink>
@@ -130,7 +147,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                     </nav>
 
                     {/* Sidebar Footer */}
-                    <div className="border-t border-primary-800 bg-primary-950/30 p-4 relative">
+                    <div className="border-t border-primary-800/50 bg-primary-950/40 p-5 relative" ref={settingsRef}>
                         <div className="flex items-center justify-between gap-2 rounded-lg bg-primary-800/40 p-3 border border-primary-700/30">
                             <div className="flex items-center gap-3 overflow-hidden">
                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-500 font-bold text-primary-900 shadow-sm overflow-hidden border-2 border-primary-600">
