@@ -104,8 +104,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
             `}>
                 <div className="flex h-full flex-col">
                     {/* Sidebar Header */}
-                    <div className="flex border-b border-primary-800/50 bg-primary-950/20 px-6 py-6 items-center gap-4">
-                        <div className="h-12 w-12 shrink-0 bg-white rounded-full p-1 shadow-lg ring-2 ring-primary-700/30">
+                    <div className="flex border-b border-primary-800/50 bg-primary-950/20 px-6 py-4 items-center gap-3">
+                        <div className="h-14 w-14 shrink-0 drop-shadow-md">
                             <img src={Logo} alt="Logo Kemenko" className="h-full w-full object-contain" />
                         </div>
                         <div className="space-y-0.5">
