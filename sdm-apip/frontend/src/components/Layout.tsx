@@ -96,7 +96,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                         </div>
                         <div className="text-center space-y-1">
                             <h2 className="text-sm font-bold tracking-wide text-white leading-tight uppercase">INSPEKTORAT</h2>
-                            <p className="text-[10px] uppercase tracking-wider text-primary-200 font-medium opacity-80">KEMENKO INFRASTRUKTUR</p>
+                            <p className="text-[10px] uppercase tracking-wider text-primary-200 font-medium opacity-80">KEMENKO INFRA</p>
                         </div>
                     </div>
 

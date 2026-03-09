@@ -155,7 +155,7 @@ const ProfilePage: React.FC = () => {
                                 </div>
                                 <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2 rounded-xl text-sm border border-white/5 backdrop-blur-sm">
                                     <Building2 size={16} className="text-accent-500" />
-                                    <span>{sdmData?.unit_kerja || 'Inspektorat Kemenko Infra'}</span>
+                                    <span>{sdmData?.unit_kerja || 'Inspektorat'}</span>
                                 </div>
                             </div>
                         </div>
@@ -213,7 +213,7 @@ const ProfilePage: React.FC = () => {
                                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Unit Kerja Utama</p>
                                     <div className="flex items-center gap-3 bg-slate-50 px-5 py-4 rounded-2xl border border-slate-100 text-lg font-bold text-slate-800">
                                         <Building2 size={20} className="text-primary-500" />
-                                        <span>{sdmData?.unit_kerja || 'Inspektorat Kemenko Infra'}</span>
+                                        <span>{sdmData?.unit_kerja || 'Inspektorat'}</span>
                                     </div>
                                 </div>
                             </div>
