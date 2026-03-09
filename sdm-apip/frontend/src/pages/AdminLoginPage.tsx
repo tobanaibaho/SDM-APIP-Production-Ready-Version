@@ -109,7 +109,7 @@ const AdminLoginPage: React.FC = () => {
                             {!requiresMFA ? (
                                 <>
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Username Admin</label>
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Username</label>
                                         <div className="relative group">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 group-focus-within:text-accent-500 transition-colors">
                                                 <UserIcon size={18} />

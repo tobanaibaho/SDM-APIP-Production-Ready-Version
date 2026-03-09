@@ -157,7 +157,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
 
                         {/* Settings Pop-up */}
                         {showSettingsMenu && (
-                            <div className="absolute bottom-full left-4 right-4 mb-2 bg-slate-800/95 backdrop-blur border border-slate-700 rounded-lg shadow-xl overflow-hidden z-50 animate-fade-in py-1">
+                            <div className="absolute bottom-4 left-full ml-3 w-48 bg-slate-800/95 backdrop-blur border border-slate-700 rounded-lg shadow-xl overflow-hidden z-50 animate-fade-in py-1">
                                 {isAdmin && (
                                     <button
                                         onClick={() => { setShowChangePassword(true); setShowSettingsMenu(false); }}

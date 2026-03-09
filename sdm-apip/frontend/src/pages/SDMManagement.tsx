@@ -429,7 +429,7 @@ const SDMManagement: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5 md:col-span-2">
                                 <label className="form-label">Email</label>
                                 <input
                                     type="email"
