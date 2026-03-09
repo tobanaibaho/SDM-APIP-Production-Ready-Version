@@ -411,35 +411,6 @@ const AdminDashboard: React.FC = () => {
                             <Database size={60} className="absolute -right-2 -bottom-6 text-white/5 rotate-12" />
                         </div>
 
-                        {/* Distribusi Unit Kerja */}
-                        <div className="card p-5">
-                            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                                <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Distribusi Unit Kerja</h4>
-                                <BarChart3 size={14} className="text-slate-400" />
-                            </div>
-                            <div className="space-y-3">
-                                {(stats?.unit_kerja_dist ?? []).slice(0, 5).map((unit, idx) => (
-                                    <div key={idx}>
-                                        <div className="flex justify-between text-[10px] mb-1">
-                                            <span className="font-bold text-slate-700 truncate max-w-[130px]" title={unit.unit_kerja}>
-                                                {unit.unit_kerja || 'Lainnya'}
-                                            </span>
-                                            <span className="font-mono text-slate-500">{unit.count}</span>
-                                        </div>
-                                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                            <div className="h-full bg-primary-500 rounded-full"
-                                                style={{ width: `${(unit.count / (stats?.total_sdm || 1)) * 100}%` }} />
-                                        </div>
-                                    </div>
-                                ))}
-                                {(stats?.unit_kerja_dist ?? []).length === 0 && (
-                                    <p className="text-center text-[10px] text-slate-400 py-4">Belum ada data unit kerja</p>
-                                )}
-                            </div>
-                            <NavLink to="/super-admin/report" className="block mt-4 text-center text-[10px] font-bold text-primary-600 hover:underline uppercase tracking-wider">
-                                Analisis Lengkap →
-                            </NavLink>
-                        </div>
 
                         {/* Belum Pernah Login */}
                         <div className="card overflow-hidden">

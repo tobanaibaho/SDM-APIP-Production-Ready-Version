@@ -430,27 +430,18 @@ const SDMManagement: React.FC = () => {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="form-label">Email Kedinasan</label>
+                                <label className="form-label">Email</label>
                                 <input
                                     type="email"
                                     className="form-input"
-                                    placeholder="email@kemenkoinfra.go.id"
+                                    placeholder="Email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 />
                                 {formErrors.email && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase">{formErrors.email}</p>}
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="form-label">Unit Kerja</label>
-                                <input
-                                    type="text"
-                                    className="form-input"
-                                    placeholder="Lokasi Penempatan"
-                                    value={formData.unit_kerja}
-                                    onChange={(e) => setFormData({ ...formData, unit_kerja: e.target.value })}
-                                />
-                            </div>
+
                         </div>
 
                         <div className="px-8 py-5 border-t border-slate-100 bg-slate-50 flex gap-3">
