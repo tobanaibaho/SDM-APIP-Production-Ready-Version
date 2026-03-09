@@ -99,10 +99,10 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
         <div className="flex min-h-screen bg-slate-100 font-sans">
             {/* Sidebar Desktop */}
             <aside className={`
-                fixed inset-y-0 left-0 z-50 w-72 bg-primary-900 border-r border-primary-800 text-white transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen shrink-0
+                fixed inset-y-0 left-0 z-50 w-72 bg-primary-900 border-r border-primary-800 text-white transition-transform duration-300 ease-in-out lg:translate-x-0 lg:relative lg:min-h-screen shrink-0
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} shadow-xl
             `}>
-                <div className="flex h-full flex-col">
+                <div className="flex h-full lg:h-screen flex-col lg:sticky lg:top-0 w-full overflow-hidden">
                     {/* Sidebar Header */}
                     <div className="flex border-b border-primary-800/50 bg-primary-950/20 px-6 py-4 items-center gap-3">
                         <div className="h-14 w-14 shrink-0 drop-shadow-md">
