@@ -21,7 +21,8 @@ import {
     KeyRound,
     Eye,
     EyeOff,
-    Loader2
+    Loader2,
+    Power
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -35,6 +36,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showChangePassword, setShowChangePassword] = useState(false);
+    const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
     const [showPw, setShowPw] = useState({ current: false, new_pw: false, confirm: false });
     const [pwLoading, setPwLoading] = useState(false);
@@ -128,38 +130,52 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                     </nav>
 
                     {/* Sidebar Footer */}
-                    <div className="border-t border-primary-800 bg-primary-950/30 p-4">
-                        <div className="flex items-center gap-3 rounded-lg bg-primary-800/40 p-3 border border-primary-700/30">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-500 font-bold text-primary-900 shadow-sm overflow-hidden border-2 border-primary-600">
-                                {user?.foto ? (
-                                    <img src={user.foto} alt="Profile" className="h-full w-full object-cover" />
-                                ) : (
-                                    user?.name?.charAt(0) || user?.nip?.slice(-1).toUpperCase() || 'U'
-                                )}
+                    <div className="border-t border-primary-800 bg-primary-950/30 p-4 relative">
+                        <div className="flex items-center justify-between gap-2 rounded-lg bg-primary-800/40 p-3 border border-primary-700/30">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-500 font-bold text-primary-900 shadow-sm overflow-hidden border-2 border-primary-600">
+                                    {user?.foto ? (
+                                        <img src={user.foto} alt="Profile" className="h-full w-full object-cover" />
+                                    ) : (
+                                        user?.name?.charAt(0).toUpperCase() || user?.nip?.slice(-1).toUpperCase() || 'U'
+                                    )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-bold text-white">
+                                        {isAdmin ? 'ADMINISTRATOR' : (user?.name || user?.nip)}
+                                    </p>
+                                    <p className="text-[10px] text-primary-300 uppercase tracking-wide font-medium">{isAdmin ? 'Pengelola Sistem' : 'Pegawai ASN'}</p>
+                                </div>
                             </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-bold text-white">
-                                    {isAdmin ? 'ADMINISTRATOR' : (user?.name || user?.nip)}
-                                </p>
-                                <p className="text-[10px] text-primary-300 uppercase tracking-wide font-medium">{isAdmin ? 'Pengelola Sistem' : 'Pegawai ASN'}</p>
-                            </div>
-                        </div>
-                        {isAdmin && (
                             <button
-                                onClick={() => setShowChangePassword(true)}
-                                className="mt-3 flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-blue-200 transition-colors hover:bg-blue-900/40 hover:text-blue-100 uppercase tracking-wider border border-transparent hover:border-blue-800/30"
+                                onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                                className={`h-8 w-8 shrink-0 flex items-center justify-center rounded-md transition-all ${showSettingsMenu ? 'bg-primary-600 text-white' : 'bg-primary-700/50 text-slate-300 hover:bg-primary-600 hover:text-white'}`}
                             >
-                                <KeyRound size={14} />
-                                Ganti Password
+                                <Power size={16} />
                             </button>
+                        </div>
+
+                        {/* Settings Pop-up */}
+                        {showSettingsMenu && (
+                            <div className="absolute bottom-full left-4 right-4 mb-2 bg-slate-800/95 backdrop-blur border border-slate-700 rounded-lg shadow-xl overflow-hidden z-50 animate-fade-in py-1">
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => { setShowChangePassword(true); setShowSettingsMenu(false); }}
+                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-700/80 hover:text-white uppercase tracking-wider"
+                                    >
+                                        <KeyRound size={14} className="text-blue-400" />
+                                        Ganti Password
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => { handleLogout(); setShowSettingsMenu(false); }}
+                                    className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-200 transition-colors hover:bg-red-500/10 hover:text-red-400 uppercase tracking-wider"
+                                >
+                                    <LogOut size={14} className="text-red-400" />
+                                    Keluar
+                                </button>
+                            </div>
                         )}
-                        <button
-                            onClick={handleLogout}
-                            className="mt-2 flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-red-200 transition-colors hover:bg-red-900/40 hover:text-red-100 uppercase tracking-wider border border-transparent hover:border-red-800/30"
-                        >
-                            <LogOut size={14} />
-                            Keluar Aplikasi
-                        </button>
                     </div>
                 </div>
             </aside>
