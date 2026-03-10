@@ -113,49 +113,49 @@ const ProfilePage: React.FC = () => {
             title="Profil Saya"
             subtitle={isAdmin ? "Kelola informasi profil dan detail akun Anda di sini." : "Detail informasi profil dan akun resmi Anda."}
         >
-            <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+            <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
                 {/* Hero Header */}
-                <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-2xl">
+                <div className="relative overflow-hidden rounded-[2rem] bg-slate-900 shadow-2xl">
                     <div className="absolute inset-0 opacity-10">
-                        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-primary-500 blur-3xl animate-pulse"></div>
-                        <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-accent-500 blur-3xl"></div>
+                        <div className="absolute -top-16 -left-16 h-48 w-48 rounded-full bg-primary-500 blur-3xl animate-pulse"></div>
+                        <div className="absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-accent-500 blur-3xl"></div>
                     </div>
 
-                    <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                    <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 md:gap-8">
                         {/* Avatar */}
                         <div className="relative group">
-                            <div className="h-40 w-40 rounded-[2.5rem] bg-white p-1 shadow-2xl transform transition-transform group-hover:scale-[1.02]">
-                                <div className="h-full w-full rounded-[2.3rem] bg-slate-100 flex items-center justify-center overflow-hidden">
+                            <div className="h-28 w-28 rounded-3xl bg-white p-1 shadow-2xl transform transition-transform group-hover:scale-[1.02]">
+                                <div className="h-full w-full rounded-[1.4rem] bg-slate-100 flex items-center justify-center overflow-hidden">
                                     {formData.foto ? (
                                         <img src={formData.foto} alt="Profile" className="h-full w-full object-cover" />
                                     ) : (
-                                        <User size={80} className="text-slate-300" />
+                                        <User size={60} className="text-slate-300" />
                                     )}
                                 </div>
                             </div>
-                            <div className="absolute -bottom-3 -right-3 h-12 w-12 rounded-2xl bg-accent-500 border-4 border-slate-900 flex items-center justify-center shadow-xl">
-                                <CheckCircle2 size={24} className="text-slate-900" />
+                            <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl bg-accent-500 border-4 border-slate-900 flex items-center justify-center shadow-xl">
+                                <CheckCircle2 size={20} className="text-slate-900" />
                             </div>
                         </div>
 
                         {/* Name & Title */}
                         <div className="text-center md:text-left">
-                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-3">
-                                <h2 className="text-4xl font-black text-white tracking-tight">{sdmData?.nama || 'Pengguna'}</h2>
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-accent-400 backdrop-blur-md border border-white/10 uppercase tracking-widest">
-                                    <Shield size={14} />
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
+                                <h2 className="text-3xl font-black text-white tracking-tight">{sdmData?.nama || 'Pengguna'}</h2>
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold text-accent-400 backdrop-blur-md border border-white/10 uppercase tracking-widest">
+                                    <Shield size={12} />
                                     {user?.role || 'Personil APIP'}
                                 </span>
                             </div>
-                            <p className="text-xl text-slate-400 font-medium max-w-xl">{sdmData?.jabatan || 'Jabatan Belum Terdata'}</p>
+                            <p className="text-lg text-slate-400 font-medium max-w-xl">{sdmData?.jabatan || 'Jabatan Belum Terdata'}</p>
 
-                            <div className="mt-8 flex flex-wrap justify-center md:justify-start gap-3">
-                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2 rounded-xl text-sm border border-white/5 backdrop-blur-sm">
-                                    <Fingerprint size={16} className="text-accent-500" />
+                            <div className="mt-5 flex flex-wrap justify-center md:justify-start gap-2">
+                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-3 py-1.5 rounded-xl text-xs border border-white/5 backdrop-blur-sm">
+                                    <Fingerprint size={14} className="text-accent-500" />
                                     <span className="font-mono">{user?.nip}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2 rounded-xl text-sm border border-white/5 backdrop-blur-sm">
-                                    <Building2 size={16} className="text-accent-500" />
+                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-3 py-1.5 rounded-xl text-xs border border-white/5 backdrop-blur-sm">
+                                    <Building2 size={14} className="text-accent-500" />
                                     <span>{sdmData?.unit_kerja || 'Inspektorat'}</span>
                                 </div>
                             </div>
@@ -163,7 +163,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Master Data Section */}
                     <div className="lg:col-span-12 xl:col-span-7 space-y-5">
                         <div className="card p-6">

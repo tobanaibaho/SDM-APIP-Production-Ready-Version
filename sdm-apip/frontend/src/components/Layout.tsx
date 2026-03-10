@@ -174,8 +174,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
 
                         {/* Settings Pop-up */}
                         <div className={`
-                            absolute bottom-full left-4 right-4 mb-2 bg-slate-800/95 backdrop-blur-md border border-slate-700/80 rounded-xl shadow-2xl overflow-hidden z-50 transition-all duration-300 origin-bottom
-                            ${showSettingsMenu ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2 pointer-events-none'}
+                            absolute bottom-2 left-full ml-4 w-52 bg-slate-800/95 backdrop-blur-md border border-slate-700/80 rounded-xl shadow-2xl overflow-hidden z-50 transition-all duration-300 origin-left
+                            ${showSettingsMenu ? 'opacity-100 scale-100 translate-x-0' : 'opacity-0 scale-95 -translate-x-4 pointer-events-none'}
                         `}>
                             <div className="p-1.5 flex flex-col gap-1">
                                 {isAdmin && (
