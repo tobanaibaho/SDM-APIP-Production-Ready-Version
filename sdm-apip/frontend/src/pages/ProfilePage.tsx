@@ -176,43 +176,37 @@ const ProfilePage: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-6">
-                                    <div>
-                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Nama Lengkap</p>
-                                        <div className="bg-slate-50 px-5 py-4 rounded-2xl border border-slate-100 text-lg font-bold text-slate-800">
-                                            {sdmData?.nama || '-'}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Pangkat / Golongan</p>
-                                        <div className="flex items-center gap-3 bg-slate-50 px-5 py-4 rounded-2xl border border-slate-100 text-lg font-bold text-slate-800">
-                                            <Award size={20} className="text-amber-500" />
-                                            <span>{sdmData?.pangkat_golongan || '-'}</span>
-                                        </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</p>
+                                    <div className="bg-slate-50 px-4 py-3 rounded-xl border border-slate-100 text-sm font-bold text-slate-800">
+                                        {sdmData?.nama || '-'}
                                     </div>
                                 </div>
-
-                                <div className="space-y-6">
-                                    <div>
-                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">NIP / Identitas</p>
-                                        <div className="bg-slate-50 px-5 py-4 rounded-2xl border border-slate-100 text-lg font-mono font-bold text-slate-800 tracking-tight">
-                                            {user?.nip}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Pendidikan Terakhir</p>
-                                        <div className="flex items-center gap-3 bg-slate-50 px-5 py-4 rounded-2xl border border-slate-100 text-lg font-bold text-slate-800">
-                                            <GraduationCap size={20} className="text-blue-500" />
-                                            <span>{sdmData?.pendidikan || '-'}</span>
-                                        </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">NIP / Identitas</p>
+                                    <div className="bg-slate-50 px-4 py-3 rounded-xl border border-slate-100 text-sm font-mono font-bold text-slate-800 tracking-tight">
+                                        {user?.nip}
                                     </div>
                                 </div>
-
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pangkat / Golongan</p>
+                                    <div className="flex items-center gap-2 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100 text-sm font-bold text-slate-800">
+                                        <Award size={16} className="text-amber-500" />
+                                        <span>{sdmData?.pangkat_golongan || '-'}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pendidikan Terakhir</p>
+                                    <div className="flex items-center gap-2 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100 text-sm font-bold text-slate-800">
+                                        <GraduationCap size={16} className="text-blue-500" />
+                                        <span>{sdmData?.pendidikan || '-'}</span>
+                                    </div>
+                                </div>
                                 <div className="md:col-span-2">
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Unit Kerja Utama</p>
-                                    <div className="flex items-center gap-3 bg-slate-50 px-5 py-4 rounded-2xl border border-slate-100 text-lg font-bold text-slate-800">
-                                        <Building2 size={20} className="text-primary-500" />
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Unit Kerja Utama</p>
+                                    <div className="flex items-center gap-2 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100 text-sm font-bold text-slate-800">
+                                        <Building2 size={16} className="text-primary-500" />
                                         <span>{sdmData?.unit_kerja || 'Inspektorat'}</span>
                                     </div>
                                 </div>
@@ -325,39 +319,39 @@ const ProfilePage: React.FC = () => {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => !mfaLoading && setShowMFAModal(false)}></div>
                         <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                            <div className="bg-slate-900 p-8 text-center text-white relative">
-                                <Shield size={48} className="mx-auto mb-4 text-accent-500" />
-                                <h3 className="text-2xl font-black mb-1 italic">Setup Autentikator</h3>
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Satu langkah menuju keamanan maksimal</p>
+                            <div className="bg-slate-900 p-6 text-center text-white relative">
+                                <Shield size={36} className="mx-auto mb-3 text-accent-500" />
+                                <h3 className="text-xl font-black mb-1 italic">Setup Autentikator</h3>
+                                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Satu langkah menuju keamanan maksimal</p>
                             </div>
 
-                            <div className="p-8 md:p-10 space-y-8 bg-slate-50/50">
-                                <div className="flex flex-col items-center text-center space-y-6">
+                            <div className="p-6 md:p-8 space-y-6 bg-slate-50/50">
+                                <div className="flex flex-col items-center text-center space-y-4">
                                     {/* QR Code */}
-                                    <div className="flex flex-col items-center space-y-4">
-                                        <div className="p-4 bg-white rounded-[2rem] border-2 border-slate-100 shadow-sm relative group overflow-hidden">
-                                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mfaData.qr_url)}`} alt="MFA QR" className="h-44 w-44 object-contain" />
+                                    <div className="flex flex-col items-center space-y-3">
+                                        <div className="p-3 bg-white rounded-[1.5rem] border-2 border-slate-100 shadow-sm relative group overflow-hidden">
+                                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(mfaData.qr_url)}`} alt="MFA QR" className="h-40 w-40 object-contain" />
                                         </div>
-                                        <p className="text-xs text-slate-500 font-medium max-w-xs">
-                                            Scan QR code di atas menggunakan aplikasi <strong className="text-slate-800">Google Authenticator</strong> atau <strong className="text-slate-800">Authy</strong>.
+                                        <p className="text-[11px] text-slate-500 font-medium max-w-xs px-4">
+                                            Scan QR menggunakan aplikasi <strong className="text-slate-800">Google Authenticator</strong> / <strong className="text-slate-800">Authy</strong>.
                                         </p>
                                     </div>
 
                                     {/* Backup Key & Input Kode */}
-                                    <div className="w-full max-w-sm space-y-6">
-                                        <div className="bg-white p-4 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Backup Key</span>
-                                            <code className="text-sm font-black text-primary-600 tracking-widest uppercase select-all">{mfaData.secret}</code>
+                                    <div className="w-full max-w-[320px] space-y-4">
+                                        <div className="bg-white px-4 py-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Backup Key</span>
+                                            <code className="text-xs font-black text-primary-600 tracking-widest uppercase select-all">{mfaData.secret}</code>
                                         </div>
 
-                                        <div className="space-y-3">
-                                            <label className="text-xs font-black text-slate-600 uppercase tracking-widest text-center block">Masukkan 6 Digit Kode</label>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest text-center block">Masukkan 6 Digit</label>
                                             <input
                                                 type="text"
                                                 maxLength={6}
                                                 value={mfaToken}
                                                 onChange={(e) => setMfaToken(e.target.value.replace(/\D/g, ''))}
-                                                className="w-full text-center text-4xl font-black tracking-[0.5em] py-5 bg-white border-2 border-slate-200 rounded-2xl focus:border-accent-500 focus:ring-4 focus:ring-accent-500/10 outline-none transition-all placeholder:text-slate-200"
+                                                className="w-full text-center text-3xl font-black tracking-[0.4em] py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-accent-500 focus:ring-4 focus:ring-accent-500/10 outline-none transition-all placeholder:text-slate-200"
                                                 placeholder="000000"
                                                 autoFocus
                                             />
