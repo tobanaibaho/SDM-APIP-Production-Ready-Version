@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"math"
 	"net/http"
 	"sdm-apip-backend/logger"
@@ -63,10 +62,10 @@ func (gc *GroupController) mapServiceError(c *gin.Context, err error, action str
 	case services.ErrGroupLeaderExists:
 		utils.ErrorResponse(c, http.StatusConflict, action, "Grup ini sudah memiliki ketua. Harap ganti peran ketua lama menjadi anggota terlebih dahulu sebelum menetapkan ketua baru.")
 	case services.ErrInternalServer:
-		utils.ErrorResponse(c, http.StatusInternalServerError, action, fmt.Sprintf("Gagal memproses operasi '%s' karena kendala sistem. Silakan hubungi Administrator jika masalah berlanjut.", action))
+		utils.ErrorResponse(c, http.StatusInternalServerError, action, "Sistem mencatat anomali ini")
 	default:
 		// Generic fallback for safety
-		utils.ErrorResponse(c, http.StatusInternalServerError, action, fmt.Sprintf("Koneksi gagal saat mencoba '%s'. Sistem mencatat anomali ini, silakan muat ulang halaman atau lapor ke Administrator.", action))
+		utils.ErrorResponse(c, http.StatusInternalServerError, action, "Sistem mencatat anomali ini")
 	}
 }
 
