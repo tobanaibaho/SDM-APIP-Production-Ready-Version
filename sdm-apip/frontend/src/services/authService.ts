@@ -47,13 +47,14 @@ export const superAdminResetToDefault = async (
 };
 
 
-// Change Admin Password (saat sudah login)
-export const changeAdminPassword = async (data: {
+// Change Password (Universal for both User and Admin)
+export const changePassword = async (data: {
     current_password: string;
     new_password: string;
     confirm_password: string;
-}): Promise<void> => {
-    await api.post<ApiResponse<null>>('/admin/change-password', data);
+}, isAdmin: boolean = false): Promise<void> => {
+    const endpoint = isAdmin ? '/admin/change-password' : '/user/change-password';
+    await api.post<ApiResponse<null>>(endpoint, data);
 };
 
 // Register

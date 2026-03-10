@@ -165,7 +165,7 @@ const VerifyEmailPage: React.FC = () => {
                         />
                     </div>
                     <p className="text-center text-xs text-slate-400">
-                        Kode unik telah dikirim ke email kedinasan Anda.
+                        Kode unik telah dikirim ke email Anda.
                     </p>
                 </div>
 

@@ -24,6 +24,7 @@ func RegisterUserRoutes(api *gin.RouterGroup) {
 	{
 		user.GET("/profile", authController.GetProfile)
 		user.PUT("/profile", authController.UpdateProfile)
+		user.POST("/change-password", authController.ChangePassword)
 		user.GET("/my-groups", groupController.GetMyGroups)
 		user.GET("/groups/:id", groupController.GetGroupDetailForUser)
 

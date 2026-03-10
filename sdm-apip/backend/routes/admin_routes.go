@@ -42,7 +42,7 @@ func RegisterAdminRoutes(api *gin.RouterGroup) {
 	)
 	{
 		// ===== AKUN ADMIN =====
-		admin.POST("/change-password", authController.ChangeAdminPassword)
+		admin.POST("/change-password", authController.ChangePassword)
 
 		// ===== AUDIT LOGS =====
 		admin.GET("/audit-logs", auditController.GetAll)

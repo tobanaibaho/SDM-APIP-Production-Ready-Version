@@ -436,9 +436,9 @@ func (ac *AuthController) RefreshToken(c *gin.Context) {
 	})
 }
 
-// ChangeAdminPassword allows a logged-in admin to change their own password.
-// POST /api/admin/change-password
-func (ac *AuthController) ChangeAdminPassword(c *gin.Context) {
+// ChangePassword allows any logged-in user (admin or normal) to change their own password.
+// POST /api/user/change-password or /api/admin/change-password
+func (ac *AuthController) ChangePassword(c *gin.Context) {
 	var req struct {
 		CurrentPassword string `json:"current_password" binding:"required"`
 		NewPassword     string `json:"new_password" binding:"required"`
@@ -467,18 +467,18 @@ func (ac *AuthController) ChangeAdminPassword(c *gin.Context) {
 		return
 	}
 
-	// 4. Ambil data admin yang sedang login
+	// 4. Ambil data user yang sedang login
 	userID := middleware.GetUserIDFromContext(c)
-	var admin models.User
-	if err := config.DB.First(&admin, userID).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "Admin tidak ditemukan", "")
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		utils.ErrorResponse(c, http.StatusNotFound, "Pengguna tidak ditemukan", "")
 		return
 	}
 
 	// 5. Verifikasi password lama
-	if !utils.CheckPasswordHash(req.CurrentPassword, admin.Password) {
-		models.CreateAuditLog(config.DB, &admin.ID, models.AuditActionLoginFailed, models.AuditStatusFailed,
-			c.ClientIP(), c.GetHeader("User-Agent"), "Admin change password failed: incorrect current password", &admin.ID)
+	if !utils.CheckPasswordHash(req.CurrentPassword, user.Password) {
+		models.CreateAuditLog(config.DB, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed,
+			c.ClientIP(), c.GetHeader("User-Agent"), "User change password failed: incorrect current password", &user.ID)
 		utils.ErrorResponse(c, http.StatusUnauthorized, "Password lama salah", "Password saat ini tidak cocok")
 		return
 	}
@@ -491,14 +491,14 @@ func (ac *AuthController) ChangeAdminPassword(c *gin.Context) {
 	}
 
 	tx := config.DB.Begin()
-	if err := tx.Model(&admin).Update("password", hashed).Error; err != nil {
+	if err := tx.Model(&user).Update("password", hashed).Error; err != nil {
 		tx.Rollback()
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menyimpan password", "")
 		return
 	}
 
 	// 7. Cabut semua sesi aktif (paksa login ulang dengan password baru)
-	tx.Model(&models.RefreshToken{}).Where("user_id = ?", admin.ID).Update("revoked_at", time.Now())
+	tx.Model(&models.RefreshToken{}).Where("user_id = ?", user.ID).Update("revoked_at", time.Now())
 
 	if err := tx.Commit().Error; err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menyelesaikan operasi", "")
@@ -506,8 +506,8 @@ func (ac *AuthController) ChangeAdminPassword(c *gin.Context) {
 	}
 
 	// 8. Audit log
-	models.CreateAuditLog(config.DB, &admin.ID, "password_changed", models.AuditStatusSuccess,
-		c.ClientIP(), c.GetHeader("User-Agent"), "Admin password changed successfully", &admin.ID)
+	models.CreateAuditLog(config.DB, &user.ID, "password_changed", models.AuditStatusSuccess,
+		c.ClientIP(), c.GetHeader("User-Agent"), "User password changed successfully", &user.ID)
 
 	utils.SuccessResponse(c, http.StatusOK, "Password berhasil diubah. Silakan login ulang.", nil)
 }

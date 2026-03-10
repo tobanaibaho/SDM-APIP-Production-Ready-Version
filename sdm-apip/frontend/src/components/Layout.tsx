@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { changeAdminPassword } from '../services/authService';
+import { changePassword } from '../services/authService';
 import Logo from '../assets/logo.png';
 import toast from 'react-hot-toast';
 import {
@@ -66,11 +66,11 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
         }
         setPwLoading(true);
         try {
-            await changeAdminPassword(pwForm);
+            await changePassword(pwForm, isAdmin);
             toast.success('Password berhasil diubah! Silakan login ulang.');
             setShowChangePassword(false);
             setPwForm({ current_password: '', new_password: '', confirm_password: '' });
-            setTimeout(() => { logout(); navigate('/super-admin/login'); }, 1500);
+            setTimeout(() => { logout(); navigate(isAdmin ? '/super-admin/login' : '/login'); }, 1500);
         } catch (err: any) {
             toast.error(err?.response?.data?.error || 'Gagal mengubah password');
         } finally {
@@ -102,7 +102,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                 fixed inset-y-0 left-0 z-50 w-72 bg-primary-900 border-r border-primary-800 text-white transition-transform duration-300 ease-in-out lg:translate-x-0
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} shadow-xl
             `}>
-                <div className="flex h-full flex-col w-full overflow-hidden">
+                <div className="flex h-full flex-col w-full">
                     {/* Sidebar Header */}
                     <div className="flex border-b border-primary-800/50 bg-primary-950/20 px-6 py-4 items-center gap-3">
                         <div className="h-14 w-14 shrink-0 drop-shadow-md">
@@ -178,17 +178,15 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                             ${showSettingsMenu ? 'opacity-100 scale-100 translate-x-0' : 'opacity-0 scale-95 -translate-x-4 pointer-events-none'}
                         `}>
                             <div className="p-1.5 flex flex-col gap-1">
-                                {isAdmin && (
-                                    <button
-                                        onClick={() => { setShowChangePassword(true); setShowSettingsMenu(false); }}
-                                        className="flex w-full items-center gap-3 px-3 py-2.5 text-xs font-semibold text-slate-300 rounded-lg transition-colors hover:bg-slate-700/50 hover:text-white"
-                                    >
-                                        <div className="h-6 w-6 rounded-md bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                                            <KeyRound size={12} className="text-blue-400" />
-                                        </div>
-                                        Ganti Password
-                                    </button>
-                                )}
+                                <button
+                                    onClick={() => { setShowChangePassword(true); setShowSettingsMenu(false); }}
+                                    className="flex w-full items-center gap-3 px-3 py-2.5 text-xs font-semibold text-slate-300 rounded-lg transition-colors hover:bg-slate-700/50 hover:text-white"
+                                >
+                                    <div className="h-6 w-6 rounded-md bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                        <KeyRound size={12} className="text-blue-400" />
+                                    </div>
+                                    Ganti Password
+                                </button>
                                 <button
                                     onClick={() => { handleLogout(); setShowSettingsMenu(false); }}
                                     className="flex w-full items-center gap-3 px-3 py-2.5 text-xs font-semibold text-slate-300 rounded-lg transition-colors hover:bg-red-500/10 hover:text-red-400"
@@ -251,9 +249,9 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                 />
             )}
 
-            {/* Modal Ganti Password Admin */}
+            {/* Modal Ganti Password */}
             {showChangePassword && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
                     <div className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in">
                         <div className="flex items-center justify-between p-6 border-b border-slate-700">
                             <div className="flex items-center gap-3">
@@ -261,7 +259,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                     <KeyRound size={20} className="text-blue-400" />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-bold text-white">Ganti Password Admin</h2>
+                                    <h2 className="text-lg font-bold text-white">Ganti Password</h2>
                                     <p className="text-xs text-slate-400">Password lama diperlukan untuk verifikasi</p>
                                 </div>
                             </div>
