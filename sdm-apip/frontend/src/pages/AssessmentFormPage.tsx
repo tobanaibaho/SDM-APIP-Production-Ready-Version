@@ -8,7 +8,9 @@ import {
     ArrowRightCircle,
     ArrowLeft,
     Target,
-    MessageSquare
+    MessageSquare,
+    Lightbulb,
+    Star
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -27,12 +29,26 @@ const AssessmentFormPage: React.FC = () => {
         adaptif: 50,
         kolaboratif: 50
     });
+    const [ideInovasi, setIdeInovasi] = useState(0);
     const [comment, setComment] = useState('');
 
     const [searchParams] = useSearchParams();
     const targetUserId = searchParams.get('target_id');
     const periodId = searchParams.get('period_id');
     const relationType = searchParams.get('relation');
+
+    // Hitung total skor + predikat (khusus Atasan)
+    const isAtasan = relationType === 'Atasan';
+    const baseScore = Object.values(scores).reduce((a, b) => a + b, 0) / 7;
+    const totalScore = isAtasan ? baseScore + ideInovasi : baseScore;
+
+    const getPredikat = (score: number) => {
+        if (score >= 110) return { label: 'Sangat Baik', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' };
+        if (score >= 90)  return { label: 'Baik', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' };
+        if (score >= 70)  return { label: 'Cukup', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' };
+        if (score >= 50)  return { label: 'Kurang', color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200' };
+        return { label: 'Sangat Kurang', color: 'text-red-600', bg: 'bg-red-50 border-red-200' };
+    };
 
     useEffect(() => {
         if (targetUserId) {
@@ -117,6 +133,7 @@ const AssessmentFormPage: React.FC = () => {
                 period_id: parseInt(periodId!),
                 assessment_month: assessmentMonth,
                 ...scores,
+                ide_inovasi: isAtasan ? ideInovasi : 0,
                 comment,
             });
             toast.success("Penilaian berhasil disimpan!", { id: loadingToast });
@@ -126,6 +143,14 @@ const AssessmentFormPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleIdeInovasiChange = (val: string) => {
+        let num = parseInt(val);
+        if (isNaN(num)) num = 0;
+        if (num > 20) num = 20;
+        if (num < 0) num = 0;
+        setIdeInovasi(num);
     };
 
     const handleScoreChange = (key: string, val: string) => {
@@ -151,6 +176,18 @@ const AssessmentFormPage: React.FC = () => {
                             <div>
                                 <p className="text-primary-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Menilai Pegawai</p>
                                 <h3 className="text-3xl font-black tracking-tight">{targetName || 'Memuat Nama...'}</h3>
+                                {/* Live score preview for Atasan */}
+                                {isAtasan && (
+                                    <div className="flex items-center gap-3 mt-3">
+                                        <div className="flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-xl px-3 py-1.5">
+                                            <Star size={13} className="text-amber-400" />
+                                            <span className="text-sm font-black text-white">{totalScore.toFixed(1)}<span className="text-xs text-white/50 font-bold">/120</span></span>
+                                        </div>
+                                        <span className={`px-3 py-1 rounded-xl text-xs font-black border ${getPredikat(totalScore).bg} ${getPredikat(totalScore).color}`}>
+                                            {getPredikat(totalScore).label}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <button
@@ -267,6 +304,77 @@ const AssessmentFormPage: React.FC = () => {
                             </div>
                         ))}
                     </div>
+
+                    {/* ══ ADD-ON: Ide Baru / Inovasi — hanya untuk Inspektur (Atasan) ══ */}
+                    {isAtasan && (
+                        <div className="relative bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 p-8 rounded-[2rem] shadow-sm animate-slide-up">
+                            {/* Corner badge */}
+                            <div className="absolute top-4 right-4">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500 text-white text-[10px] font-black rounded-full uppercase tracking-wider shadow">
+                                    <Star size={10} /> Bonus Inspektur
+                                </span>
+                            </div>
+                            <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md">
+                                            <Lightbulb size={20} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xl font-black text-amber-900 leading-tight">Ide Baru / Inovasi</h4>
+                                            <p className="text-xs text-amber-700 font-bold uppercase tracking-wide mt-0.5">Add-on Eksklusif Inspektur</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-amber-800 font-medium leading-relaxed">
+                                        Nilai tambahan atas inisiatif, kreativitas, dan kontribusi inovasi pegawai.
+                                        Poin ini dapat mendorong predikat ke level <strong>Sangat Baik</strong> (110–120).
+                                    </p>
+                                    <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase">
+                                        {[['Sangat Baik','110–120','emerald'], ['Baik','90–<110','blue'], ['Cukup','70–<90','amber'], ['Kurang','50–<70','orange'], ['Sangat Kurang','<50','red']].map(([label, range, color]) => (
+                                            <span key={label} className={`px-2 py-1 rounded-lg border bg-${color}-50 border-${color}-200 text-${color}-700`}>
+                                                {label}: {range}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="w-full lg:w-64 space-y-4">
+                                    <div className="flex items-end justify-between">
+                                        <span className={`text-4xl font-black ${ideInovasi >= 15 ? 'text-emerald-500' : ideInovasi >= 10 ? 'text-amber-500' : ideInovasi > 0 ? 'text-orange-400' : 'text-slate-300'}`}>
+                                            +{ideInovasi}
+                                            <small className="text-xs font-bold text-slate-400 ml-1 uppercase">/ 20</small>
+                                        </span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="20"
+                                            className="w-16 h-10 text-center bg-white border-2 border-amber-200 rounded-xl font-black text-sm focus:border-amber-500 transition-all"
+                                            value={ideInovasi}
+                                            onChange={(e) => handleIdeInovasiChange(e.target.value)}
+                                        />
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="20"
+                                        value={ideInovasi}
+                                        onChange={(e) => handleIdeInovasiChange(e.target.value)}
+                                        className="w-full h-3 bg-amber-100 rounded-full appearance-none cursor-pointer accent-amber-500"
+                                    />
+                                    <div className="flex justify-between px-1">
+                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">Tidak Ada</span>
+                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">Signifikan</span>
+                                    </div>
+                                    {/* Live total preview */}
+                                    <div className={`mt-2 p-3 rounded-xl border text-center ${getPredikat(totalScore).bg}`}>
+                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Estimasi Total</p>
+                                        <p className={`text-2xl font-black ${getPredikat(totalScore).color}`}>{totalScore.toFixed(1)}</p>
+                                        <p className={`text-xs font-black uppercase tracking-widest ${getPredikat(totalScore).color}`}>{getPredikat(totalScore).label}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-white p-8 rounded-[2rem] border-2 border-slate-100 shadow-sm focus-within:border-primary-500 transition-all">
                         <div className="flex items-center gap-3 mb-4">

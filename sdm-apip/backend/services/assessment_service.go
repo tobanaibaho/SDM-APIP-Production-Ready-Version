@@ -343,6 +343,23 @@ func (s *AssessmentService) GetAssessmentDetail(targetUserID uint, periodID uint
 		sum += v
 	}
 
+	// Hitung bonus Ide Inovasi dari Atasan/Inspektur
+	ideBonus := 0.0
+	atAsIdeCount := 0
+	for _, r := range rows {
+		if r.RelationType == "Atasan" && r.IdeInovasi > 0 {
+			ideBonus += float64(r.IdeInovasi)
+			atAsIdeCount++
+		}
+	}
+	avgIdeBonus := 0.0
+	if atAsIdeCount > 0 {
+		avgIdeBonus = ideBonus / float64(atAsIdeCount)
+	}
+
+	finalBase := sum / 7.0
+	finalWithBonus := finalBase + avgIdeBonus
+
 	resp := map[string]interface{}{
 		"user":                map[string]interface{}{"name": user.Name, "nip": user.NIP},
 		"period":              map[string]interface{}{"name": period.Name, "month": period.StartDate.Month().String(), "year": period.StartDate.Year()},
@@ -350,7 +367,10 @@ func (s *AssessmentService) GetAssessmentDetail(targetUserID uint, periodID uint
 		"status":              status,
 		"scores_by_role":      detailScores,
 		"total_per_indicator": totalPerIndicator,
-		"final_score":         sum / 7.0,
+		"final_score":         finalBase,
+		"ide_inovasi_bonus":   avgIdeBonus,
+		"final_score_total":   finalWithBonus,
+		"predikat":            models.GetPredikat(finalWithBonus),
 	}
 	return &resp, nil
 }
@@ -397,6 +417,10 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 		Harmonis: req.Harmonis, Loyal: req.Loyal,
 		Adaptif: req.Adaptif, Kolaboratif: req.Kolaboratif,
 		Comment: req.Comment,
+	}
+	// Hanya simpan ide_inovasi jika evaluator adalah Atasan (Inspektur)
+	if relation.RelationType == "Atasan" && req.IdeInovasi > 0 {
+		assessment.IdeInovasi = req.IdeInovasi
 	}
 	if err := s.db.Create(&assessment).Error; err != nil {
 		logger.Error("Failed to save peer assessment: %v", err)
@@ -481,13 +505,29 @@ func (s *AssessmentService) GetAssessmentSummary(userID uint, periodID uint) (*m
 	)
 	finalScore := avgRole("Atasan")*wA + avgRole("Peer")*wP + avgRole("Bawahan")*wB
 
+	// Hitung bonus Ide Inovasi (hanya dari penilaian Atasan/Inspektur)
+	ideBonus := 0.0
+	atAsCount := 0
+	for _, a := range assessments {
+		if a.RelationType == "Atasan" && a.IdeInovasi > 0 {
+			ideBonus += float64(a.IdeInovasi)
+			atAsCount++
+		}
+	}
+	if atAsCount > 0 {
+		ideBonus = ideBonus / float64(atAsCount)
+	}
+	finalScoreWithBonus := finalScore + ideBonus
+
 	var period models.AssessmentPeriod
 	s.db.Select("name").First(&period, periodID)
+
+	details["Ide Inovasi (Bonus)"] = ideBonus
 
 	return &models.AssessmentSummary{
 		PeriodID:     periodID,
 		PeriodName:   period.Name,
-		AverageScore: finalScore,
+		AverageScore: finalScoreWithBonus,
 		Status:       status,
 		Details:      details,
 	}, nil
