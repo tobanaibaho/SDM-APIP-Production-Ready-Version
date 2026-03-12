@@ -243,8 +243,7 @@ const AssessmentFormPage: React.FC = () => {
                     <div>
                         <h4 className="text-sm font-black text-blue-900 uppercase tracking-widest mb-1">Panduan Pengisian</h4>
                         <p className="text-sm text-blue-700 leading-relaxed font-semibold">
-                            Berikan penilaian perilaku kerja harian yang paling sesuai pada skala 1 - 100.
-                            Nilai 80-100 menandakan perilaku yang sudah menjadi budaya konsisten.
+                            Berikan penilaian perilaku kerja yang paling sesuai pada skala 1 - 100.
                         </p>
                     </div>
                 </div>

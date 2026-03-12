@@ -27,9 +27,13 @@ import toast from 'react-hot-toast';
    Helper: format 'YYYY-MM' → 'Jan', 'Feb', etc.
 ───────────────────────────────────────────── */
 const formatMonth = (ym: string): string => {
-    const [y, m] = ym.split('-');
-    const d = new Date(Number(y), Number(m) - 1, 1);
-    return d.toLocaleDateString('id-ID', { month: 'short' });
+    const parts = ym.split('-');
+    if (parts.length < 2) return ym;
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (isNaN(y) || isNaN(m) || m < 1 || m > 12) return ym;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+    return months[m - 1];
 };
 
 /* ─────────────────────────────────────────────
@@ -38,15 +42,19 @@ const formatMonth = (ym: string): string => {
 const SparkBar: React.FC<{ value: number; max: number; label: string }> = ({ value, max, label }) => {
     const pct = max > 0 ? Math.round((value / max) * 100) : 0;
     return (
-        <div className="flex flex-col items-center gap-1.5 flex-1">
-            <div className="w-full flex items-end h-16 rounded-t overflow-hidden">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+            {/* Fixed-height container: bar grows from bottom up */}
+            <div className="relative w-full" style={{ height: '64px' }}>
                 <div
-                    className="w-full bg-primary-500 rounded-t transition-all duration-700"
-                    style={{ height: `${Math.max(4, pct)}%` }}
+                    className="absolute bottom-0 left-0 right-0 rounded-t-md transition-all duration-700"
+                    style={{
+                        height: `${Math.max(4, pct)}%`,
+                        background: pct >= 80 ? '#10b981' : pct >= 50 ? '#6366f1' : '#94a3b8',
+                    }}
                 />
             </div>
-            <span className="text-[9px] font-bold text-slate-500 uppercase">{label}</span>
-            <span className="text-[10px] font-black text-slate-700">{value}</span>
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-none whitespace-nowrap">{label}</span>
+            <span className="text-[10px] font-black text-slate-700 leading-none">{value}</span>
         </div>
     );
 };

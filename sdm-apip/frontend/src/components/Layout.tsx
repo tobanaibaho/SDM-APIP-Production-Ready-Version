@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { changePassword } from '../services/authService';
@@ -22,7 +22,9 @@ import {
     Eye,
     EyeOff,
     Loader2,
-    Power
+    Power,
+    ChevronUp,
+    ChevronDown,
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -42,6 +44,21 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
     const [pwLoading, setPwLoading] = useState(false);
 
     const settingsRef = useRef<HTMLDivElement>(null);
+    const [showScrollTop, setShowScrollTop] = useState(false);
+    const [showScrollBottom, setShowScrollBottom] = useState(false);
+
+    const handleScroll = useCallback(() => {
+        const scrollY = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        setShowScrollTop(scrollY > 250);
+        setShowScrollBottom(docHeight > 200 && scrollY < docHeight - 150);
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [handleScroll]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -228,9 +245,9 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                             <h1 className="text-2xl font-bold tracking-tight text-primary-900 md:text-3xl">{title}</h1>
                             {subtitle && <p className="mt-1 text-slate-500 text-sm font-medium">{subtitle}</p>}
                         </div>
-                        <div className="hidden md:block">
-                            <span className="text-xs font-bold text-primary-600 bg-primary-50 px-3 py-1 rounded-full border border-primary-100 uppercase tracking-wider">
-                                {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        <div className="hidden md:flex items-center gap-2 shrink-0">
+                            <span className="text-xs font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-100 uppercase tracking-wider whitespace-nowrap">
+                                {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </span>
                         </div>
                     </div>
@@ -248,6 +265,24 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
+
+            {/* ══ Floating Scroll Buttons (Global) ══ */}
+            <div className="fixed bottom-6 right-6 z-[9990] flex flex-col gap-2">
+                <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className={`flex items-center justify-center h-10 w-10 rounded-xl bg-slate-800/90 backdrop-blur-sm text-white shadow-xl border border-slate-600/60 transition-all duration-300 hover:scale-110 hover:bg-primary-600 active:scale-95 ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+                    title="Ke paling atas"
+                >
+                    <ChevronUp size={18} />
+                </button>
+                <button
+                    onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })}
+                    className={`flex items-center justify-center h-10 w-10 rounded-xl bg-slate-800/90 backdrop-blur-sm text-white shadow-xl border border-slate-600/60 transition-all duration-300 hover:scale-110 hover:bg-primary-600 active:scale-95 ${showScrollBottom ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+                    title="Ke paling bawah"
+                >
+                    <ChevronDown size={18} />
+                </button>
+            </div>
 
             {/* Modal Ganti Password */}
             {showChangePassword && (
