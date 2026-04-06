@@ -10,6 +10,7 @@ type ReportFilter struct {
 	UnitKerja       string     `json:"unit_kerja"`
 	UserID          *uint      `json:"user_id"`
 	AssessmentType  string     `json:"assessment_type"` // e.g., "peer"
+	AssessmentMonth *int       `json:"assessment_month"`
 	Search          string     `json:"search"`
 	SortBy          string     `json:"sort_by"`
 	Order           string     `json:"order"` // asc, desc
@@ -67,6 +68,8 @@ type DashboardData struct {
 // AssessmentDetailRow represents a single row in the detailed report table
 type AssessmentDetailRow struct {
 	ID                    uint      `json:"id"`
+	PeriodID              uint      `json:"period_id"`
+	AssessmentMonth       int       `json:"assessment_month"`
 	Date                  time.Time `json:"date"`
 	EvaluatorName         string    `json:"evaluator_name"`
 	TargetUserName        string    `json:"target_user_name"`

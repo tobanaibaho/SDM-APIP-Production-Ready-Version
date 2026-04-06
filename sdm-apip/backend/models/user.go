@@ -126,17 +126,19 @@ type ResetPasswordRequest struct {
 
 // UserResponse for API response
 type UserResponse struct {
-	ID        uint   `json:"id"`
-	NIP       string `json:"nip"`
-	Username  string `json:"username"`
-	Name      string `json:"name"`
-	Foto      string `json:"foto"`
-	Email     string `json:"email"`
-	Role      string `json:"role"`
-	Jabatan   string `json:"jabatan"`
-	Status    string `json:"status"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID             uint   `json:"id"`
+	NIP            string `json:"nip"`
+	Username       string `json:"username"`
+	Name           string `json:"name"`
+	Foto           string `json:"foto"`
+	Email          string `json:"email"`
+	Role           string `json:"role"`
+	Jabatan        string `json:"jabatan"`
+	Status         string `json:"status"`
+	LastLoginAt    string `json:"last_login_at,omitempty"`
+	LastActivityAt string `json:"last_activity_at,omitempty"`
+	CreatedAt      string `json:"created_at"`
+	UpdatedAt      string `json:"updated_at"`
 }
 
 // AfterFind hook to ensure Name is populated even if join fails
@@ -185,18 +187,30 @@ func (u *User) ToResponse() UserResponse {
 		}
 	}
 
+	lastLogin := ""
+	if u.LastLoginAt != nil {
+		lastLogin = u.LastLoginAt.Format(time.RFC3339)
+	}
+
+	lastActivity := ""
+	if u.LastActivityAt != nil {
+		lastActivity = u.LastActivityAt.Format(time.RFC3339)
+	}
+
 	return UserResponse{
-		ID:        u.ID,
-		NIP:       nip,
-		Username:  username,
-		Name:      name,
-		Foto:      u.Foto,
-		Email:     u.Email,
-		Role:      roleName,
-		Jabatan:   u.Jabatan,
-		Status:    string(u.Status),
-		CreatedAt: u.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt: u.UpdatedAt.Format("2006-01-02 15:04:05"),
+		ID:             u.ID,
+		NIP:            nip,
+		Username:       username,
+		Name:           name,
+		Foto:           u.Foto,
+		Email:          u.Email,
+		Role:           roleName,
+		Jabatan:        u.Jabatan,
+		Status:         string(u.Status),
+		LastLoginAt:    lastLogin,
+		LastActivityAt: lastActivity,
+		CreatedAt:      u.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt:      u.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}
 }
 

@@ -97,8 +97,15 @@ func (s *AuthService) Login(
 	}
 
 	// 4. Lockout Check
-	if user.LockoutUntil != nil && user.LockoutUntil.After(time.Now()) {
-		return nil, fmt.Errorf("akun terkunci. silakan coba lagi setelah %s", user.LockoutUntil.Format("15:04:05"))
+	if user.LockoutUntil != nil {
+		if user.LockoutUntil.After(time.Now()) {
+			return nil, fmt.Errorf("akun terkunci. silakan coba lagi setelah %s", user.LockoutUntil.Format("15:04:05"))
+		}
+		// Reset login attempts if the lockout period has finished
+		s.db.Model(&user).Updates(map[string]interface{}{
+			"login_attempts": 0,
+			"lockout_until":  nil,
+		})
 	}
 
 	// 5. Password Check
@@ -214,8 +221,15 @@ func (s *AuthService) SuperAdminLogin(
 	}
 
 	// 4. Lockout Check
-	if user.LockoutUntil != nil && user.LockoutUntil.After(time.Now()) {
-		return nil, fmt.Errorf("akun terkunci. silakan coba lagi setelah %s", user.LockoutUntil.Format("15:04:05"))
+	if user.LockoutUntil != nil {
+		if user.LockoutUntil.After(time.Now()) {
+			return nil, fmt.Errorf("akun terkunci. silakan coba lagi setelah %s", user.LockoutUntil.Format("15:04:05"))
+		}
+		// Reset login attempts if the lockout period has finished
+		s.db.Model(&user).Updates(map[string]interface{}{
+			"login_attempts": 0,
+			"lockout_until":  nil,
+		})
 	}
 
 	// 5. Password Check

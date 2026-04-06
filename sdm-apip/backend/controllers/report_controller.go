@@ -57,6 +57,12 @@ func (ctrl *ReportController) parseFilter(c *gin.Context) models.ReportFilter {
 	filter.Order = c.Query("order")
 	filter.IncludeArchived = c.Query("include_archived") == "true"
 
+	if am := c.Query("assessment_month"); am != "" {
+		if month, err := strconv.Atoi(am); err == nil && month >= 1 && month <= 12 {
+			filter.AssessmentMonth = &month
+		}
+	}
+
 	if p := c.Query("page"); p != "" {
 		if page, err := strconv.Atoi(p); err == nil {
 			filter.Page = page

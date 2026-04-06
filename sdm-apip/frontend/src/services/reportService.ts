@@ -12,6 +12,7 @@ export interface ReportFilter {
     page?: number;
     page_size?: number;
     include_archived?: boolean;
+    assessment_month?: number;
 }
 
 export interface ReportSummary {
@@ -56,6 +57,8 @@ export interface DashboardData {
 
 export interface AssessmentDetailRow {
     id: number;
+    period_id: number;
+    assessment_month: number;
     date: string;
     evaluator_name: string;
     target_user_name: string;

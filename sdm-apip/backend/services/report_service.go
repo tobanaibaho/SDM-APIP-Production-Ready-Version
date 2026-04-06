@@ -52,6 +52,9 @@ func (s *ReportService) buildAssessmentQuery(filter models.ReportFilter) *gorm.D
 	if filter.GroupID != nil && *filter.GroupID != 0 {
 		query = query.Where("peer_assessments.group_id = ?", filter.GroupID)
 	}
+	if filter.AssessmentMonth != nil && *filter.AssessmentMonth != 0 {
+		query = query.Where("peer_assessments.assessment_month = ?", filter.AssessmentMonth)
+	}
 	if filter.UnitKerja != "" {
 		query = query.Where("sdm.unit_kerja = ?", filter.UnitKerja)
 	}
@@ -246,6 +249,8 @@ func (s *ReportService) GetDetailedReports(filter models.ReportFilter) ([]models
 
 	err := query.Select(`
 		peer_assessments.id, 
+		peer_assessments.period_id,
+		peer_assessments.assessment_month,
 		peer_assessments.created_at as date,
 		evaluator_sdm.nama as evaluator_name,
 		sdm.nama as target_user_name,
@@ -294,7 +299,7 @@ func (s *ReportService) ExportToExcel(filter models.ReportFilter, adminID uint, 
 
 	// Sheet 2: Detail Penilaian
 	index, _ := f.NewSheet("Detail Penilaian")
-	headers := []string{"ID", "Tanggal", "Penilai", "Nama Pegawai", "NIP", "Grup", "Peran", "Unit Kerja", "Berorientasi Pelayanan", "Akuntabel", "Kompeten", "Harmonis", "Loyal", "Adaptif", "Kolaboratif", "Rata-rata", "Komentar"}
+	headers := []string{"ID", "Bulan Ke", "Tanggal", "Penilai", "Nama Pegawai", "NIP", "Grup", "Peran", "Unit Kerja", "Berorientasi Pelayanan", "Akuntabel", "Kompeten", "Harmonis", "Loyal", "Adaptif", "Kolaboratif", "Rata-rata", "Komentar"}
 	for i, head := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue("Detail Penilaian", cell, head)
@@ -302,23 +307,31 @@ func (s *ReportService) ExportToExcel(filter models.ReportFilter, adminID uint, 
 
 	for i, row := range details {
 		rowIdx := i + 2
+		
+		bulanNama := fmt.Sprintf("Ke-%d", row.AssessmentMonth)
+		if row.AssessmentMonth >= 1 {
+			bulanID := []string{"Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"}
+			bulanNama = bulanID[(row.AssessmentMonth-1)%12]
+		}
+
 		f.SetCellValue("Detail Penilaian", fmt.Sprintf("A%d", rowIdx), row.ID)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("B%d", rowIdx), row.Date.Format("2006-01-02"))
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("C%d", rowIdx), row.EvaluatorName)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("D%d", rowIdx), row.TargetUserName)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("E%d", rowIdx), row.TargetNIP)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("F%d", rowIdx), row.GroupName)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("G%d", rowIdx), row.GroupRole)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("H%d", rowIdx), row.UnitKerja)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("I%d", rowIdx), row.BerorientasiPelayanan)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("J%d", rowIdx), row.Akuntabel)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("K%d", rowIdx), row.Kompeten)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("L%d", rowIdx), row.Harmonis)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("M%d", rowIdx), row.Loyal)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("N%d", rowIdx), row.Adaptif)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("O%d", rowIdx), row.Kolaboratif)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("P%d", rowIdx), row.AverageScore)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("Q%d", rowIdx), row.Comment)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("B%d", rowIdx), bulanNama)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("C%d", rowIdx), row.Date.Format("2006-01-02"))
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("D%d", rowIdx), row.EvaluatorName)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("E%d", rowIdx), row.TargetUserName)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("F%d", rowIdx), row.TargetNIP)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("G%d", rowIdx), row.GroupName)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("H%d", rowIdx), row.GroupRole)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("I%d", rowIdx), row.UnitKerja)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("J%d", rowIdx), row.BerorientasiPelayanan)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("K%d", rowIdx), row.Akuntabel)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("L%d", rowIdx), row.Kompeten)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("M%d", rowIdx), row.Harmonis)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("N%d", rowIdx), row.Loyal)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("O%d", rowIdx), row.Adaptif)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("P%d", rowIdx), row.Kolaboratif)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("Q%d", rowIdx), row.AverageScore)
+		f.SetCellValue("Detail Penilaian", fmt.Sprintf("R%d", rowIdx), row.Comment)
 	}
 	f.SetActiveSheet(index)
 
@@ -371,7 +384,7 @@ func (s *ReportService) ExportToPDF(filter models.ReportFilter, adminID uint, ip
 		Text  string
 		Width float64
 	}{
-		{"No", 10}, {"Tanggal", 25}, {"Nama Pegawai", 45}, {"NIP", 35}, {"Peran", 25}, {"Unit Kerja", 45}, {"Nilai", 15}, {"Komentar", 75},
+		{"No", 10}, {"Bulan", 20}, {"Tanggal", 22}, {"Nama Pegawai", 45}, {"NIP", 30}, {"Peran", 22}, {"Unit Kerja", 43}, {"Nilai", 15}, {"Komentar", 68},
 	}
 	for _, col := range cols {
 		pdf.CellFormat(col.Width, 10, col.Text, "1", 0, "C", true, 0, "")
@@ -380,14 +393,21 @@ func (s *ReportService) ExportToPDF(filter models.ReportFilter, adminID uint, ip
 
 	pdf.SetFont("Arial", "", 9)
 	for i, row := range details {
+		bulanNama := fmt.Sprintf("Ke-%d", row.AssessmentMonth)
+		if row.AssessmentMonth >= 1 {
+			bulanID := []string{"Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"}
+			bulanNama = bulanID[(row.AssessmentMonth-1)%12]
+		}
+
 		pdf.CellFormat(10, 8, fmt.Sprintf("%d", i+1), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(25, 8, row.Date.Format("02-01-2006"), "1", 0, "L", false, 0, "")
+		pdf.CellFormat(20, 8, bulanNama, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(22, 8, row.Date.Format("02-01-2006"), "1", 0, "L", false, 0, "")
 		pdf.CellFormat(45, 8, row.TargetUserName, "1", 0, "L", false, 0, "")
-		pdf.CellFormat(35, 8, row.TargetNIP, "1", 0, "L", false, 0, "")
-		pdf.CellFormat(25, 8, row.GroupRole, "1", 0, "L", false, 0, "")
-		pdf.CellFormat(45, 8, row.UnitKerja, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(30, 8, row.TargetNIP, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(22, 8, row.GroupRole, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(43, 8, row.UnitKerja, "1", 0, "L", false, 0, "")
 		pdf.CellFormat(15, 8, fmt.Sprintf("%.2f", row.AverageScore), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(75, 8, row.Comment, "1", 1, "L", false, 0, "")
+		pdf.CellFormat(68, 8, row.Comment, "1", 1, "L", false, 0, "")
 
 		if pdf.GetY() > 180 {
 			pdf.AddPage()
@@ -459,17 +479,24 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 		query = query.Limit(filter.PageSize).Offset((filter.Page - 1) * filter.PageSize)
 	}
 
-	// Build constraints for subqueries
-	if filter.StartDate != nil {
-		query = query.Where("created_at >= ?", filter.StartDate)
-	}
-	if filter.EndDate != nil {
-		query = query.Where("created_at <= ?", filter.EndDate)
+	subqueryFilter := "AND deleted_at IS NULL"
+	if filter.IncludeArchived {
+		subqueryFilter = ""
 	}
 
-	deletedAtFilter := "AND deleted_at IS NULL"
-	if filter.IncludeArchived {
-		deletedAtFilter = ""
+	// Build constraints for subqueries
+	if filter.StartDate != nil {
+		// Use manual string concatenation for subquery filter to inject safely
+		// We insert the date string. Note: string formatting might be tricky if we don't pass it as an argument to the main query, But since Select doesn't easily take infinite args for multiple subqueries unless we duplicate them, we can format the date conditionally since it's a strongly typed time/string.
+		dateStr := filter.StartDate.Format("2006-01-02 15:04:05")
+		subqueryFilter += fmt.Sprintf(" AND created_at >= '%s'", dateStr)
+	}
+	if filter.EndDate != nil {
+		dateStr := filter.EndDate.Format("2006-01-02 15:04:05")
+		subqueryFilter += fmt.Sprintf(" AND created_at <= '%s'", dateStr)
+	}
+	if filter.AssessmentMonth != nil && *filter.AssessmentMonth != 0 {
+		subqueryFilter += fmt.Sprintf(" AND assessment_month = %d", *filter.AssessmentMonth)
 	}
 
 	// Dynamic subqueries using Joins or subqueries safely
@@ -478,13 +505,13 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 		sdm.nama as name, 
 		sdm.nip as nip, 
 		sdm.jabatan as jabatan,
-		(SELECT role FROM user_groups WHERE user_id = users.id %[1]s LIMIT 1) as group_role,
+		(SELECT role FROM user_groups WHERE user_id = users.id AND deleted_at IS NULL LIMIT 1) as group_role,
 		sdm.unit_kerja,
 		(SELECT COUNT(*) FROM peer_assessments WHERE target_user_id = users.id %[1]s) as assessments_received,
 		(SELECT COUNT(*) FROM peer_assessments WHERE evaluator_id = users.id %[1]s) as assessments_given,
 		(SELECT COALESCE(AVG((berorientasi_pelayanan + akuntabel + kompeten + harmonis + loyal + adaptif + kolaboratif) / 7.0), 0) 
 		 FROM peer_assessments WHERE target_user_id = users.id %[1]s) as average_score
-	`, deletedAtFilter)).
+	`, subqueryFilter)).
 		Order(fmt.Sprintf("%s %s", sortBy, order)).
 		Scan(&results).Error
 

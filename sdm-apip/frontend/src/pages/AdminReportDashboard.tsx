@@ -9,17 +9,80 @@ import {
     Star, UserCheck, Eye, X, History, ClipboardCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import reportService, { DashboardData, AssessmentDetailRow, ReportFilter, UserReportRow } from '../services/reportService';
+import assessmentService, { AssessmentPeriod } from '../services/assessmentService';
 import { toast } from 'react-hot-toast';
 import Layout from '../components/Layout';
+import RoleBadge from '../components/RoleBadge';
+
+// Indonesian month names
+const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+// Get the frequency max months for a period
+const frequencyMonths = (frequency: string): number => {
+    switch (frequency) {
+        case 'monthly':    return 1;
+        case 'quarterly':  return 3;
+        case 'semi_annual': return 6;
+        case 'annual':     return 12;
+        default:           return 1;
+    }
+};
+
+// Given a period's start_date and an assessment_month (1-based relative),
+// return the real calendar month name in Bahasa Indonesia.
+// We parse the date string directly (YYYY-MM-DD) to avoid JS Date UTC↔local timezone pitfalls.
+const resolveMonthName = (period: AssessmentPeriod, assessmentMonth: number): string => {
+    // Extract month from "YYYY-MM-DD..." — always 0-indexed
+    const startMonthIndex = parseInt(period.start_date.substring(5, 7), 10) - 1;
+    const realMonthIndex = (startMonthIndex + (assessmentMonth - 1)) % 12;
+    return BULAN_ID[realMonthIndex];
+};
+
+// Build deduplicated list of { label, value } for dropdown from all periods
+interface MonthOption {
+    label: string;      // e.g. "April (Triwulan 1)"
+    value: number;      // assessment_month integer sent to backend
+    periodId: number;
+}
+const buildMonthOptions = (periods: AssessmentPeriod[]): MonthOption[] => {
+    const seen = new Set<string>();
+    const options: MonthOption[] = [];
+    for (const period of periods) {
+        const maxMonths = frequencyMonths(period.frequency);
+        for (let m = 1; m <= maxMonths; m++) {
+            const monthName = resolveMonthName(period, m);
+            const key = `${period.id}-${m}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                options.push({
+                    label: `${monthName} (${period.name})`,
+                    value: m,
+                    periodId: period.id,
+                });
+            }
+        }
+    }
+    return options;
+};
+
+const getPredikat = (score: number) => {
+    if (score >= 110) return { label: 'Sangat Baik', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' };
+    if (score >= 90)  return { label: 'Baik',         color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200' };
+    if (score >= 70)  return { label: 'Cukup',        color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200' };
+    if (score >= 50)  return { label: 'Kurang',       color: 'text-orange-700',  bg: 'bg-orange-50 border-orange-200' };
+    return                   { label: 'Sangat Kurang',color: 'text-red-700',     bg: 'bg-red-50 border-red-200' };
+};
 
 const AdminReportDashboard: React.FC = () => {
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [userReports, setUserReports] = useState<UserReportRow[]>([]);
+    const [periods, setPeriods] = useState<AssessmentPeriod[]>([]);
+    const [monthOptions, setMonthOptions] = useState<MonthOption[]>([]);
     const [activeTab, setActiveTab] = useState<'analytics' | 'users'>('users');
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
-    const [unitKerjaOptions, setUnitKerjaOptions] = useState<string[]>([]);
     const [filter, setFilter] = useState<ReportFilter>({
         sort_by: 'peer_assessments.created_at',
         order: 'DESC',
@@ -35,6 +98,16 @@ const AdminReportDashboard: React.FC = () => {
     });
     const [detailLoading, setDetailLoading] = useState(false);
 
+    // Load all periods once on mount to build month name options
+    useEffect(() => {
+        assessmentService.getAllPeriods()
+            .then(data => {
+                setPeriods(data || []);
+                setMonthOptions(buildMonthOptions(data || []));
+            })
+            .catch(() => { /* silent – filter still works with numbers */ });
+    }, []);
+
     useEffect(() => {
         if (activeTab === 'analytics') {
             fetchAnalyticsData();
@@ -43,17 +116,6 @@ const AdminReportDashboard: React.FC = () => {
         }
     }, [filter, page, activeTab]);
 
-    useEffect(() => {
-        const fetchOptions = async () => {
-            try {
-                const options = await reportService.getUnitKerjaOptions();
-                setUnitKerjaOptions(options);
-            } catch (error) {
-                console.error('Failed to fetch unit kerja options', error);
-            }
-        };
-        fetchOptions();
-    }, []);
 
     const fetchAnalyticsData = async () => {
         try {
@@ -78,7 +140,14 @@ const AdminReportDashboard: React.FC = () => {
         setSelectedUser(user);
         setDetailLoading(true);
         try {
-            const received = await reportService.getDetails({ user_id: user.user_id, page: 1, page_size: 100 });
+            const received = await reportService.getDetails({
+                user_id: user.user_id,
+                page: 1,
+                page_size: 100,
+                assessment_month: filter.assessment_month,
+                start_date: filter.start_date,
+                end_date: filter.end_date,
+            });
             setSelectedUserDetails({
                 received: received?.data || []
             });
@@ -211,19 +280,30 @@ const AdminReportDashboard: React.FC = () => {
                                         />
                                     </div>
                                 </div>
+
                                 <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-slate-700 block">Unit Kerja</label>
+                                    <label className="text-sm font-semibold text-slate-700 block">Pilih Bulan Penilaian</label>
                                     <select
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
-                                        value={filter.unit_kerja || ''}
-                                        onChange={(e) => setFilter({ ...filter, unit_kerja: e.target.value })}
+                                        className="w-full px-4 py-2 border border-slate-200 text-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        value={filter.assessment_month || ''}
+                                        onChange={(e) => setFilter({ ...filter, assessment_month: e.target.value ? Number(e.target.value) : undefined })}
                                     >
-                                        <option value="">Semua Unit</option>
-                                        {unitKerjaOptions.map(opt => (
-                                            <option key={opt} value={opt}>{opt}</option>
-                                        ))}
+                                        <option value="">Semua Bulan (Rekap)</option>
+                                        {monthOptions.length > 0 ? (
+                                            monthOptions.map((opt, idx) => (
+                                                <option key={`${opt.periodId}-${opt.value}-${idx}`} value={opt.value}>
+                                                    {opt.label}
+                                                </option>
+                                            ))
+                                        ) : (
+                                            // Fallback: nama bulan kalender jika periode belum dimuat
+                                            BULAN_ID.map((nama, i) => (
+                                                <option key={i + 1} value={i + 1}>{nama}</option>
+                                            ))
+                                        )}
                                     </select>
                                 </div>
+
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-slate-700 block">Mulai Tanggal</label>
                                     <input
@@ -307,7 +387,7 @@ const AdminReportDashboard: React.FC = () => {
                                                 <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-lg shadow-emerald-200">#{i + 1}</div>
                                                 <div>
                                                     <p className="font-bold text-slate-900">{p.name}</p>
-                                                    <p className="text-xs text-slate-500">{p.unit_kerja}</p>
+                                                    <p className="text-xs text-slate-500">Inspektorat</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
@@ -324,7 +404,7 @@ const AdminReportDashboard: React.FC = () => {
                                                 <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold shadow-lg shadow-rose-200">#{i + 1}</div>
                                                 <div>
                                                     <p className="font-bold text-slate-900">{p.name}</p>
-                                                    <p className="text-xs text-slate-500">{p.unit_kerja}</p>
+                                                    <p className="text-xs text-slate-500">Inspektorat</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
@@ -353,7 +433,7 @@ const AdminReportDashboard: React.FC = () => {
                                     <tr>
                                         <th className="px-8 py-4">Pegawai (NIP)</th>
                                         <th className="px-8 py-4">Peran</th>
-                                        <th className="px-8 py-4">Unit Kerja</th>
+                                        <th className="px-8 py-4 text-center">Predikat</th>
                                         <th className="px-8 py-4 text-center">Dinilai</th>
                                         <th className="px-8 py-4 text-center">Menilai</th>
                                         <th className="px-8 py-4 text-center">Skor Rerata</th>
@@ -375,19 +455,18 @@ const AdminReportDashboard: React.FC = () => {
                                             <td className="px-8 py-5">
                                                 {(() => {
                                                     const role = user.jabatan?.toLowerCase().includes('inspektur') ? 'Inspektur' : (user.group_role || 'Anggota');
-                                                    return (
-                                                        <span className={`inline-flex px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter border ${role === 'Inspektur' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                                                            role === 'Dalnis' ? 'bg-purple-50 text-purple-600 border-purple-100' :
-                                                                role === 'KT' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                                    role === 'AT' ? 'bg-green-50 text-green-600 border-green-100' :
-                                                                        'bg-slate-100 text-slate-600 border-slate-200'
-                                                            }`}>
-                                                            {role}
-                                                        </span>
-                                                    );
+                                                    return <RoleBadge role={role} />;
                                                 })()}
                                             </td>
-                                            <td className="px-8 py-5 text-sm text-slate-600 font-medium">{user.unit_kerja}</td>
+                                            <td className="px-8 py-5 text-center">
+                                                {user.average_score > 0 ? (
+                                                    <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-black border ${getPredikat(user.average_score).bg} ${getPredikat(user.average_score).color}`}>
+                                                        {getPredikat(user.average_score).label}
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex px-3 py-1 rounded-full text-[11px] font-black border bg-slate-50 border-slate-200 text-slate-400">Belum Ada</span>
+                                                )}
+                                            </td>
                                             <td className="px-8 py-5 text-center">
                                                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${user.assessments_received > 0 ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
                                                     <ClipboardCheck size={12} /> {user.assessments_received} Kali
@@ -456,44 +535,41 @@ const AdminReportDashboard: React.FC = () => {
                 )}
 
                 {/* User Detail Modal */}
-                <AnimatePresence>
-                    {selectedUser && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                {typeof document !== 'undefined' && createPortal(
+                    <AnimatePresence>
+                        {selectedUser && (
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed top-0 left-0 w-screen h-screen z-[100000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+                            >
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                                 className="bg-white rounded-[2rem] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
                             >
-                                <div className="px-10 py-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                                <div className="px-10 py-8 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
                                     <div className="flex items-center gap-6">
-                                        <div className="h-16 w-16 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                                        <div className="h-16 w-16 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg">
                                             {selectedUser.name.charAt(0)}
                                         </div>
                                         <div>
-                                            <h3 className="text-2xl font-black text-slate-900">{selectedUser.name}</h3>
+                                            <h3 className="text-2xl font-black text-white">{selectedUser.name}</h3>
                                             <div className="flex items-center gap-3 mt-1.5">
-                                                <span className="text-xs font-mono bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-slate-500">{selectedUser.nip}</span>
+                                                <span className="text-xs font-mono bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 text-slate-300">{selectedUser.nip}</span>
                                                 {(() => {
                                                     const role = selectedUser.jabatan?.toLowerCase().includes('inspektur') ? 'Inspektur' : (selectedUser.group_role || 'Anggota');
-                                                    return (
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter border ${role === 'Inspektur' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                                                            role === 'Dalnis' ? 'bg-purple-50 text-purple-600 border-purple-100' :
-                                                                role === 'KT' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                                    role === 'AT' ? 'bg-green-50 text-green-600 border-green-100' :
-                                                                        'bg-slate-100 text-slate-600 border-slate-200'
-                                                            }`}>
-                                                            {role}
-                                                        </span>
-                                                    );
+                                                    return <RoleBadge role={role} />;
                                                 })()}
-                                                <span className="text-xs font-bold text-slate-400">{selectedUser.unit_kerja}</span>
+                                                <span className="text-xs font-bold text-slate-400">Inspektorat</span>
                                             </div>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setSelectedUser(null)}
-                                        className="h-12 w-12 rounded-2xl bg-white text-slate-400 hover:text-slate-600 hover:shadow-md transition-all flex items-center justify-center border border-slate-100"
+                                        className="h-12 w-12 rounded-2xl bg-white/10 text-slate-300 hover:text-white hover:bg-white/20 transition-all flex items-center justify-center border border-white/10"
                                     >
                                         <X size={24} />
                                     </button>
@@ -531,7 +607,10 @@ const AdminReportDashboard: React.FC = () => {
                                                 </h4>
 
                                                 <div className="space-y-6">
-                                                    {selectedUserDetails.received.map(row => (
+                                                    {selectedUserDetails.received
+                                                    .slice()
+                                                    .sort((a: any, b: any) => a.assessment_month - b.assessment_month)
+                                                    .map((row: any) => (
                                                         <motion.div
                                                             key={row.id}
                                                             initial={{ opacity: 0, x: -20 }}
@@ -545,7 +624,20 @@ const AdminReportDashboard: React.FC = () => {
                                                                     </div>
                                                                     <div>
                                                                         <p className="text-sm font-bold text-slate-900">Penilai: {row.evaluator_name}</p>
-                                                                        <p className="text-[10px] text-slate-400 font-medium">{new Date(row.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                                            <span className="text-[9px] font-black uppercase text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                                                                {(() => {
+                                                                                    // Resolve real calendar month using period_id from assessment row
+                                                                                    const period = periods.find(p => p.id === row.period_id);
+                                                                                    if (period) {
+                                                                                        return resolveMonthName(period, row.assessment_month);
+                                                                                    }
+                                                                                    // Fallback: gunakan nama bulan kalender langsung
+                                                                                    return BULAN_ID[(row.assessment_month - 1) % 12];
+                                                                                })()}
+                                                                            </span>
+                                                                            <p className="text-[10px] text-slate-400 font-medium">{new Date(row.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right">
@@ -569,13 +661,16 @@ const AdminReportDashboard: React.FC = () => {
                                                                                 {indicator.label}
                                                                             </p>
                                                                             <div className="flex gap-0.5 mb-1.5">
-                                                                                {[1, 2, 3, 4, 5].map(star => (
-                                                                                    <Star
-                                                                                        key={star}
-                                                                                        size={10}
-                                                                                        className={star <= indicator.value ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}
-                                                                                    />
-                                                                                ))}
+                                                                                {[1, 2, 3, 4, 5].map(star => {
+                                                                                    const filledStars = Math.round((indicator.value / 100) * 5);
+                                                                                    return (
+                                                                                        <Star
+                                                                                            key={star}
+                                                                                            size={10}
+                                                                                            className={star <= filledStars ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}
+                                                                                        />
+                                                                                    );
+                                                                                })}
                                                                             </div>
                                                                             <span className="text-sm font-black text-slate-700">{indicator.value}</span>
                                                                         </div>
@@ -607,9 +702,11 @@ const AdminReportDashboard: React.FC = () => {
                                     )}
                                 </div>
                             </motion.div>
-                        </div>
+                        </motion.div>
                     )}
-                </AnimatePresence>
+                    </AnimatePresence>,
+                    document.body
+                )}
 
             </div>
         </Layout>

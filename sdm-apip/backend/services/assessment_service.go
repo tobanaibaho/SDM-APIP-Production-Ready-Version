@@ -66,7 +66,7 @@ func (s *AssessmentService) GetAssessmentTargets(evaluatorID uint, periodID uint
 	if err := s.db.Preload("TargetUser", func(db *gorm.DB) *gorm.DB {
 		return db.Select("users.*, sdm_apip.nama as name, sdm_apip.jabatan as jabatan, sdm_apip.foto as foto").
 			Joins("LEFT JOIN sdm_apip ON sdm_apip.nip = users.nip")
-	}).Where("evaluator_id = ? AND period_id = ?", evaluatorID, periodID).Find(&relations).Error; err != nil {
+	}).Where("evaluator_id = ? AND target_user_id != ? AND period_id = ?", evaluatorID, evaluatorID, periodID).Find(&relations).Error; err != nil {
 		return nil, ErrInternalServer
 	}
 	if len(relations) == 0 {

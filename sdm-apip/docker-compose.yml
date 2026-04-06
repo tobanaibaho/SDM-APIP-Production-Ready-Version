@@ -6,6 +6,7 @@ services:
       POSTGRES_USER: ${DB_USER:-sdm_admin}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-sdm_secure_password_2024}
       POSTGRES_DB: ${DB_NAME:-sdm_apip_db}
+      TZ: Asia/Jakarta
     ports:
       - "5432:5432"
     volumes:
@@ -24,6 +25,7 @@ services:
       dockerfile: ./backend/Dockerfile
     container_name: sdm_apip_backend
     environment:
+      - TZ=Asia/Jakarta
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=${DB_USER:-sdm_admin}

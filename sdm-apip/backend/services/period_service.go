@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"sdm-apip-backend/logger"
 	"sdm-apip-backend/models"
 	"time"
@@ -63,26 +62,31 @@ func (s *AssessmentService) UpdatePeriodStatus(id uint, isActive bool) error {
 }
 
 func (s *AssessmentService) DeletePeriod(id uint) error {
-	var assessmentCount int64
-	s.db.Model(&models.PeerAssessment{}).Where("period_id = ? AND deleted_at IS NULL", id).Count(&assessmentCount)
-	if assessmentCount > 0 {
-		return fmt.Errorf("tidak dapat menghapus periode: terdapat %d data penilaian yang sudah disubmit", assessmentCount)
-	}
-
-	var relationCount int64
-	s.db.Model(&models.AssessmentRelation{}).Where("period_id = ?", id).Count(&relationCount)
-	if relationCount > 0 {
-		return fmt.Errorf("tidak dapat menghapus periode: terdapat %d relasi penilaian yang terkait. Hapus relasi terlebih dahulu", relationCount)
-	}
-
-	result := s.db.Delete(&models.AssessmentPeriod{}, id)
-	if result.Error != nil {
-		return ErrInternalServer
-	}
-	if result.RowsAffected == 0 {
+	// Pastikan periode ada
+	var period models.AssessmentPeriod
+	if err := s.db.First(&period, id).Error; err != nil {
 		return ErrPeriodNotFound
 	}
-	return nil
+
+	// Jalankan dalam satu transaksi: hapus relasi, penilaian, lalu periode
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		// 1. Hard-delete semua assessment_relations yang terkait
+		if err := tx.Unscoped().Where("period_id = ?", id).Delete(&models.AssessmentRelation{}).Error; err != nil {
+			return ErrInternalServer
+		}
+
+		// 2. Soft-delete semua peer_assessments yang terkait
+		if err := tx.Where("period_id = ?", id).Delete(&models.PeerAssessment{}).Error; err != nil {
+			return ErrInternalServer
+		}
+
+		// 3. Hapus periode itu sendiri
+		if err := tx.Delete(&models.AssessmentPeriod{}, id).Error; err != nil {
+			return ErrInternalServer
+		}
+
+		return nil
+	})
 }
 
 func (s *AssessmentService) GetActivePeriod() (*models.AssessmentPeriod, error) {

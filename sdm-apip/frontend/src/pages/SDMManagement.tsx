@@ -44,7 +44,7 @@ const SDMManagement: React.FC = () => {
         pangkat_golongan: '',
         pendidikan: '',
         nomor_hp: '',
-        unit_kerja: '',
+        unit_kerja: 'Inspektorat',
     });
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -84,7 +84,7 @@ const SDMManagement: React.FC = () => {
         setFormData({
             nip: '', nama: '', email: '',
             jabatan: '', pangkat_golongan: '', pendidikan: '', nomor_hp: '',
-            unit_kerja: ''
+            unit_kerja: 'Inspektorat'
         });
         setFormErrors({});
         setShowModal(true);
@@ -100,7 +100,7 @@ const SDMManagement: React.FC = () => {
             pangkat_golongan: sdm.pangkat_golongan || '',
             pendidikan: sdm.pendidikan || '',
             nomor_hp: sdm.nomor_hp || '',
-            unit_kerja: sdm.unit_kerja || '',
+            unit_kerja: sdm.unit_kerja || 'Inspektorat',
         });
         setFormErrors({});
         setShowModal(true);

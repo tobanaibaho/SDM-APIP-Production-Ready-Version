@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, UserPlus, Trash2, X } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { GroupDetail } from '../types';
+import RoleBadge from './RoleBadge';
 
 interface Props {
     selectedGroup: GroupDetail;
@@ -19,12 +20,6 @@ interface Props {
     relationsTab: React.ReactNode;
 }
 
-const roleBadge = (role: string) => {
-    if (role === 'Dalnis') return <span className="px-1.5 py-0.5 rounded bg-purple-50 text-[8px] font-black text-purple-600 uppercase tracking-tighter border border-purple-100">Dalnis</span>;
-    if (role === 'KT') return <span className="px-1.5 py-0.5 rounded bg-blue-50 text-[8px] font-black text-blue-600 uppercase tracking-tighter border border-blue-100">Ketua Tim</span>;
-    if (role === 'AT') return <span className="px-1.5 py-0.5 rounded bg-green-50 text-[8px] font-black text-green-600 uppercase tracking-tighter border border-green-100">Anggota Tim</span>;
-    return null;
-};
 
 const GroupMemberModal: React.FC<Props> = ({
     selectedGroup, activeTab, setActiveTab,
@@ -82,7 +77,7 @@ const GroupMemberModal: React.FC<Props> = ({
                                             <p className="font-bold text-slate-950 truncate">{member.name}</p>
                                             <div className="flex items-center gap-2">
                                                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{member.jabatan || 'Anggota Tim'}</p>
-                                                {roleBadge(member.group_role)}
+                                                <RoleBadge role={member.group_role} />
                                             </div>
                                             <p className="text-[10px] font-mono text-slate-400 mt-0.5">{member.nip}</p>
                                         </div>

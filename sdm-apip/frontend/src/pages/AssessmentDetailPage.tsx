@@ -14,6 +14,14 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const getPredikat = (score: number) => {
+    if (score >= 110) return { label: 'Sangat Baik', color: 'text-emerald-400', bg: 'bg-emerald-500/20' };
+    if (score >= 90)  return { label: 'Baik',         color: 'text-blue-400',    bg: 'bg-blue-500/20' };
+    if (score >= 70)  return { label: 'Cukup',        color: 'text-amber-400',   bg: 'bg-amber-500/20' };
+    if (score >= 50)  return { label: 'Kurang',       color: 'text-orange-400',  bg: 'bg-orange-500/20' };
+    return                   { label: 'Sangat Kurang',color: 'text-red-400',     bg: 'bg-red-500/20' };
+};
+
 const AssessmentDetailPage: React.FC = () => {
     const { userId } = useParams();
     const [searchParams] = useSearchParams();
@@ -80,7 +88,7 @@ const AssessmentDetailPage: React.FC = () => {
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-slate-400">
                                     <span className="text-sm font-mono font-bold bg-white/5 px-3 py-1 rounded-lg">NIP: {detail.user.nip}</span>
                                     <span className="h-1.5 w-1.5 rounded-full bg-slate-700"></span>
-                                    <span className="text-sm font-bold">{detail.user.unit_kerja || 'Unit Kerja APIP'}</span>
+                                    <span className="text-sm font-bold">Inspektorat</span>
                                 </div>
                             </div>
                         </div>
@@ -90,8 +98,8 @@ const AssessmentDetailPage: React.FC = () => {
                             <div className="text-6xl font-black bg-gradient-to-r from-primary-400 to-emerald-400 bg-clip-text text-transparent">
                                 {detail.final_score.toFixed(2)}
                             </div>
-                            <div className="flex items-center gap-2 px-3 py-1 bg-primary-500/20 text-primary-400 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                <TrendingUp size={14} /> Berkinerja Baik
+                            <div className={`flex items-center gap-2 px-3 py-1 ${getPredikat(detail.final_score).bg} ${getPredikat(detail.final_score).color} rounded-full text-[10px] font-black uppercase tracking-widest`}>
+                                <TrendingUp size={14} /> {getPredikat(detail.final_score).label}
                             </div>
                         </div>
                     </div>

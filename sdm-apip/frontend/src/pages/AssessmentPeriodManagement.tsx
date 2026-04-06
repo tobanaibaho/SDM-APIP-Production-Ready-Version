@@ -16,6 +16,8 @@ const AssessmentPeriodManagement: React.FC = () => {
     const [periods, setPeriods] = useState<AssessmentPeriod[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState<AssessmentPeriod | null>(null);
+    const [deleting, setDeleting] = useState(false);
     const [newPeriod, setNewPeriod] = useState({
         name: '',
         start_date: '',
@@ -62,15 +64,22 @@ const AssessmentPeriodManagement: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm('Apakah Anda yakin ingin menghapus periode ini? Tindakan ini tidak dapat dibatalkan.')) return;
+    const handleDelete = (period: AssessmentPeriod) => {
+        setDeleteConfirm(period);
+    };
 
+    const confirmDelete = async () => {
+        if (!deleteConfirm) return;
+        setDeleting(true);
         try {
-            await assessmentService.deletePeriod(id);
-            toast.success('Periode berhasil dihapus');
+            await assessmentService.deletePeriod(deleteConfirm.id);
+            toast.success(`Periode "${deleteConfirm.name}" berhasil dihapus`);
+            setDeleteConfirm(null);
             fetchPeriods();
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Gagal menghapus periode');
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -154,9 +163,8 @@ const AssessmentPeriodManagement: React.FC = () => {
                                             {period.is_active ? 'Status Aktif' : 'Status Nonaktif'}
                                         </button>
 
-                                        {/* Optional: Assessment Summary Link */}
                                         <button
-                                            onClick={() => handleDelete(period.id)}
+                                            onClick={() => handleDelete(period)}
                                             className="text-slate-400 hover:text-red-600 transition-colors"
                                             title="Hapus Periode"
                                         >
@@ -169,6 +177,56 @@ const AssessmentPeriodManagement: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+                    <div className="card w-full max-w-md animate-slide-up">
+                        <div className="px-6 py-4 border-b border-red-100 flex items-center gap-3">
+                            <div className="p-2 bg-red-100 text-red-600 rounded-lg">
+                                <AlertCircle size={20} />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-900">Hapus Periode Penilaian</h3>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <p className="text-slate-700">
+                                Anda akan menghapus periode <span className="font-semibold text-slate-900">"{deleteConfirm.name}"</span>.
+                            </p>
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2">
+                                <p className="text-sm font-semibold text-red-800">⚠️ Peringatan — Tindakan ini akan menghapus secara permanen:</p>
+                                <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
+                                    <li>Semua <strong>relasi penilaian</strong> yang terdaftar pada periode ini</li>
+                                    <li>Semua <strong>data penilaian</strong> (nilai & komentar) yang sudah disubmit</li>
+                                    <li>Periode itu sendiri</li>
+                                </ul>
+                                <p className="text-xs text-red-600 mt-2 font-medium">Tindakan ini tidak dapat dibatalkan.</p>
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setDeleteConfirm(null)}
+                                    disabled={deleting}
+                                    className="btn-secondary flex-1"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={confirmDelete}
+                                    disabled={deleting}
+                                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+                                >
+                                    {deleting ? (
+                                        <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Menghapus...</>
+                                    ) : (
+                                        <><Trash2 size={16} />Ya, Hapus Permanen</>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Create Modal */}
             {showModal && (

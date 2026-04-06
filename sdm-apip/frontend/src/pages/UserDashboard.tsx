@@ -5,6 +5,7 @@ import { getProfile } from '../services/authService';
 import groupService from '../services/groupService';
 import assessmentService, { AssessmentPeriod } from '../services/assessmentService';
 import AssessmentReferencePanel from '../components/AssessmentReferencePanel';
+import RoleBadge from '../components/RoleBadge';
 import api from '../services/api';
 import { SDM, Group } from '../types';
 import { useNavigate } from 'react-router-dom';
@@ -47,14 +48,6 @@ interface AssessmentTarget {
 }
 
 /* ─────────────────────── Helpers ─────────────────────── */
-
-
-const ROLE_BADGE: Record<string, JSX.Element> = {
-    Dalnis: <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-black uppercase border border-purple-200">Dalnis</span>,
-    KT: <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[9px] font-black uppercase border border-blue-200">Ketua Tim</span>,
-    AT: <span className="px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 text-[9px] font-black uppercase border border-teal-200">Anggota Tim</span>,
-};
-
 /* ─────────────────────── Component ─────────────────────── */
 const UserDashboard: React.FC = () => {
     const { user, activePeriod } = useAuth();
@@ -256,7 +249,7 @@ const UserDashboard: React.FC = () => {
                             <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/40">
                                 <div className="flex items-center gap-2">
                                     <Star size={20} className="text-amber-500" />
-                                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">Status Kelengkapan 360°</h3>
+                                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">Antrian Tugas Penilaian</h3>
                                 </div>
                                 <select
                                     className="text-xs font-bold border border-slate-200 bg-white rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-300 cursor-pointer"
@@ -513,8 +506,8 @@ const UserDashboard: React.FC = () => {
                                                     <h4 className="font-bold text-slate-900 group-hover:text-primary-700 transition-colors text-sm truncate w-36">{group.name}</h4>
                                                     <div className="flex items-center gap-1.5 mt-0.5">
                                                         <p className="text-[9px] text-slate-400 font-bold uppercase">{group.user_count || 0} anggota</p>
-                                                        {group.user_role && ROLE_BADGE[group.user_role] && (
-                                                            <>{ROLE_BADGE[group.user_role]}</>
+                                                        {group.user_role && (
+                                                            <RoleBadge role={group.user_role} />
                                                         )}
                                                     </div>
                                                 </div>
@@ -570,16 +563,8 @@ const UserDashboard: React.FC = () => {
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <p className="font-bold text-slate-900 text-sm truncate">{member.name}</p>
-                                                {member.group_role === 'Dalnis' && (
-                                                    <span className="px-1.5 py-0.5 rounded bg-purple-50 text-[8px] font-black text-purple-600 uppercase border border-purple-100">Dalnis</span>
-                                                )}
-                                                {member.group_role === 'KT' && (
-                                                    <span className="px-1.5 py-0.5 rounded bg-blue-50 text-[8px] font-black text-blue-600 uppercase border border-blue-100">Ketua Tim</span>
-                                                )}
-                                                {member.group_role === 'AT' && (
-                                                    <span className="px-1.5 py-0.5 rounded bg-teal-50 text-[8px] font-black text-teal-600 uppercase border border-teal-100">Anggota Tim</span>
-                                                )}
+                                                <p className="font-bold text-slate-900 text-sm truncate mr-2">{member.name}</p>
+                                                <RoleBadge role={member.group_role} />
                                             </div>
                                             <p className="text-xs text-slate-400 truncate mt-0.5">{member.jabatan || 'Personil APIP'}</p>
                                         </div>

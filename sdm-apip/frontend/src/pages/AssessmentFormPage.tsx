@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AssessmentReferencePanel from '../components/AssessmentReferencePanel';
 import api from '../services/api';
+import { getProfile } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 import {
     Info,
     ArrowRightCircle,
@@ -15,6 +17,7 @@ import {
 import toast from 'react-hot-toast';
 
 const AssessmentFormPage: React.FC = () => {
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [targetName, setTargetName] = useState('');
@@ -31,16 +34,19 @@ const AssessmentFormPage: React.FC = () => {
     });
     const [ideInovasi, setIdeInovasi] = useState(0);
     const [comment, setComment] = useState('');
+    
+    // Gunakan user jabatan dari konteks auth
+    const evaluatorJabatan = user?.jabatan || '';
 
     const [searchParams] = useSearchParams();
     const targetUserId = searchParams.get('target_id');
     const periodId = searchParams.get('period_id');
     const relationType = searchParams.get('relation');
 
-    // Hitung total skor + predikat (khusus Atasan)
-    const isAtasan = relationType === 'Atasan';
+    // Hanya Inspektur yang bisa mengisi Ide Inovasi (skor mak 120)
+    const isInspektur = evaluatorJabatan.toLowerCase().includes('inspektur');
     const baseScore = Object.values(scores).reduce((a, b) => a + b, 0) / 7;
-    const totalScore = isAtasan ? baseScore + ideInovasi : baseScore;
+    const totalScore = isInspektur ? baseScore + ideInovasi : baseScore;
 
     const getPredikat = (score: number) => {
         if (score >= 110) return { label: 'Sangat Baik', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' };
@@ -51,6 +57,9 @@ const AssessmentFormPage: React.FC = () => {
     };
 
     useEffect(() => {
+        // Fetch jabatan terbaru dari getProfile in background in case user context is stale
+        getProfile().catch(() => { /* silent */ });
+
         if (targetUserId) {
             fetchTargetInfo();
         }
@@ -133,7 +142,7 @@ const AssessmentFormPage: React.FC = () => {
                 period_id: parseInt(periodId!),
                 assessment_month: assessmentMonth,
                 ...scores,
-                ide_inovasi: isAtasan ? ideInovasi : 0,
+                ide_inovasi: isInspektur ? ideInovasi : 0,
                 comment,
             });
             toast.success("Penilaian berhasil disimpan!", { id: loadingToast });
@@ -176,8 +185,8 @@ const AssessmentFormPage: React.FC = () => {
                             <div>
                                 <p className="text-primary-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Menilai Pegawai</p>
                                 <h3 className="text-3xl font-black tracking-tight">{targetName || 'Memuat Nama...'}</h3>
-                                {/* Live score preview for Atasan */}
-                                {isAtasan && (
+                                {/* Live score preview for Inspektur */}
+                                {isInspektur && (
                                     <div className="flex items-center gap-3 mt-3">
                                         <div className="flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-xl px-3 py-1.5">
                                             <Star size={13} className="text-amber-400" />
@@ -304,8 +313,8 @@ const AssessmentFormPage: React.FC = () => {
                         ))}
                     </div>
 
-                    {/* ══ ADD-ON: Ide Baru / Inovasi — hanya untuk Inspektur (Atasan) ══ */}
-                    {isAtasan && (
+                    {/* ══ ADD-ON: Ide Baru / Inovasi — hanya untuk Inspektur ══ */}
+                    {isInspektur && (
                         <div className="relative bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 p-8 rounded-[2rem] shadow-sm animate-slide-up">
                             {/* Corner badge */}
                             <div className="absolute top-4 right-4">

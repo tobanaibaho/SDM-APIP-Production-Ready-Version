@@ -63,3 +63,5 @@ backend/coverage.out
 backend/coverage.html
 *.test
 /tmp/
+.postman/
+postman/

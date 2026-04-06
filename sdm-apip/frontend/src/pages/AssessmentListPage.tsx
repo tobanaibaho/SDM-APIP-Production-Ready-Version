@@ -9,11 +9,9 @@ import { getProfile } from '../services/authService';
 import {
     ClipboardCheck,
     ArrowUpRight,
-    Shield,
     CheckCircle2,
     TrendingUp,
     Calendar,
-    Users,
     BarChart3,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -33,7 +31,6 @@ const AssessmentListPage: React.FC = () => {
 
     const [periods, setPeriods] = useState<AssessmentPeriod[]>([]);
     const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
-    const [matrix, setMatrix] = useState<any[]>([]);
     const [targets, setTargets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -60,33 +57,14 @@ const AssessmentListPage: React.FC = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [matrixRes, targetsRes] = await Promise.all([
-                api.get(`/user/assessments/matrix?period_id=${selectedPeriod}`),
-                api.get(`/user/assessments/targets?period_id=${selectedPeriod}`),
-            ]);
-            setMatrix(Array.isArray(matrixRes.data?.data) ? matrixRes.data.data : []);
+            const targetsRes = await api.get(`/user/assessments/targets?period_id=${selectedPeriod}`);
             setTargets(Array.isArray(targetsRes.data?.data) ? targetsRes.data.data : []);
         } catch {
             toast.error('Gagal memuat data penilaian');
-            setMatrix([]);
             setTargets([]);
         } finally {
             setLoading(false);
         }
-    };
-
-    const getStatusBadge = (status: number) => {
-        if (status === 0) return <span className="text-slate-400 text-xs">—</span>;
-        let count = 0;
-        if (status & 1) count++;
-        if (status & 2) count++;
-        if (status & 4) count++;
-        return (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {count} Kategori
-            </div>
-        );
     };
 
     /* ── Avatar colour determined by initial ── */
@@ -351,81 +329,7 @@ const AssessmentListPage: React.FC = () => {
                             )}
                         </section>
 
-                        {/* ════════════════════════════════════════
-                            SECTION: Status Kelengkapan (Matrix)
-                        ════════════════════════════════════════ */}
-                        <section className="space-y-5">
-                            <div className="flex items-center gap-3">
-                                <span className="flex items-center justify-center h-9 w-9 bg-slate-900 rounded-xl text-white shadow-lg">
-                                    <ClipboardCheck size={18} />
-                                </span>
-                                <div>
-                                    <h3 className="text-lg font-black text-slate-900 leading-tight">Status Kelengkapan</h3>
-                                    <p className="text-xs text-slate-400 font-medium">Seberapa banyak penilaian yang sudah masuk untuk Anda</p>
-                                </div>
-                            </div>
 
-                            <div className="card overflow-hidden !rounded-2xl shadow-xl border border-slate-100">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left">
-                                        <thead>
-                                            <tr className="bg-slate-950 border-b border-slate-800">
-                                                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400">
-                                                    <div className="flex items-center gap-2">
-                                                        <Users size={13} /> Nama Pegawai
-                                                    </div>
-                                                </th>
-                                                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400">Penilai Masuk</th>
-                                                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400">Progress</th>
-                                                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400 text-right">Privasi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-50">
-                                            {matrix.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={4} className="px-6 py-12 text-center text-slate-400 text-sm">
-                                                        Belum ada data
-                                                    </td>
-                                                </tr>
-                                            ) : matrix.map((row) => (
-                                                <tr key={row.user_id} className="hover:bg-slate-50/70 transition-colors group">
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${avatarColor(row.name)} text-white font-black text-sm flex items-center justify-center uppercase shrink-0`}>
-                                                                {row.name?.charAt(0) || '?'}
-                                                            </div>
-                                                            <div>
-                                                                <p className="font-black text-slate-900 text-sm">{row.name}</p>
-                                                                <p className="text-[10px] font-mono text-slate-400">{row.nip}</p>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">{getStatusBadge(row.status)}</td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="h-1.5 w-28 bg-slate-100 rounded-full overflow-hidden">
-                                                                <div
-                                                                    className={`h-full rounded-full transition-all duration-700 ${(row.completion_pct ?? 0) === 100 ? 'bg-emerald-500' : (row.completion_pct ?? 0) >= 50 ? 'bg-amber-400' : 'bg-primary-500'}`}
-                                                                    style={{ width: `${row.completion_pct ?? 0}%` }}
-                                                                />
-                                                            </div>
-                                                            <span className={`text-[10px] font-black ${(row.completion_pct ?? 0) === 100 ? 'text-emerald-600' : (row.completion_pct ?? 0) >= 50 ? 'text-amber-600' : 'text-slate-400'}`}>
-                                                                {row.done_count ?? 0}/{row.total_required ?? 0}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-full text-[9px] font-black uppercase border border-slate-200">
-                                                            <Shield size={12} /> Anonim
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </section>
                     </>
                 )}
             </div>

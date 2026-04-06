@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { changePassword } from '../services/authService';
 import Logo from '../assets/logo.png';
@@ -25,6 +25,7 @@ import {
     Power,
     ChevronUp,
     ChevronDown,
+    ArrowLeft,
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -36,6 +37,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
     const { user, logout, isAdmin } = useAuth();
     const navigate = useNavigate();
+    const { pathname } = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showChangePassword, setShowChangePassword] = useState(false);
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -111,6 +113,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
         { to: '/my-groups', label: 'Grup Saya', icon: Users },
         { to: '/profile', label: 'Profil Saya', icon: UserCircle2 },
     ];
+
+    const isRootPage = navItems.some(item => pathname === item.to);
 
     return (
         <div className="flex min-h-screen bg-slate-100 font-sans">
@@ -241,9 +245,20 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                 {/* Content Wrapper */}
                 <div className="flex-1 px-4 py-6 md:px-8 md:py-8 lg:px-10 w-full max-w-[1600px] mx-auto">
                     <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center bg-white/80 backdrop-blur-xl p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/60 sticky top-[72px] lg:top-4 z-30 animate-fade-in">
-                        <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-primary-900 md:text-3xl">{title}</h1>
-                            {subtitle && <p className="mt-1 text-slate-500 text-sm font-medium">{subtitle}</p>}
+                        <div className="flex items-center gap-4">
+                            {!isRootPage && (
+                                <button
+                                    onClick={() => navigate(-1)}
+                                    className="shrink-0 h-10 w-10 md:h-12 md:w-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-primary-600 hover:border-primary-200 hover:shadow-sm transition-all active:scale-95"
+                                    title="Kembali ke halaman sebelumnya"
+                                >
+                                    <ArrowLeft size={20} />
+                                </button>
+                            )}
+                            <div>
+                                <h1 className="text-2xl font-bold tracking-tight text-primary-900 md:text-3xl">{title}</h1>
+                                {subtitle && <p className="mt-1 text-slate-500 text-sm font-medium">{subtitle}</p>}
+                            </div>
                         </div>
                         <div className="hidden md:flex items-center gap-2 shrink-0">
                             <span className="text-xs font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-100 uppercase tracking-wider whitespace-nowrap">
