@@ -71,8 +71,8 @@ const AssessmentPeriodManagement: React.FC = () => {
     const handleToggleStatus = async (period: AssessmentPeriod) => {
         const expiredByDate = isPeriodExpiredByDate(period);
 
-        // Jika periode sudah expired dan Admin ingin mengaktifkan kembali → tampilkan konfirmasi
-        if (!period.is_active && expiredByDate) {
+        // Jika periode sudah expired secara tanggal → tampilkan konfirmasi override
+        if (expiredByDate) {
             setOverrideConfirm(period);
             return;
         }

@@ -49,6 +49,11 @@ func (s *AssessmentService) GetAllPeriods() ([]models.AssessmentPeriod, error) {
 }
 
 func (s *AssessmentService) UpdatePeriodStatus(id uint, isActive bool) error {
+	var period models.AssessmentPeriod
+	if err := s.db.First(&period, id).Error; err != nil {
+		return ErrPeriodNotFound
+	}
+
 	if isActive {
 		// Deactivate other periods first (only one active)
 		if err := s.db.Model(&models.AssessmentPeriod{}).
@@ -56,14 +61,18 @@ func (s *AssessmentService) UpdatePeriodStatus(id uint, isActive bool) error {
 			Update("is_active", false).Error; err != nil {
 			return ErrInternalServer
 		}
+
+		// Jika admin melakukan "Override" (mengaktifkan periode yang sudah kedaluwarsa),
+		// secara intervensi sistem akan memperpanjang masa periodenya (grace period) selama 7 Hari.
+		if time.Now().After(period.EndDate) {
+			newEnd := time.Now().AddDate(0, 0, 7)
+			s.db.Model(&period).Update("end_date", newEnd)
+		}
 	}
 	
-	result := s.db.Model(&models.AssessmentPeriod{}).Where("id = ?", id).Update("is_active", isActive)
+	result := s.db.Model(&period).Update("is_active", isActive)
 	if result.Error != nil {
 		return ErrInternalServer
-	}
-	if result.RowsAffected == 0 {
-		return ErrPeriodNotFound
 	}
 	return nil
 }
