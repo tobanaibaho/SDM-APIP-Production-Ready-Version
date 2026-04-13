@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"sdm-apip-backend/logger"
 	"sdm-apip-backend/models"
 	"time"
@@ -111,6 +112,13 @@ func (s *AssessmentService) GetActivePeriod() (*models.AssessmentPeriod, error) 
 	if time.Now().After(period.EndDate) {
 		logger.Info("Period '%s' (ID:%d) telah melewati end_date — otomatis dinonaktifkan.", period.Name, period.ID)
 		s.db.Model(&period).Update("is_active", false)
+		
+		// Audit Log (System Event)
+		details := fmt.Sprintf("System auto-locked period '%s' (ID %d) because current date passed end_date (%v)", 
+			period.Name, period.ID, period.EndDate.Format("2006-01-02"))
+		models.CreateAuditLog(s.db, nil, models.AuditActionPeriodLock, models.AuditStatusSuccess, 
+			"SYSTEM", "INTERNAL_SERVICE", details, nil)
+
 		period.IsActive = false
 		return nil, nil
 	}

@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"sdm-apip-backend/config"
 	"sdm-apip-backend/middleware"
 	"sdm-apip-backend/models"
 	"sdm-apip-backend/services"
@@ -65,6 +67,12 @@ func (ac *AssessmentController) UpdatePeriodStatus(c *gin.Context) {
 		utils.ErrorResponse(c, http.StatusNotFound, "Failed to update period", err.Error())
 		return
 	}
+
+	// Audit Log
+	adminID := middleware.GetUserIDFromContext(c)
+	details := fmt.Sprintf("Admin manually updated period ID %d status to active=%v", id, req.IsActive)
+	models.CreateAuditLog(config.DB, &adminID, models.AuditActionPeriodUpdate, models.AuditStatusSuccess,
+		c.ClientIP(), c.GetHeader("User-Agent"), details, nil)
 
 	utils.SuccessResponse(c, http.StatusOK, "Period status updated", nil)
 }
@@ -273,6 +281,11 @@ func (ac *AssessmentController) SubmitAssessment(c *gin.Context) {
 			utils.ErrorResponse(c, http.StatusForbidden, "Assessment failed", "Administrator tidak diperbolehkan melakukan penilaian")
 			return
 		}
+
+		// Audit Log for failure
+		models.CreateAuditLog(config.DB, &evaluatorID, models.AuditActionAssessmentSubmit, models.AuditStatusFailed,
+			c.ClientIP(), c.GetHeader("User-Agent"), fmt.Sprintf("Assessment submission failed: %v", err.Error()), &req.TargetUserID)
+
 		// Catch string errors from service
 		if err.Error() == "you are not assigned to assess this user in this period" {
 			status = http.StatusForbidden
@@ -280,6 +293,10 @@ func (ac *AssessmentController) SubmitAssessment(c *gin.Context) {
 		utils.ErrorResponse(c, status, "Assessment failed", err.Error())
 		return
 	}
+
+	// Audit Log for success
+	models.CreateAuditLog(config.DB, &evaluatorID, models.AuditActionAssessmentSubmit, models.AuditStatusSuccess,
+		c.ClientIP(), c.GetHeader("User-Agent"), fmt.Sprintf("User submitted assessment for target ID %d", req.TargetUserID), &req.TargetUserID)
 
 	utils.SuccessResponse(c, http.StatusCreated, "Assessment submitted successfully", nil)
 }

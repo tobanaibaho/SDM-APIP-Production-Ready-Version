@@ -24,6 +24,9 @@ const (
 	AuditActionPasswordChange AuditAction = "password_change"
 	AuditActionUserSeed       AuditAction = "user_seed_cli"
 	AuditActionReportExport   AuditAction = "report_export"
+	AuditActionPeriodUpdate   AuditAction = "period_update"
+	AuditActionPeriodLock     AuditAction = "period_lock"
+	AuditActionAssessmentSubmit AuditAction = "assessment_submit"
 )
 
 // AuditStatus represents the result of the audited action

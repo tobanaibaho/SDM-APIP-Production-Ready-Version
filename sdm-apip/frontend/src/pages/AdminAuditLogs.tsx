@@ -127,6 +127,9 @@ const AdminAuditLogs: React.FC = () => {
                             <option value="status_change">Perubahan Status</option>
                             <option value="admin_reset">Admin Reset</option>
                             <option value="password_change">Ganti Password</option>
+                            <option value="period_lock">Sistem Lock Periode</option>
+                            <option value="period_update">Update Periode</option>
+                            <option value="assessment_submit">Submit Penilaian</option>
                         </select>
                     </div>
 

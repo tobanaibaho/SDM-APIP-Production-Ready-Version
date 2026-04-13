@@ -47,8 +47,12 @@ func GenerateJWT(user *models.User) (string, error) {
 	}
 
 	now := time.Now()
-	// Access token berlaku 15 menit (diperpanjang dari 5 menit agar sesi lebih nyaman)
-	expirationTime := now.Add(15 * time.Minute)
+	// Use expiry from config (fallback to 1 hour if not set or invalid)
+	expiryHours := config.AppConfig.JWTExpiryHours
+	if expiryHours <= 0 {
+		expiryHours = 1
+	}
+	expirationTime := now.Add(time.Duration(expiryHours) * time.Hour)
 
 	nip := ""
 	if user.NIP != nil {
@@ -77,8 +81,12 @@ func GenerateJWT(user *models.User) (string, error) {
 // GenerateRefreshToken generates a new Refresh Token (long-lived)
 func GenerateRefreshToken(user *models.User) (string, error) {
 	now := time.Now()
-	// Refresh token is long-lived (7 days)
-	expirationTime := now.Add(7 * 24 * time.Hour)
+	// Use expiry from config (fallback to 7 days if not set or invalid)
+	refreshExpiryHours := config.AppConfig.JWTRefreshExpiryHours
+	if refreshExpiryHours <= 0 {
+		refreshExpiryHours = 7 * 24
+	}
+	expirationTime := now.Add(time.Duration(refreshExpiryHours) * time.Hour)
 
 	claims := &jwt.RegisteredClaims{
 		Subject:   fmt.Sprintf("%d", user.ID),

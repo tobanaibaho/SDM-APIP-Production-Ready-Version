@@ -376,6 +376,12 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 	if time.Now().After(period.EndDate) {
 		// Auto-nonaktifkan di DB sekaligus
 		s.db.Model(&period).Update("is_active", false)
+		
+		// Audit Log (System Event)
+		details := fmt.Sprintf("System auto-locked period '%s' (ID %d) during submission attempt because end_date passed", period.Name, period.ID)
+		models.CreateAuditLog(s.db, nil, models.AuditActionPeriodLock, models.AuditStatusSuccess, 
+			"SYSTEM", "SUBMISSION_GUARD", details, nil)
+
 		return ErrPeriodInactive
 	}
 
