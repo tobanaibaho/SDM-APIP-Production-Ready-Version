@@ -104,7 +104,7 @@ func (s *AuthService) Login(
 		// Reset login attempts if the lockout period has finished
 		s.db.Model(&user).Updates(map[string]interface{}{
 			"login_attempts": 0,
-			"lockout_until":  nil,
+			"lockout_until":  gorm.Expr("NULL"),
 		})
 	}
 
@@ -117,10 +117,10 @@ func (s *AuthService) Login(
 		s.db.First(&updatedUser, user.ID)
 
 		if updatedUser.LoginAttempts >= 5 {
-			lockout := time.Now().Add(15 * time.Minute)
+			lockout := time.Now().Add(3 * time.Minute)
 			s.db.Model(&updatedUser).Update("lockout_until", lockout)
 			models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Account locked due to multiple failed attempts", &user.ID)
-			return nil, fmt.Errorf("akun terkunci karena terlalu banyak percobaan. silakan coba lagi dalam 15 menit")
+			return nil, fmt.Errorf("akun terkunci karena terlalu banyak percobaan. silakan coba lagi dalam 3 menit")
 		}
 
 		models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Login failed: Invalid password", &user.ID)
@@ -131,7 +131,7 @@ func (s *AuthService) Login(
 	if user.LoginAttempts > 0 || user.LockoutUntil != nil {
 		s.db.Model(&user).Updates(map[string]interface{}{
 			"login_attempts": 0,
-			"lockout_until":  nil,
+			"lockout_until":  gorm.Expr("NULL"),
 		})
 	}
 
@@ -228,7 +228,7 @@ func (s *AuthService) SuperAdminLogin(
 		// Reset login attempts if the lockout period has finished
 		s.db.Model(&user).Updates(map[string]interface{}{
 			"login_attempts": 0,
-			"lockout_until":  nil,
+			"lockout_until":  gorm.Expr("NULL"),
 		})
 	}
 
@@ -241,10 +241,10 @@ func (s *AuthService) SuperAdminLogin(
 		s.db.First(&updatedUser, user.ID)
 
 		if updatedUser.LoginAttempts >= 5 {
-			lockout := time.Now().Add(15 * time.Minute)
+			lockout := time.Now().Add(3 * time.Minute)
 			s.db.Model(&updatedUser).Update("lockout_until", lockout)
 			models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Admin account locked due to multiple failed attempts", &user.ID)
-			return nil, fmt.Errorf("akun terkunci karena terlalu banyak percobaan. silakan coba lagi dalam 15 menit")
+			return nil, fmt.Errorf("akun terkunci karena terlalu banyak percobaan. silakan coba lagi dalam 3 menit")
 		}
 
 		models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Admin login failed: Invalid password", &user.ID)
@@ -255,7 +255,7 @@ func (s *AuthService) SuperAdminLogin(
 	if user.LoginAttempts > 0 || user.LockoutUntil != nil {
 		s.db.Model(&user).Updates(map[string]interface{}{
 			"login_attempts": 0,
-			"lockout_until":  nil,
+			"lockout_until":  gorm.Expr("NULL"),
 		})
 	}
 
