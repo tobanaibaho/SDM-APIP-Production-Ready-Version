@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLiveClock } from '../hooks/useRelativeTime';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { changePassword } from '../services/authService';
@@ -35,6 +36,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
+    const clock = useLiveClock();
     const { user, logout, isAdmin } = useAuth();
     const navigate = useNavigate();
     const { pathname } = useLocation();
@@ -260,10 +262,15 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 {subtitle && <p className="mt-1 text-slate-500 text-sm font-medium">{subtitle}</p>}
                             </div>
                         </div>
-                        <div className="hidden md:flex items-center gap-2 shrink-0">
-                            <span className="text-xs font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-100 uppercase tracking-wider whitespace-nowrap">
-                                {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
-                            </span>
+                        <div className="hidden md:flex items-center gap-3 shrink-0">
+                            <div className="flex flex-col items-end">
+                                <span className="text-xs font-black text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-100 uppercase tracking-wider whitespace-nowrap">
+                                    {clock.date}
+                                </span>
+                                <span className="text-[11px] font-mono font-bold text-slate-400 mt-1 pr-1 tracking-widest">
+                                    {clock.time}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -323,6 +330,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 <label className="block text-sm font-semibold text-slate-300 mb-1.5">Password Saat Ini</label>
                                 <div className="relative">
                                     <input
+                                        id="current_password"
+                                        name="current_password"
                                         type={showPw.current ? 'text' : 'password'}
                                         value={pwForm.current_password}
                                         onChange={e => setPwForm(p => ({ ...p, current_password: e.target.value }))}
@@ -340,6 +349,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 <label className="block text-sm font-semibold text-slate-300 mb-1.5">Password Baru</label>
                                 <div className="relative">
                                     <input
+                                        id="new_password"
+                                        name="new_password"
                                         type={showPw.new_pw ? 'text' : 'password'}
                                         value={pwForm.new_password}
                                         onChange={e => setPwForm(p => ({ ...p, new_password: e.target.value }))}
@@ -357,6 +368,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 <label className="block text-sm font-semibold text-slate-300 mb-1.5">Konfirmasi Password Baru</label>
                                 <div className="relative">
                                     <input
+                                        id="confirm_password"
+                                        name="confirm_password"
                                         type={showPw.confirm ? 'text' : 'password'}
                                         value={pwForm.confirm_password}
                                         onChange={e => setPwForm(p => ({ ...p, confirm_password: e.target.value }))}

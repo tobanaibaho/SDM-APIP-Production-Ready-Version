@@ -6,6 +6,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 const api = axios.create({
     baseURL: '/api',
     headers: { 'Content-Type': 'application/json' },
+    withCredentials: true,
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -26,7 +27,6 @@ const processQueue = (error: unknown, token: string | null) => {
 
 const forceLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     window.location.href = '/login';
 };
@@ -60,12 +60,6 @@ api.interceptors.response.use(
                 return Promise.reject(error);
             }
 
-            const refreshToken = localStorage.getItem('refresh_token');
-            if (!refreshToken) {
-                forceLogout();
-                return Promise.reject(error);
-            }
-
             if (isRefreshing) {
                 // Jika refresh sedang berjalan, antri request ini
                 return new Promise((resolve, reject) => {
@@ -84,16 +78,14 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const response = await axios.post('/api/auth/refresh-token', {
-                    refresh_token: refreshToken,
+                // Jangan kirim refresh token di body, peramban akan otomatis mengirim cookie HttpOnly
+                const response = await axios.post('/api/auth/refresh-token', undefined, {
+                    withCredentials: true,
                 });
-                const { token: newToken, refresh_token: newRefreshToken } = response.data.data;
+                const { token: newToken } = response.data.data;
 
-                // Simpan token baru
+                // Simpan access token baru
                 localStorage.setItem('token', newToken);
-                if (newRefreshToken) {
-                    localStorage.setItem('refresh_token', newRefreshToken);
-                }
 
                 // Terapkan token baru ke request yang antri
                 processQueue(null, newToken);

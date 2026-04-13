@@ -37,7 +37,7 @@ export const RoleBadge: React.FC<{ role?: RoleType, className?: string }> = ({ r
 
     return (
         <span
-            className={`inline-flex items-center justify-center w-[90px] px-1 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter border ${colorClasses} ${className}`}
+            className={`inline-flex items-center justify-center min-w-[100px] px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider border ${colorClasses} ${className}`}
             title={role}
         >
             <span className="truncate w-full text-center">{textDisplay}</span>

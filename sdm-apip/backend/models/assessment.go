@@ -47,9 +47,6 @@ type PeerAssessment struct {
 	Adaptif               int `gorm:"not null;check:adaptif >= 0 AND adaptif <= 100" json:"adaptif"`
 	Kolaboratif           int `gorm:"not null;check:kolaboratif >= 0 AND kolaboratif <= 100" json:"kolaboratif"`
 
-	// Add-on: Ide Baru / Inovasi — khusus diisi oleh Inspektur (Atasan), rentang 0-20
-	IdeInovasi int `gorm:"default:0;check:ide_inovasi >= 0 AND ide_inovasi <= 20" json:"ide_inovasi"`
-
 	Comment   string         `gorm:"type:text" json:"comment"`
 	CreatedAt time.Time      `json:"created_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -59,8 +56,7 @@ func (PeerAssessment) TableName() string {
 	return "peer_assessments"
 }
 
-// GetPredikat mengembalikan predikat berdasarkan skor akhir (skala 0-120).
-// Skor dasar 0-100, bonus Ide Inovasi 0-20 (khusus Atasan/Inspektur).
+// GetPredikat mengembalikan predikat berdasarkan skor akhir (skala 0-100).
 func GetPredikat(score float64) string {
 	switch {
 	case score >= 110:
@@ -97,8 +93,6 @@ type SubmitAssessmentRequest struct {
 	Loyal                 int    `json:"loyal" binding:"required,min=0,max=100"`
 	Adaptif               int    `json:"adaptif" binding:"required,min=0,max=100"`
 	Kolaboratif           int    `json:"kolaboratif" binding:"required,min=0,max=100"`
-	// Add-on Ide Inovasi — opsional (0-20), hanya relevan jika relationType=Atasan
-	IdeInovasi int    `json:"ide_inovasi" binding:"min=0,max=20"`
 	Comment    string `json:"comment" binding:"max=500"`
 }
 

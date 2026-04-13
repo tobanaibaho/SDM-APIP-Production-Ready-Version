@@ -10,16 +10,17 @@ import {
     ArrowLeft,
     TrendingUp,
     FileText,
-    Shield
+    Shield,
+    Info
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const getPredikat = (score: number) => {
-    if (score >= 110) return { label: 'Sangat Baik', color: 'text-emerald-400', bg: 'bg-emerald-500/20' };
-    if (score >= 90)  return { label: 'Baik',         color: 'text-blue-400',    bg: 'bg-blue-500/20' };
-    if (score >= 70)  return { label: 'Cukup',        color: 'text-amber-400',   bg: 'bg-amber-500/20' };
-    if (score >= 50)  return { label: 'Kurang',       color: 'text-orange-400',  bg: 'bg-orange-500/20' };
-    return                   { label: 'Sangat Kurang',color: 'text-red-400',     bg: 'bg-red-500/20' };
+    if (score >= 110) return { label: 'Sangat Baik', color: 'text-emerald-400', bg: 'bg-emerald-500/20', border: 'border-emerald-500/20' };
+    if (score >= 90)  return { label: 'Baik',         color: 'text-blue-400',    bg: 'bg-blue-500/20', border: 'border-blue-500/20' };
+    if (score >= 70)  return { label: 'Cukup',        color: 'text-amber-400',   bg: 'bg-amber-500/20', border: 'border-amber-500/20' };
+    if (score >= 50)  return { label: 'Kurang',       color: 'text-orange-400',  bg: 'bg-orange-500/20', border: 'border-orange-500/20' };
+    return                   { label: 'Sangat Kurang',color: 'text-red-400',     bg: 'bg-red-500/20', border: 'border-red-500/20' };
 };
 
 const AssessmentDetailPage: React.FC = () => {
@@ -93,13 +94,13 @@ const AssessmentDetailPage: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-center lg:items-end gap-3 px-8 py-6 bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10">
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Nilai Akhir Perilaku</span>
-                            <div className="text-6xl font-black bg-gradient-to-r from-primary-400 to-emerald-400 bg-clip-text text-transparent">
+                        <div className="flex flex-col items-center gap-4 px-10 py-8 bg-white/5 backdrop-blur-xl rounded-[3rem] border border-white/10 shadow-2xl relative group hover:bg-white/10 transition-all duration-500">
+                            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-500">Nilai Akhir Perilaku</span>
+                            <div className="text-7xl font-black bg-gradient-to-r from-primary-400 via-emerald-400 to-primary-500 bg-clip-text text-transparent drop-shadow-sm">
                                 {detail.final_score.toFixed(2)}
                             </div>
-                            <div className={`flex items-center gap-2 px-3 py-1 ${getPredikat(detail.final_score).bg} ${getPredikat(detail.final_score).color} rounded-full text-[10px] font-black uppercase tracking-widest`}>
-                                <TrendingUp size={14} /> {getPredikat(detail.final_score).label}
+                            <div className={`flex items-center gap-3 px-6 py-2.5 ${getPredikat(detail.final_score).bg} ${getPredikat(detail.final_score).color} ${getPredikat(detail.final_score).border} border rounded-[1.25rem] text-[13px] font-black uppercase tracking-[0.2em] shadow-lg animate-pulse-slow`}>
+                                <TrendingUp size={18} /> {getPredikat(detail.final_score).label}
                             </div>
                         </div>
                     </div>
@@ -225,6 +226,45 @@ const AssessmentDetailPage: React.FC = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                {/* Predicate Range Guide */}
+                <div className="p-10 bg-slate-50/50 rounded-[3rem] border border-slate-100 mt-12">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+                        <div className="max-w-md">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-lg">
+                                    <Info size={20} />
+                                </div>
+                                <h4 className="text-xl font-black text-slate-900">Panduan Range Predikat</h4>
+                            </div>
+                            <p className="text-sm text-slate-400 font-bold leading-relaxed">
+                                Acuan standar skor yang digunakan sistem untuk menentukan hasil predikat perilaku BerAKHLAK.
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap gap-4 text-sm font-black">
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors group w-60">
+                                <span className="bg-emerald-50 text-emerald-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&ge; 110</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Baik</span>
+                            </div>
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors group w-60">
+                                <span className="bg-blue-50 text-blue-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">90 – 109.9</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Baik</span>
+                            </div>
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors group w-60">
+                                <span className="bg-amber-50 text-amber-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">70 – 89.9</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Cukup</span>
+                            </div>
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors group w-60">
+                                <span className="bg-orange-50 text-orange-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">50 – 69.9</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Kurang</span>
+                            </div>
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors group w-60">
+                                <span className="bg-red-50 text-red-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&lt; 50</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Kurang</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Footer Actions */}

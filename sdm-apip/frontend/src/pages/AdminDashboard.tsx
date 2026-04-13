@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatRelativeTime, formatAbsoluteTime } from '../hooks/useRelativeTime';
 import { NavLink } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getDashboardStats } from '../services/sdmService';
@@ -20,6 +21,7 @@ import {
     AlertTriangle,
     CheckCircle2,
     TrendingUp,
+    Info,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -89,6 +91,12 @@ const AdminDashboard: React.FC = () => {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [recentLogs, setRecentLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
+    // tick every 30s to refresh relative timestamps
+    const [, setTick] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setTick(t => t + 1), 30_000);
+        return () => clearInterval(id);
+    }, []);
 
     useEffect(() => { loadData(); }, []);
 
@@ -195,6 +203,43 @@ const AdminDashboard: React.FC = () => {
                         </div>
                         <p className="text-[9px] text-slate-400 mt-1 truncate">{stats?.active_period_name || '—'}</p>
                         <Calendar size={48} className="absolute -right-2 -bottom-3 text-slate-50 group-hover:-rotate-12 transition-all" />
+                    </div>
+                </div>
+                
+                {/* ══════════════════════════════════════════
+                    ROW 1.5: Legend
+                ══════════════════════════════════════════ */}
+                <div className="card p-4 sm:p-5 bg-slate-50/50 border-slate-200">
+                    <div className="flex flex-col md:flex-row md:items-center gap-4">
+                        <div className="shrink-0 flex items-center gap-2">
+                            <div className="p-1.5 bg-primary-100 rounded-lg">
+                                <Info size={14} className="text-primary-600" />
+                            </div>
+                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Panduan Range Predikat</h4>
+                        </div>
+                        <div className="hidden md:block h-4 w-px bg-slate-200" />
+                        <div className="flex flex-wrap gap-3 text-sm font-black">
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
+                                <span className="bg-emerald-50 text-emerald-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&ge; 110</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Baik</span>
+                            </div>
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
+                                <span className="bg-blue-50 text-blue-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">90 – 109.9</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Baik</span>
+                            </div>
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
+                                <span className="bg-amber-50 text-amber-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">70 – 89.9</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Cukup</span>
+                            </div>
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
+                                <span className="bg-orange-50 text-orange-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">50 – 69.9</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Kurang</span>
+                            </div>
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
+                                <span className="bg-red-50 text-red-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&lt; 50</span>
+                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Kurang</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -385,8 +430,11 @@ const AdminDashboard: React.FC = () => {
                                                     <span className="font-bold text-slate-600 mr-1">[{log.action}]</span>{log.details}
                                                 </p>
                                             </div>
-                                            <span className="text-[9px] text-slate-400 whitespace-nowrap mt-1">
-                                                {new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                            <span
+                                                className="text-[9px] text-slate-400 whitespace-nowrap mt-1 cursor-help"
+                                                title={formatAbsoluteTime(log.created_at)}
+                                            >
+                                                {formatRelativeTime(log.created_at)}
                                             </span>
                                         </div>
                                     ))

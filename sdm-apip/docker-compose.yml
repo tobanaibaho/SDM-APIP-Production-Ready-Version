@@ -62,7 +62,8 @@ services:
       context: ./frontend
       # Gunakan Dockerfile.prebuilt jika npm install gagal karena masalah network.
       # Pastikan sudah menjalankan 'npm run build' lokal terlebih dahulu.
-      dockerfile: Dockerfile.prebuilt
+      # dockerfile: Dockerfile.prebuilt
+      dockerfile: Dockerfile
     container_name: sdm_apip_frontend
     ports:
       - "5173:80"

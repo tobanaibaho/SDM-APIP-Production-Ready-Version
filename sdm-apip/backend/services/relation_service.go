@@ -41,6 +41,16 @@ func (s *AssessmentService) CreateAssessmentRelation(req models.CreateRelationRe
 		logger.Error("Failed to create assessment relation: %v", err)
 		return ErrInternalServer
 	}
+
+	// Sync existing assessments if they exist
+	s.db.Model(&models.PeerAssessment{}).
+		Where("period_id = ? AND evaluator_id = ? AND target_user_id = ?",
+			relation.PeriodID, relation.EvaluatorID, relation.TargetUserID).
+		Updates(map[string]interface{}{
+			"relation_type":   relation.RelationType,
+			"target_position": relation.TargetPosition,
+		})
+
 	return nil
 }
 
@@ -88,6 +98,17 @@ func (s *AssessmentService) CreateGroupRelations(req models.BulkCreateRelationsR
 				TargetPosition: r.TargetPosition,
 			}
 			if err := tx.Create(&relation).Error; err != nil {
+				return err
+			}
+
+			// Sync existing assessments if they exist for this pair
+			if err := tx.Model(&models.PeerAssessment{}).
+				Where("period_id = ? AND evaluator_id = ? AND target_user_id = ?",
+					relation.PeriodID, relation.EvaluatorID, relation.TargetUserID).
+				Updates(map[string]interface{}{
+					"relation_type":   relation.RelationType,
+					"target_position": relation.TargetPosition,
+				}).Error; err != nil {
 				return err
 			}
 		}

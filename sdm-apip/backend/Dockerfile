@@ -13,7 +13,7 @@ RUN go mod download
 COPY backend/ .
 
 # Build the application (static binary, stripped for smaller size)
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o main .
+RUN CGO_ENABLED=0 GOOS=linux go build -buildvcs=false -ldflags="-w -s" -o main .
 
 # Run stage — minimal Alpine image
 FROM alpine:latest

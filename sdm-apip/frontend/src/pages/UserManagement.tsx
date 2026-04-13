@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatRelativeTime, formatAbsoluteTime } from '../hooks/useRelativeTime';
 import Layout from '../components/Layout';
 import { getAllUsers, updateUserStatus, updateUserRole, deleteUser, adminDisableMFA } from '../services/userService';
 import { User, Pagination } from '../types';
@@ -33,6 +34,12 @@ const UserManagement: React.FC = () => {
 
     const [sortBy, setSortBy] = useState('created_at');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    // tick every 30s to refresh relative timestamps
+    const [, setTick] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setTick(t => t + 1), 30_000);
+        return () => clearInterval(id);
+    }, []);
 
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -270,14 +277,21 @@ const UserManagement: React.FC = () => {
                                                     <StatusIcon size={12} /> {status.label}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                                            <td className="px-6 py-4">
                                                 {user.last_activity_at ? (
                                                     <div className="flex flex-col">
-                                                        <span className="text-slate-900">{new Date(user.last_activity_at).toLocaleDateString('id-ID')}</span>
-                                                        <span className="text-slate-400">{new Date(user.last_activity_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                        <span
+                                                            className="text-xs font-black text-primary-700 cursor-help"
+                                                            title={formatAbsoluteTime(user.last_activity_at)}
+                                                        >
+                                                            {formatRelativeTime(user.last_activity_at)}
+                                                        </span>
+                                                        <span className="text-[10px] text-slate-400 font-mono mt-0.5">
+                                                            {new Date(user.last_activity_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                        </span>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-slate-300 italic font-medium lowercase">belum pernah aktif</span>
+                                                    <span className="text-slate-300 italic font-medium text-xs lowercase">belum pernah aktif</span>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 text-right">

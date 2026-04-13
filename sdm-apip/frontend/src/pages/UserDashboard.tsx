@@ -25,6 +25,9 @@ import {
     TrendingUp,
     AlertCircle,
     ChevronRight,
+    Zap,
+    Calendar,
+    Loader2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -46,8 +49,15 @@ interface AssessmentTarget {
     months_done: number[];
     months_required: number;
 }
-
 /* ─────────────────────── Helpers ─────────────────────── */
+const getPredikat = (score: number) => {
+    if (score >= 110) return { label: 'Sangat Baik', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' };
+    if (score >= 90)  return { label: 'Baik',         color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200' };
+    if (score >= 70)  return { label: 'Cukup',        color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200' };
+    if (score >= 50)  return { label: 'Kurang',       color: 'text-orange-700',  bg: 'bg-orange-50 border-orange-200' };
+    return                   { label: 'Sangat Kurang',color: 'text-red-700',     bg: 'bg-red-50 border-red-200' };
+};
+
 /* ─────────────────────── Component ─────────────────────── */
 const UserDashboard: React.FC = () => {
     const { user, activePeriod } = useAuth();
@@ -62,6 +72,8 @@ const UserDashboard: React.FC = () => {
     const [periods, setPeriods] = useState<AssessmentPeriod[]>([]);
     const [selectedPeriodId, setSelectedPeriodId] = useState<number | null>(null);
     const [targets, setTargets] = useState<AssessmentTarget[]>([]);
+    const [myResults, setMyResults] = useState<any>(null);
+    const [resultsLoading, setResultsLoading] = useState(false);
 
     /* ── Initial load ── */
     useEffect(() => {
@@ -103,9 +115,24 @@ const UserDashboard: React.FC = () => {
         }
     }, []);
 
+    const fetchMyResults = useCallback(async (periodId: number) => {
+        try {
+            setResultsLoading(true);
+            const data = await assessmentService.getMyResults(periodId);
+            setMyResults(data);
+        } catch {
+            setMyResults(null);
+        } finally {
+            setResultsLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
-        if (selectedPeriodId) fetchTargets(selectedPeriodId);
-    }, [selectedPeriodId, fetchTargets]);
+        if (selectedPeriodId) {
+            fetchTargets(selectedPeriodId);
+            fetchMyResults(selectedPeriodId);
+        }
+    }, [selectedPeriodId, fetchTargets, fetchMyResults]);
 
     /* ── Group detail modal ── */
     const handleGroupClick = async (groupId: number) => {
@@ -137,92 +164,153 @@ const UserDashboard: React.FC = () => {
         );
     }
 
-    return (
-        <Layout title="Dashboard" subtitle="Selamat datang di sistem manajemen SDM APIP.">
-            <div className="space-y-8 animate-fade-in">
+    const currentPeriod = periods.find(p => p.id === selectedPeriodId);
+    const isExpired = currentPeriod && !currentPeriod.is_active;
 
+    // Hitung sisa hari periode
+    const daysRemaining = currentPeriod
+        ? Math.ceil((new Date(currentPeriod.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        : null;
+    const isNearDeadline = daysRemaining !== null && daysRemaining >= 0 && daysRemaining <= 3;
+
+    return (
+        <Layout title="Dashboard Pegawai" subtitle="Pantau capaian kinerja dan penilaian BerAKHLAK Anda.">
+            <div className="space-y-8 animate-in fade-in duration-1000">
                 {/* ═══════════════════════════════════════════
-                    BANNER: Periode Aktif
+                    TOP STATS & SELECTOR
                 ═══════════════════════════════════════════ */}
-                {activePeriod && (
-                    <div
-                        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-600 to-primary-700 p-6 shadow-lg shadow-primary-600/20 group hover:to-primary-800 transition-all cursor-pointer"
-                        onClick={() => navigate('/user/assessments')}
-                    >
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                            <ClipboardCheck size={120} />
-                        </div>
-                        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                                <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                                    <ClipboardCheck size={20} className="text-accent-400" />
-                                    Penilaian Aktif: {activePeriod.name}
-                                </h3>
-                                <p className="text-primary-100 mt-1 text-sm">
-                                    {remaining > 0
-                                        ? `${remaining} formulir penilaian masih menunggu pengisian Anda.`
-                                        : 'Semua formulir sudah terisi. Terima kasih!'}
-                                </p>
+                {selectedPeriodId && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-slate-800 rounded-[2.5rem] p-4 sm:p-6 border border-white/5 shadow-2xl">
+                        <div className="lg:col-span-5 flex items-center gap-4">
+                            <div className="h-14 w-14 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400 shrink-0">
+                                <Calendar size={28} />
                             </div>
-                            <button className="flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-primary-700 shadow-xl transition-all hover:scale-105 active:scale-95 group-hover:bg-accent-500 group-hover:text-slate-900 shrink-0">
-                                {remaining > 0 ? 'Mulai Penilaian' : 'Lihat Penilaian'}
-                                <ArrowUpRight size={18} />
+                            <div className="min-w-0">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 block">Periode Penilaian</label>
+                                <select
+                                    className="bg-transparent text-white font-bold text-lg focus:ring-0 border-none p-0 cursor-pointer hover:text-primary-400 transition-colors w-full"
+                                    value={selectedPeriodId}
+                                    onChange={(e) => setSelectedPeriodId(Number(e.target.value))}
+                                >
+                                    {periods.map(p => (
+                                        <option key={p.id} value={p.id} className="bg-slate-900 text-white">
+                                            {p.name} {p.is_active ? '(Aktif)' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Middle: Progress / Warning */}
+                        <div className="lg:col-span-4 px-4 border-l border-r border-white/5 h-full flex flex-col justify-center">
+                            {isExpired ? (
+                                <div className="flex items-center gap-3 text-red-400">
+                                    <Clock size={20} className="shrink-0" />
+                                    <div>
+                                        <p className="text-xs font-black uppercase tracking-wider">Periode Berakhir</p>
+                                        <p className="text-[11px] opacity-80 leading-tight">
+                                            Masa penilaian ditutup otomatis per {currentPeriod?.end_date ? new Date(currentPeriod.end_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : isNearDeadline ? (
+                                <div className="flex items-center gap-3 text-amber-400">
+                                    <AlertCircle size={20} className="shrink-0 animate-pulse" />
+                                    <div>
+                                        <p className="text-xs font-black uppercase tracking-wider">
+                                            {daysRemaining === 0 ? 'Berakhir Hari Ini!' : `Sisa ${daysRemaining} Hari!`}
+                                        </p>
+                                        <p className="text-[11px] opacity-80 leading-tight">
+                                            Segera selesaikan sebelum {currentPeriod?.end_date ? new Date(currentPeriod.end_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long' }) : '-'}
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : targetsLoading ? (
+                                <div className="flex items-center gap-2 text-slate-400">
+                                    <Loader2 size={16} className="animate-spin" />
+                                    <span className="text-xs font-bold uppercase tracking-widest text-[10px]">Memuat...</span>
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="flex justify-between items-end mb-1.5">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress Anda</span>
+                                        <span className="text-xs font-bold text-accent-400">{pct}%</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-slate-700/50 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-accent-400 rounded-full transition-all duration-700"
+                                            style={{ width: `${pct}%` }}
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-slate-400 mt-1 font-bold">
+                                        {doneForms}/{totalForms} formulir — {pct}% selesai
+                                        {daysRemaining !== null && daysRemaining > 3 && (
+                                            <span className="ml-2 text-slate-500">· Sisa {daysRemaining} hari</span>
+                                        )}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Right: Quick Action */}
+                        <div className="lg:col-span-3 flex justify-end">
+                             <button
+                                onClick={() => !isExpired && (remaining > 0 ? navigate('/user/assessments') : toast.success('Semua penilaian selesai!'))}
+                                disabled={isExpired && remaining > 0}
+                                className={`group relative flex items-center justify-center gap-3 w-full sm:w-auto px-6 py-3.5 rounded-2xl font-bold text-sm transition-all duration-300 ${isExpired && remaining > 0 
+                                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed border border-white/5' 
+                                    : 'bg-white text-slate-900 hover:scale-105 active:scale-95 shadow-xl hover:shadow-primary-500/20'}`}
+                            >
+                                {isExpired && remaining > 0 ? <Clock size={16} /> : <Zap size={16} className="text-accent-500" />}
+                                {isExpired && remaining > 0 ? 'Waktu Berakhir' : (remaining > 0 ? 'Mulai Sekarang' : 'Lihat Progress')}
                             </button>
                         </div>
-                        {/* inline progress bar */}
-                        {totalForms > 0 && (
-                            <div className="relative z-10 mt-4">
-                                <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-accent-400 rounded-full transition-all duration-700"
-                                        style={{ width: `${pct}%` }}
-                                    />
-                                </div>
-                                <p className="text-[10px] text-primary-200 mt-1 font-bold">{doneForms}/{totalForms} formulir — {pct}% selesai</p>
-                            </div>
-                        )}
                     </div>
                 )}
 
                 {/* ═══════════════════════════════════════════
                     HERO: Profile Card
                 ═══════════════════════════════════════════ */}
-                <div className="relative overflow-hidden rounded-3xl bg-slate-900 shadow-2xl">
+                <div className="relative overflow-hidden rounded-3xl bg-slate-900 shadow-2xl border border-white/5">
                     <div className="absolute inset-0 opacity-10">
                         <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-primary-500 blur-3xl" />
                         <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-accent-500 blur-3xl" />
                     </div>
                     <div className="relative z-10 flex flex-col items-center gap-6 p-8 md:flex-row md:p-10">
                         {/* Avatar */}
-                        <div className="shrink-0 h-28 w-28 rounded-3xl bg-gradient-to-br from-accent-400 to-accent-600 font-bold text-slate-900 text-3xl shadow-lg ring-4 ring-white/10 overflow-hidden flex items-center justify-center">
+                        <div className="shrink-0 h-28 w-28 md:h-32 md:w-32 lg:h-36 lg:w-36 rounded-[2rem] bg-gradient-to-br from-accent-400 to-accent-600 font-bold text-slate-900 text-4xl shadow-lg ring-4 ring-white/10 overflow-hidden flex items-center justify-center">
                             {sdmData?.foto
                                 ? <img src={sdmData.foto} alt="Profile" className="h-full w-full object-cover" />
                                 : (sdmData?.nama?.charAt(0).toUpperCase() || 'U')}
                         </div>
 
                         {/* Info */}
-                        <div className="flex-1 text-center md:text-left">
-                            <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
-                                <h2 className="text-3xl font-black text-white tracking-tight">{sdmData?.nama || 'Pengguna'}</h2>
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-slate-300 backdrop-blur-md border border-white/10 uppercase tracking-widest">
-                                    <Shield size={12} className="text-accent-400" /> Personil APIP
-                                </span>
-                            </div>
-                            <p className="mt-2 text-lg text-slate-400 font-medium">{sdmData?.jabatan || 'Unit Kerja Belum Terdaftar'}</p>
-                            <div className="mt-4 flex flex-wrap justify-center gap-3 md:justify-start">
-                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2 rounded-xl text-sm border border-white/5">
-                                    <Fingerprint size={16} className="text-accent-500" />
-                                    <span className="font-mono">{user?.nip}</span>
+                        <div className="flex-1 min-w-0 text-center md:text-left">
+                            <div className="flex flex-col gap-2">
+                                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight break-words leading-tight">
+                                    {sdmData?.nama || 'Pengguna'}
+                                </h2>
+                                <div className="flex justify-center md:justify-start">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-slate-300 backdrop-blur-md border border-white/10 uppercase tracking-widest">
+                                        <Shield size={12} className="text-accent-400 shrink-0" /> Personil APIP
+                                    </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2 rounded-xl text-sm border border-white/5">
-                                    <Building2 size={16} className="text-accent-500" />
-                                    <span>{sdmData?.unit_kerja || 'Inspektorat'}</span>
+                            </div>
+                            <p className="mt-2 text-lg md:text-xl text-slate-400 font-medium break-words">{sdmData?.jabatan || 'Unit Kerja Belum Terdaftar'}</p>
+                            <div className="mt-4 flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-3">
+                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2.5 rounded-xl text-sm md:text-base border border-white/5">
+                                    <Fingerprint size={16} className="text-accent-500 shrink-0" />
+                                    <span className="font-mono truncate">{user?.nip}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2.5 rounded-xl text-sm md:text-base border border-white/5">
+                                    <Building2 size={16} className="text-accent-500 shrink-0" />
+                                    <span className="truncate max-w-[200px] sm:max-w-xs">{sdmData?.unit_kerja || 'Inspektorat'}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Status & action */}
-                        <div className="shrink-0 flex flex-col items-center gap-3">
+                        <div className="shrink-0 flex flex-col items-center gap-3 mt-4 md:mt-0">
                             <button
                                 onClick={() => navigate('/profile')}
                                 className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-all hover:bg-slate-100 hover:scale-105 active:scale-95 shadow-xl"
@@ -244,7 +332,70 @@ const UserDashboard: React.FC = () => {
 
                     {/* ── LEFT: Status Kelengkapan Penilaian ── */}
                     <div className="lg:col-span-8">
-                        <div className="card overflow-hidden h-full">
+
+                        {/* ── Hasil Penilaian Saya ── */}
+                        <div className="card overflow-hidden mb-8">
+                            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-emerald-50/40">
+                                <div className="flex items-center gap-2">
+                                    <TrendingUp size={20} className="text-emerald-500" />
+                                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">Hasil Penilaian Saya ({selectedPeriod?.name})</h3>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                {resultsLoading ? (
+                                    <div className="flex justify-center py-8"><div className="loading-spinner" /></div>
+                                ) : !myResults || !myResults.average_score || myResults.average_score === 0 ? (
+                                    <div className="text-center py-8">
+                                        <p className="text-slate-400 font-bold">Belum ada penilaian yang masuk untuk Anda pada periode ini.</p>
+                                    </div>
+                                ) : (
+                                    <div className="animate-fade-in">
+                                        <div className="mb-6 flex flex-col sm:flex-row gap-6 items-center">
+                                            <div className="bg-emerald-50 text-emerald-700 p-6 rounded-2xl text-center w-full sm:w-1/3">
+                                                <p className="text-[11px] font-black uppercase tracking-widest mb-2">Nilai Rata-rata Total</p>
+                                                <p className="text-5xl font-black">{myResults.average_score.toFixed(2)}</p>
+                                                <div className="mt-3">
+                                                    {(() => {
+                                                        const p = getPredikat(myResults.average_score);
+                                                        return (
+                                                            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-black border ${p.bg} ${p.color}`}>
+                                                                {p.label}
+                                                            </span>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            </div>
+                                            <div className="text-sm text-slate-500 w-full sm:w-2/3">
+                                                <p className="mb-2"><strong className="text-slate-800">Capaian Anda sejauh ini:</strong> Nilai ini merupakan akumulasi dari seluruh penilaian yang masuk secara sistem terpusat dan rahasia.</p>
+                                                <div className="inline-flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                                                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <span className="text-xs font-bold text-slate-600">Skor dapat berubah selama periode aktif</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <h4 className="text-xs font-black text-slate-400 mb-4 uppercase tracking-widest">Rincian per Indikator BerAKHLAK</h4>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                            {Object.entries(myResults.details || {}).map(([key, value]: [string, any]) => {
+                                                if (key === "Ide Inovasi (Bonus)") return null;
+                                                return (
+                                                <div key={key} className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center text-center hover:bg-white hover:border-emerald-200 transition-colors">
+                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 min-h-[24px] flex items-center justify-center">{key.replace(/_/g, ' ')}</p>
+                                                    <p className="text-2xl font-black text-slate-800">{Number(value).toFixed(2)}</p>
+                                                    <div className="flex gap-0.5 mt-2">
+                                                        {[1, 2, 3, 4, 5].map(star => {
+                                                            const filled = Math.round((Number(value) / 100) * 5);
+                                                            return <Star key={star} size={10} className={star <= filled ? 'fill-amber-400 text-amber-400' : 'text-slate-200'} />;
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )})}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="card overflow-hidden">
                             {/* Header */}
                             <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/40">
                                 <div className="flex items-center gap-2">
@@ -367,7 +518,7 @@ const UserDashboard: React.FC = () => {
                                                                         <div
                                                                             key={m}
                                                                             title={months_done.includes(m) ? `Bulan ${m} ✓` : `Bulan ${m} — belum diisi`}
-                                                                            className={`flex flex-col items-center gap-0.5 w-10 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all ${months_done.includes(m)
+                                                                            className={`flex flex-col items-center gap-0.5 w-10 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all shadow-sm ${months_done.includes(m)
                                                                                 ? 'bg-emerald-500 text-white'
                                                                                 : m === nextMonth && !is_done
                                                                                     ? 'bg-amber-400 text-white ring-2 ring-amber-300 ring-offset-1 animate-pulse'
@@ -517,6 +668,33 @@ const UserDashboard: React.FC = () => {
                                     </button>
                                 ))
                             )}
+                        </div>
+
+                        {/* Legend in Sidebar */}
+                        <div className="card p-6 bg-slate-50/50 border-slate-200 mt-6 shadow-sm">
+                            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-5 text-center">Panduan Range Predikat</h4>
+                            <div className="space-y-3 text-sm font-black">
+                                <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                    <span className="bg-emerald-50 text-emerald-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&ge; 110</span>
+                                    <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Baik</span>
+                                </div>
+                                <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                    <span className="bg-blue-50 text-blue-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">90 – 109.9</span>
+                                    <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Baik</span>
+                                </div>
+                                <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                    <span className="bg-amber-50 text-amber-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">70 – 89.9</span>
+                                    <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Cukup</span>
+                                </div>
+                                <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                    <span className="bg-orange-50 text-orange-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">50 – 69.9</span>
+                                    <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Kurang</span>
+                                </div>
+                                <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                    <span className="bg-red-50 text-red-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&lt; 50</span>
+                                    <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Kurang</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

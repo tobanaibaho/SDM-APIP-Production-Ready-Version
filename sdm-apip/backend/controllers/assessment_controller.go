@@ -300,9 +300,6 @@ func (ac *AssessmentController) GetMyResults(c *gin.Context) {
 		return
 	}
 
-	role, _ := c.Get("role")
-	isAdmin := role == string(models.RoleNameSuperAdmin)
-
 	if summary == nil {
 		utils.SuccessResponse(c, http.StatusOK, "No assessment data for this period", gin.H{
 			"status": "Belum Dinilai",
@@ -310,17 +307,6 @@ func (ac *AssessmentController) GetMyResults(c *gin.Context) {
 		return
 	}
 
-	// ALWAYS return status for User
-	if !isAdmin {
-		utils.SuccessResponse(c, http.StatusOK, "Assessment status retrieved", gin.H{
-			"status":      summary.Status, // 1-7
-			"period_name": summary.PeriodName,
-			"period_id":   periodID,
-		})
-		return
-	}
-
-	// For Admin, return full summary
 	utils.SuccessResponse(c, http.StatusOK, "Assessment summary retrieved", summary)
 }
 

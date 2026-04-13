@@ -17,16 +17,16 @@ import Layout from '../components/Layout';
 import RoleBadge from '../components/RoleBadge';
 
 // Indonesian month names
-const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
 // Get the frequency max months for a period
 const frequencyMonths = (frequency: string): number => {
     switch (frequency) {
-        case 'monthly':    return 1;
-        case 'quarterly':  return 3;
+        case 'monthly': return 1;
+        case 'quarterly': return 3;
         case 'semi_annual': return 6;
-        case 'annual':     return 12;
-        default:           return 1;
+        case 'annual': return 12;
+        default: return 1;
     }
 };
 
@@ -69,11 +69,12 @@ const buildMonthOptions = (periods: AssessmentPeriod[]): MonthOption[] => {
 
 const getPredikat = (score: number) => {
     if (score >= 110) return { label: 'Sangat Baik', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' };
-    if (score >= 90)  return { label: 'Baik',         color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200' };
-    if (score >= 70)  return { label: 'Cukup',        color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200' };
-    if (score >= 50)  return { label: 'Kurang',       color: 'text-orange-700',  bg: 'bg-orange-50 border-orange-200' };
-    return                   { label: 'Sangat Kurang',color: 'text-red-700',     bg: 'bg-red-50 border-red-200' };
+    if (score >= 90) return { label: 'Baik', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' };
+    if (score >= 70) return { label: 'Cukup', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' };
+    if (score >= 50) return { label: 'Kurang', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' };
+    return { label: 'Sangat Kurang', color: 'text-red-700', bg: 'bg-red-50 border-red-200' };
 };
+
 
 const AdminReportDashboard: React.FC = () => {
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -224,7 +225,7 @@ const AdminReportDashboard: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <label className="flex items-center cursor-pointer gap-2 mr-2 group" title="Sertakan data dari Grup/Pegawai yang dihapus (Arsip)">
                             <div className="relative">
-                                <input type="checkbox" className="sr-only" checked={filter.include_archived || false} onChange={(e) => setFilter({ ...filter, include_archived: e.target.checked })} />
+                                <input type="checkbox" id="includeArchived" name="includeArchived" className="sr-only" checked={filter.include_archived || false} onChange={(e) => setFilter({ ...filter, include_archived: e.target.checked })} />
                                 <div className={`block w-10 h-6 rounded-full transition-colors ${filter.include_archived ? 'bg-red-500' : 'bg-slate-200 group-hover:bg-slate-300'}`}></div>
                                 <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${filter.include_archived ? 'transform translate-x-4' : ''}`}></div>
                             </div>
@@ -273,6 +274,8 @@ const AdminReportDashboard: React.FC = () => {
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                         <input
                                             type="text"
+                                            id="searchReport"
+                                            name="searchReport"
                                             placeholder="Nama atau NIP..."
                                             className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                                             value={filter.search || ''}
@@ -284,6 +287,8 @@ const AdminReportDashboard: React.FC = () => {
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-slate-700 block">Pilih Bulan Penilaian</label>
                                     <select
+                                        id="assessmentMonth"
+                                        name="assessmentMonth"
                                         className="w-full px-4 py-2 border border-slate-200 text-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                                         value={filter.assessment_month || ''}
                                         onChange={(e) => setFilter({ ...filter, assessment_month: e.target.value ? Number(e.target.value) : undefined })}
@@ -308,6 +313,8 @@ const AdminReportDashboard: React.FC = () => {
                                     <label className="text-sm font-semibold text-slate-700 block">Mulai Tanggal</label>
                                     <input
                                         type="date"
+                                        id="startDate"
+                                        name="startDate"
                                         className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                                         value={filter.start_date || ''}
                                         onChange={(e) => setFilter({ ...filter, start_date: e.target.value })}
@@ -317,6 +324,8 @@ const AdminReportDashboard: React.FC = () => {
                                     <label className="text-sm font-semibold text-slate-700 block">Akhir Tanggal</label>
                                     <input
                                         type="date"
+                                        id="endDate"
+                                        name="endDate"
                                         className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                                         value={filter.end_date || ''}
                                         onChange={(e) => setFilter({ ...filter, end_date: e.target.value })}
@@ -418,13 +427,47 @@ const AdminReportDashboard: React.FC = () => {
                     </div>
                 ) : (
                     <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
-                        <div className="p-8 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-xl font-bold text-slate-900">Monitor Penilaian Pegawai</h3>
-                                <p className="text-sm text-slate-500 mt-1">Pantau siapa saja yang sudah dinilai dan siapa yang melakukan penilaian.</p>
-                            </div>
-                            <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-600">
-                                Total: {total} Pegawai
+                        <div className="p-6 border-b border-slate-100 bg-slate-50/30">
+                            <div className="space-y-6">
+                                {/* Title + counter */}
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-slate-900">Monitor Penilaian Pegawai</h3>
+                                        <p className="text-sm text-slate-500 mt-1">Pantau siapa saja yang sudah dinilai dan siapa yang melakukan penilaian.</p>
+                                    </div>
+                                    <div className="shrink-0 bg-white px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 whitespace-nowrap shadow-sm">
+                                        Total: {total} Pegawai
+                                    </div>
+                                </div>
+                                
+                                <div className="h-px bg-slate-100" />
+
+                                {/* Predicate Legend (FULL WIDTH ROW) */}
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 mb-3 uppercase tracking-widest">Panduan Range Predikat</p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-sm font-black">
+                                        <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-full">
+                                            <span className="bg-emerald-50 text-emerald-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&ge; 110</span>
+                                            <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Baik</span>
+                                        </div>
+                                        <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-full">
+                                            <span className="bg-blue-50 text-blue-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">90 – 109.9</span>
+                                            <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Baik</span>
+                                        </div>
+                                        <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-full">
+                                            <span className="bg-amber-50 text-amber-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">70 – 89.9</span>
+                                            <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Cukup</span>
+                                        </div>
+                                        <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-full">
+                                            <span className="bg-orange-50 text-orange-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">50 – 69.9</span>
+                                            <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Kurang</span>
+                                        </div>
+                                        <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-full">
+                                            <span className="bg-red-50 text-red-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&lt; 50</span>
+                                            <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Kurang</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className="overflow-x-auto">
@@ -433,10 +476,9 @@ const AdminReportDashboard: React.FC = () => {
                                     <tr>
                                         <th className="px-8 py-4">Pegawai (NIP)</th>
                                         <th className="px-8 py-4">Peran</th>
-                                        <th className="px-8 py-4 text-center">Predikat</th>
+                                        <th className="px-8 py-4 text-center">Nilai Akhir & Predikat</th>
                                         <th className="px-8 py-4 text-center">Dinilai</th>
                                         <th className="px-8 py-4 text-center">Menilai</th>
-                                        <th className="px-8 py-4 text-center">Skor Rerata</th>
                                         <th className="px-8 py-4 text-right">Aksi</th>
                                     </tr>
                                 </thead>
@@ -459,33 +501,26 @@ const AdminReportDashboard: React.FC = () => {
                                                 })()}
                                             </td>
                                             <td className="px-8 py-5 text-center">
-                                                {user.average_score > 0 ? (
-                                                    <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-black border ${getPredikat(user.average_score).bg} ${getPredikat(user.average_score).color}`}>
-                                                        {getPredikat(user.average_score).label}
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex px-3 py-1 rounded-full text-[11px] font-black border bg-slate-50 border-slate-200 text-slate-400">Belum Ada</span>
-                                                )}
-                                            </td>
-                                            <td className="px-8 py-5 text-center">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${user.assessments_received > 0 ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
-                                                    <ClipboardCheck size={12} /> {user.assessments_received} Kali
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-5 text-center">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${user.assessments_given > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
-                                                    <UserCheck size={12} /> {user.assessments_given} Kali
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-5 text-center">
-                                                <div className="flex flex-col items-center gap-1">
+                                                <div className="flex flex-col items-center gap-1.5">
                                                     <div className="text-sm font-black text-slate-900">{user.average_score.toFixed(2)}</div>
-                                                    <div className="flex gap-0.5">
-                                                        {[1, 2, 3, 4, 5].map(s => (
-                                                            <div key={s} className={`h-1 w-3 rounded-full ${user.average_score >= s ? 'bg-indigo-500' : 'bg-slate-200'}`} />
-                                                        ))}
-                                                    </div>
+                                                    {user.average_score > 0 ? (
+                                                        <span className={`inline-flex px-2.5 py-1 rounded text-[10px] font-black border tracking-wider shadow-sm uppercase ${getPredikat(user.average_score).bg} ${getPredikat(user.average_score).color}`}>
+                                                            {getPredikat(user.average_score).label}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">N/A</span>
+                                                    )}
                                                 </div>
+                                            </td>
+                                            <td className="px-8 py-5 text-center">
+                                                <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black ${user.assessments_received > 0 ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200' : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200'}`}>
+                                                    <ClipboardCheck size={14} /> {user.assessments_received} Kali
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 text-center">
+                                                <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black ${user.assessments_given > 0 ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200'}`}>
+                                                    <UserCheck size={14} /> {user.assessments_given} Kali
+                                                </span>
                                             </td>
                                             <td className="px-8 py-5 text-right">
                                                 <button
@@ -538,172 +573,213 @@ const AdminReportDashboard: React.FC = () => {
                 {typeof document !== 'undefined' && createPortal(
                     <AnimatePresence>
                         {selectedUser && (
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 className="fixed top-0 left-0 w-screen h-screen z-[100000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
                             >
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                className="bg-white rounded-[2rem] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
-                            >
-                                <div className="px-10 py-8 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
-                                    <div className="flex items-center gap-6">
-                                        <div className="h-16 w-16 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg">
-                                            {selectedUser.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <h3 className="text-2xl font-black text-white">{selectedUser.name}</h3>
-                                            <div className="flex items-center gap-3 mt-1.5">
-                                                <span className="text-xs font-mono bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 text-slate-300">{selectedUser.nip}</span>
-                                                {(() => {
-                                                    const role = selectedUser.jabatan?.toLowerCase().includes('inspektur') ? 'Inspektur' : (selectedUser.group_role || 'Anggota');
-                                                    return <RoleBadge role={role} />;
-                                                })()}
-                                                <span className="text-xs font-bold text-slate-400">Inspektorat</span>
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                    className="bg-white rounded-[2rem] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+                                >
+                                    <div className="px-10 py-8 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
+                                        <div className="flex items-center gap-6">
+                                            <div className="h-16 w-16 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                                                {selectedUser.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white">{selectedUser.name}</h3>
+                                                <div className="flex items-center gap-3 mt-1.5">
+                                                    <span className="text-xs font-mono bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 text-slate-300">{selectedUser.nip}</span>
+                                                    {(() => {
+                                                        const role = selectedUser.jabatan?.toLowerCase().includes('inspektur') ? 'Inspektur' : (selectedUser.group_role || 'Anggota');
+                                                        return <RoleBadge role={role} />;
+                                                    })()}
+                                                    <span className="text-xs font-bold text-slate-400">Inspektorat</span>
+                                                </div>
                                             </div>
                                         </div>
+                                        <button
+                                            onClick={() => setSelectedUser(null)}
+                                            className="h-12 w-12 rounded-2xl bg-white/10 text-slate-300 hover:text-white hover:bg-white/20 transition-all flex items-center justify-center border border-white/10"
+                                        >
+                                            <X size={24} />
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => setSelectedUser(null)}
-                                        className="h-12 w-12 rounded-2xl bg-white/10 text-slate-300 hover:text-white hover:bg-white/20 transition-all flex items-center justify-center border border-white/10"
-                                    >
-                                        <X size={24} />
-                                    </button>
-                                </div>
 
-                                <div className="flex-1 overflow-y-auto p-10 space-y-8">
-                                    {detailLoading ? (
-                                        <div className="flex flex-col items-center justify-center h-64">
-                                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-indigo-600 mb-4"></div>
-                                            <p className="text-slate-400 font-bold">Memuat detail penilaian...</p>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {/* Summary for Modal */}
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                <div className="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100">
-                                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Skor Rerata Keseluruhan</p>
-                                                    <div className="text-3xl font-black text-indigo-900">{selectedUser.average_score.toFixed(2)}</div>
-                                                </div>
-                                                <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100">
-                                                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Penilaian Diberikan</p>
-                                                    <div className="text-3xl font-black text-emerald-900">{selectedUser.assessments_given}</div>
-                                                </div>
-                                                <div className="bg-amber-50/50 p-6 rounded-3xl border border-amber-100">
-                                                    <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Penilaian Diterima</p>
-                                                    <div className="text-3xl font-black text-amber-900">{selectedUser.assessments_received}</div>
-                                                </div>
+                                    <div className="flex-1 overflow-y-auto p-10 space-y-8">
+                                        {detailLoading ? (
+                                            <div className="flex flex-col items-center justify-center h-64">
+                                                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-indigo-600 mb-4"></div>
+                                                <p className="text-slate-400 font-bold">Memuat detail penilaian...</p>
                                             </div>
+                                        ) : (
+                                            <>
+                                                {/* Summary for Modal */}
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                    <div className="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100 flex flex-col items-center text-center">
+                                                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Skor Rerata Keseluruhan</p>
+                                                        <div className="text-4xl font-black text-indigo-900 leading-none">{selectedUser.average_score.toFixed(2)}</div>
+                                                        {selectedUser.average_score > 0 ? (
+                                                            <div className={`mt-3 inline-flex px-4 py-1.5 rounded-xl text-xs font-black border tracking-wider shadow-sm ${getPredikat(selectedUser.average_score).bg} ${getPredikat(selectedUser.average_score).color}`}>
+                                                                {getPredikat(selectedUser.average_score).label}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="mt-3 inline-flex px-4 py-1.5 rounded-xl text-xs font-black border border-slate-200 bg-slate-50 text-slate-400">
+                                                                Belum Ada
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100">
+                                                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Penilaian Diberikan</p>
+                                                        <div className="text-3xl font-black text-emerald-900">{selectedUser.assessments_given}</div>
+                                                    </div>
+                                                    <div className="bg-amber-50/50 p-6 rounded-3xl border border-amber-100">
+                                                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Penilaian Diterima</p>
+                                                        <div className="text-3xl font-black text-amber-900">{selectedUser.assessments_received}</div>
+                                                    </div>
+                                                </div>
 
-                                            {/* Detailed History Table in Modal */}
-                                            <div className="space-y-6">
-                                                <h4 className="flex items-center gap-2 text-xl font-black text-slate-900">
-                                                    <History size={22} className="text-indigo-600" />
-                                                    Rincian Penilaian BerAKHLAK
-                                                </h4>
-
+                                                {/* Detailed History Table in Modal */}
                                                 <div className="space-y-6">
-                                                    {selectedUserDetails.received
-                                                    .slice()
-                                                    .sort((a: any, b: any) => a.assessment_month - b.assessment_month)
-                                                    .map((row: any) => (
-                                                        <motion.div
-                                                            key={row.id}
-                                                            initial={{ opacity: 0, x: -20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-                                                        >
-                                                            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                                                        <UserCheck size={20} />
-                                                                    </div>
-                                                                    <div>
-                                                                        <p className="text-sm font-bold text-slate-900">Penilai: {row.evaluator_name}</p>
-                                                                        <div className="flex items-center gap-2 mt-0.5">
-                                                                            <span className="text-[9px] font-black uppercase text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                                                                                {(() => {
-                                                                                    // Resolve real calendar month using period_id from assessment row
-                                                                                    const period = periods.find(p => p.id === row.period_id);
-                                                                                    if (period) {
-                                                                                        return resolveMonthName(period, row.assessment_month);
-                                                                                    }
-                                                                                    // Fallback: gunakan nama bulan kalender langsung
-                                                                                    return BULAN_ID[(row.assessment_month - 1) % 12];
-                                                                                })()}
-                                                                            </span>
-                                                                            <p className="text-[10px] text-slate-400 font-medium">{new Date(row.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="text-right">
-                                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Rerata Skor</span>
-                                                                    <span className="text-lg font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-xl">{row.average_score.toFixed(2)}</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="p-6">
-                                                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
-                                                                    {[
-                                                                        { label: 'Berorientasi Pelayanan', value: row.berorientasi_pelayanan },
-                                                                        { label: 'Akuntabel', value: row.akuntabel },
-                                                                        { label: 'Kompeten', value: row.kompeten },
-                                                                        { label: 'Harmonis', value: row.harmonis },
-                                                                        { label: 'Loyal', value: row.loyal },
-                                                                        { label: 'Adaptif', value: row.adaptif },
-                                                                        { label: 'Kolaboratif', value: row.kolaboratif },
-                                                                    ].map((indicator, idx) => (
-                                                                        <div key={idx} className="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50/50 border border-slate-100">
-                                                                            <p className="text-[9px] font-bold text-slate-400 uppercase leading-tight h-8 flex items-center justify-center mb-2 px-1">
-                                                                                {indicator.label}
-                                                                            </p>
-                                                                            <div className="flex gap-0.5 mb-1.5">
-                                                                                {[1, 2, 3, 4, 5].map(star => {
-                                                                                    const filledStars = Math.round((indicator.value / 100) * 5);
-                                                                                    return (
-                                                                                        <Star
-                                                                                            key={star}
-                                                                                            size={10}
-                                                                                            className={star <= filledStars ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}
-                                                                                        />
-                                                                                    );
-                                                                                })}
+                                                    <h4 className="flex items-center gap-2 text-xl font-black text-slate-900">
+                                                        <History size={22} className="text-indigo-600" />
+                                                        Rincian Penilaian BerAKHLAK
+                                                    </h4>
+
+                                                    <div className="space-y-6">
+                                                        {selectedUserDetails.received
+                                                            .slice()
+                                                            .sort((a: any, b: any) => a.assessment_month - b.assessment_month)
+                                                            .map((row: any) => (
+                                                                <motion.div
+                                                                    key={row.id}
+                                                                    initial={{ opacity: 0, x: -20 }}
+                                                                    animate={{ opacity: 1, x: 0 }}
+                                                                    className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                                                                >
+                                                                    <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                                                                <UserCheck size={20} />
                                                                             </div>
-                                                                            <span className="text-sm font-black text-slate-700">{indicator.value}</span>
+                                                                            <div>
+                                                                                <p className="text-sm font-bold text-slate-900">Penilai: {row.evaluator_name}</p>
+                                                                                <div className="flex items-center gap-2 mt-0.5">
+                                                                                    <span className="text-[9px] font-black uppercase text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                                                                        {(() => {
+                                                                                            // Resolve real calendar month using period_id from assessment row
+                                                                                            const period = periods.find(p => p.id === row.period_id);
+                                                                                            if (period) {
+                                                                                                return resolveMonthName(period, row.assessment_month);
+                                                                                            }
+                                                                                            // Fallback: gunakan nama bulan kalender langsung
+                                                                                            return BULAN_ID[(row.assessment_month - 1) % 12];
+                                                                                        })()}
+                                                                                    </span>
+                                                                                    <p className="text-[10px] text-slate-400 font-medium">{new Date(row.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                    ))}
-                                                                </div>
+                                                                        <div className="text-right">
+                                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Rerata Skor</span>
+                                                                            <span className="text-lg font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-xl">{row.average_score.toFixed(2)}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="p-6">
+                                                                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+                                                                            {[
+                                                                                { label: 'Berorientasi Pelayanan', value: row.berorientasi_pelayanan },
+                                                                                { label: 'Akuntabel', value: row.akuntabel },
+                                                                                { label: 'Kompeten', value: row.kompeten },
+                                                                                { label: 'Harmonis', value: row.harmonis },
+                                                                                { label: 'Loyal', value: row.loyal },
+                                                                                { label: 'Adaptif', value: row.adaptif },
+                                                                                { label: 'Kolaboratif', value: row.kolaboratif },
+                                                                            ].map((indicator, idx) => (
+                                                                                <div key={idx} className="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50/50 border border-slate-100">
+                                                                                    <p className="text-[9px] font-bold text-slate-400 uppercase leading-tight h-8 flex items-center justify-center mb-2 px-1">
+                                                                                        {indicator.label}
+                                                                                    </p>
+                                                                                    <div className="flex gap-0.5 mb-1.5">
+                                                                                        {[1, 2, 3, 4, 5].map(star => {
+                                                                                            const filledStars = Math.round((indicator.value / 100) * 5);
+                                                                                            return (
+                                                                                                <Star
+                                                                                                    key={star}
+                                                                                                    size={10}
+                                                                                                    className={star <= filledStars ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}
+                                                                                                />
+                                                                                            );
+                                                                                        })}
+                                                                                    </div>
+                                                                                    <span className="text-sm font-black text-slate-700">{indicator.value}</span>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
 
-                                                                <div className="p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100/50">
-                                                                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                                                        <ClipboardCheck size={12} /> Komentar & Feedback
-                                                                    </p>
-                                                                    <p className="text-sm text-slate-600 italic leading-relaxed">
-                                                                        "{row.comment || 'Tidak ada komentar tambahan.'}"
-                                                                    </p>
-                                                                </div>
+                                                                        <div className="p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100/50">
+                                                                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                                                                <ClipboardCheck size={12} /> Komentar & Feedback
+                                                                            </p>
+                                                                            <p className="text-sm text-slate-600 italic leading-relaxed">
+                                                                                "{row.comment || 'Tidak ada komentar tambahan.'}"
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </motion.div>
+                                                            ))}
+
+                                                        {selectedUserDetails.received.length === 0 && (
+                                                            <div className="py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                                                                <History size={48} className="mx-auto text-slate-200 mb-4" />
+                                                                <h5 className="text-lg font-bold text-slate-400">Belum Ada Riwayat</h5>
+                                                                <p className="text-sm text-slate-400">User ini belum menerima penilaian dari rekan manapun.</p>
                                                             </div>
-                                                        </motion.div>
-                                                    ))}
-
-                                                    {selectedUserDetails.received.length === 0 && (
-                                                        <div className="py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
-                                                            <History size={48} className="mx-auto text-slate-200 mb-4" />
-                                                            <h5 className="text-lg font-bold text-slate-400">Belum Ada Riwayat</h5>
-                                                            <p className="text-sm text-slate-400">User ini belum menerima penilaian dari rekan manapun.</p>
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
+                                                
+                                                {/* Range Guide in Modal */}
+                                                <div className="mt-6 p-8 bg-slate-50/50 rounded-[2rem] border border-slate-100">
+                                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                                        <div>
+                                                            <h5 className="text-lg font-black text-slate-900">Panduan Range Predikat</h5>
+                                                            <p className="text-sm text-slate-400 mt-0.5 font-bold">Acuan skor untuk penentuan predikat hasil evaluasi 360.</p>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm font-black">
+                                                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                                                <span className="bg-emerald-50 text-emerald-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&ge; 110</span>
+                                                                <span className="px-3 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Baik</span>
+                                                            </div>
+                                                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                                                <span className="bg-blue-50 text-blue-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">90 – 109.9</span>
+                                                                <span className="px-3 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Baik</span>
+                                                            </div>
+                                                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                                                <span className="bg-amber-50 text-amber-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">70 – 89.9</span>
+                                                                <span className="px-3 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Cukup</span>
+                                                            </div>
+                                                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                                                <span className="bg-orange-50 text-orange-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">50 – 69.9</span>
+                                                                <span className="px-3 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Kurang</span>
+                                                            </div>
+                                                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
+                                                                <span className="bg-red-50 text-red-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&lt; 50</span>
+                                                                <span className="px-3 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Kurang</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </motion.div>
                             </motion.div>
-                        </motion.div>
-                    )}
+                        )}
                     </AnimatePresence>,
                     document.body
                 )}

@@ -30,7 +30,7 @@ func RegisterUserRoutes(api *gin.RouterGroup) {
 
 		// ===== PEER ASSESSMENT =====
 		user.POST("/assessments", assessmentController.SubmitAssessment)
-		// REMOVED: user.GET("/assessments/my-results", assessmentController.GetMyResults) - Users cannot view their scores
+		user.GET("/assessments/my-results", assessmentController.GetMyResults) // User can now view their scores
 		user.GET("/assessments/given", assessmentController.GetMyAssessmentsGiven)
 		user.GET("/assessments/targets", assessmentController.GetTargets) // New: Get who to assess
 		user.GET("/assessments/matrix", assessmentController.GetMatrixFnForUser)

@@ -72,23 +72,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return response;
             }
 
-            // Store token, refresh token, dan user
+            // Store token dan user (Refresh token sekarang diamankan via Cookie HttpOnly)
             if (response.token && response.user) {
                 localStorage.setItem('token', response.token);
                 localStorage.setItem('user', JSON.stringify(response.user));
-                if (response.refresh_token) {
-                    localStorage.setItem('refresh_token', response.refresh_token);
-                }
 
                 setToken(response.token);
                 setUser(response.user);
-                toast.success('Login berhasil!');
+                toast.success('Login berhasil!', { id: 'auth-toast' });
             }
 
             return response;
         } catch (error: any) {
             const message = error.response?.data?.error || 'Login gagal';
-            toast.error(message);
+            toast.error(message, { id: 'auth-toast' });
             throw error;
         }
     };
@@ -101,34 +98,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return response;
             }
 
-            // Store token, refresh token, dan user
+            // Store token dan user
             if (response.token && response.user) {
                 localStorage.setItem('token', response.token);
                 localStorage.setItem('user', JSON.stringify(response.user));
-                if (response.refresh_token) {
-                    localStorage.setItem('refresh_token', response.refresh_token);
-                }
 
                 setToken(response.token);
                 setUser(response.user);
-                toast.success('Admin login berhasil!');
+                toast.success('Admin login berhasil!', { id: 'auth-toast' });
             }
 
             return response;
         } catch (error: any) {
             const message = error.response?.data?.error || 'Admin login gagal';
-            toast.error(message);
+            toast.error(message, { id: 'auth-toast' });
             throw error;
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await import('../services/authService').then(({ logoutUser }) => logoutUser());
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
         localStorage.removeItem('token');
-        localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
         setToken(null);
         setUser(null);
-        toast.success('Logout berhasil');
+        toast.success('Logout berhasil', { id: 'auth-toast' });
     };
 
     const updateUser = (updatedUser: User) => {

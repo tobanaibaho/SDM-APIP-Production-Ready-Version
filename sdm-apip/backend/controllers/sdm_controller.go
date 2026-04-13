@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -209,7 +210,20 @@ func (sc *SDMController) ImportExcel(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("temp_%d.xlsx", time.Now().UnixNano())
+	// SECURITY: Hard limit the uploaded file size to 15MB
+	if file.Size > 15*1024*1024 {
+		utils.ErrorResponse(c, http.StatusBadRequest, "File terlalu besar", "Maksimal ukuran file adalah 15MB")
+		return
+	}
+
+	// SECURITY: Validasi tipe ekstensi khusus Excel
+	ext := filepath.Ext(file.Filename)
+	if ext != ".xlsx" && ext != ".xls" {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Format tidak diizinkan", "Hanya file Excel (.xlsx / .xls) yang diperbolehkan")
+		return
+	}
+
+	filename := fmt.Sprintf("temp_%d%s", time.Now().UnixNano(), ext)
 	if err := c.SaveUploadedFile(file, filename); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Save failed", err.Error())
 		return

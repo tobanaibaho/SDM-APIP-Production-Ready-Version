@@ -74,6 +74,15 @@ func (ac *AuthController) Login(c *gin.Context) {
 		ac.mapAuthError(c, err, "Login failed")
 		return
 	}
+
+	// Set Refresh Token HTTP-Only Cookie
+	isProd := config.AppConfig.GinMode == "release"
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("refresh_token", resp.RefreshToken, 7*24*3600, "/", "", isProd, true)
+
+	// Don't send refresh token in JSON response
+	resp.RefreshToken = ""
+
 	utils.SuccessResponse(c, http.StatusOK, "Login successful", resp)
 }
 
@@ -94,6 +103,15 @@ func (ac *AuthController) SuperAdminLogin(c *gin.Context) {
 		ac.mapAuthError(c, err, "Admin login failed")
 		return
 	}
+
+	// Set Refresh Token HTTP-Only Cookie
+	isProd := config.AppConfig.GinMode == "release"
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("refresh_token", resp.RefreshToken, 7*24*3600, "/", "", isProd, true)
+
+	// Don't send refresh token in JSON response
+	resp.RefreshToken = ""
+
 	utils.SuccessResponse(c, http.StatusOK, "Login successful", resp)
 }
 
@@ -372,15 +390,14 @@ func (ac *AuthController) UpdateProfile(c *gin.Context) {
 // RefreshToken performs secure refresh-token rotation.
 // POST /api/auth/refresh-token
 func (ac *AuthController) RefreshToken(c *gin.Context) {
-	var req struct {
-		RefreshToken string `json:"refresh_token" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+	cookieToken, err := c.Cookie("refresh_token")
+	if err != nil || cookieToken == "" {
+		utils.ErrorResponse(c, http.StatusUnauthorized, "Invalid request", "Refresh token missing")
 		return
 	}
+
 	var stored models.RefreshToken
-	if err := config.DB.Preload("User.Role").Where("token_hash = ?", utils.HashToken(req.RefreshToken)).
+	if err := config.DB.Preload("User.Role").Where("token_hash = ?", utils.HashToken(cookieToken)).
 		First(&stored).Error; err != nil {
 		utils.ErrorResponse(c, http.StatusUnauthorized, "Invalid refresh token", "Session not found or expired")
 		return
@@ -430,10 +447,30 @@ func (ac *AuthController) RefreshToken(c *gin.Context) {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotation failed", "Transaction failed")
 		return
 	}
+	isProd := config.AppConfig.GinMode == "release"
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("refresh_token", newRefresh, 7*24*3600, "/", "", isProd, true)
+
 	utils.SuccessResponse(c, http.StatusOK, "Token refreshed", gin.H{
-		"token":         newAccess,
-		"refresh_token": newRefresh,
+		"token": newAccess,
 	})
+}
+
+// Logout clears the refresh token cookie
+// POST /api/auth/logout
+func (ac *AuthController) Logout(c *gin.Context) {
+	cookieToken, err := c.Cookie("refresh_token")
+	if err == nil && cookieToken != "" {
+		// Optional: Revoke in DB
+		config.DB.Model(&models.RefreshToken{}).Where("token_hash = ?", utils.HashToken(cookieToken)).Update("revoked_at", time.Now())
+	}
+
+	// Always clear the cookie
+	isProd := config.AppConfig.GinMode == "release"
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("refresh_token", "", -1, "/", "", isProd, true)
+
+	utils.SuccessResponse(c, http.StatusOK, "Logged out successfully", nil)
 }
 
 // ChangePassword allows any logged-in user (admin or normal) to change their own password.

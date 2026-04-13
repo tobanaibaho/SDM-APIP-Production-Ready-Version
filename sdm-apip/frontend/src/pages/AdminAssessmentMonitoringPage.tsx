@@ -43,12 +43,19 @@ interface PeriodOption {
    Status Badge Helper
 ───────────────────────────────────────────────── */
 const getStatusBadge = (status: number) => {
-    if (status === 0) return <span className="text-slate-300 text-xs font-bold">Belum Ada</span>;
+    if (status === 0) return <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest">Belum Ada</span>;
     const results = [];
-    if (status & 1) results.push(<span key="atasan" className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold border border-green-200">Atasan</span>);
-    if (status & 2) results.push(<span key="peer" className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold border border-blue-200">Peer</span>);
-    if (status & 4) results.push(<span key="bawahan" className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-[10px] font-bold border border-purple-200">Bawahan</span>);
-    return <div className="flex gap-1.5 flex-wrap">{results}</div>;
+
+    // Backend scenario code mapping (1-7):
+    const hasA = [1, 3, 4, 7].includes(status);
+    const hasP = [1, 2, 4, 6].includes(status);
+    const hasB = [1, 2, 3, 5].includes(status);
+
+    if (hasA) results.push(<span key="atasan" className="px-3 py-1 bg-green-100/80 text-green-700 rounded-full text-xs font-black shadow-sm ring-1 ring-inset ring-green-200">Atasan</span>);
+    if (hasP) results.push(<span key="peer" className="px-3 py-1 bg-blue-100/80 text-blue-700 rounded-full text-xs font-black shadow-sm ring-1 ring-inset ring-blue-200">Peer</span>);
+    if (hasB) results.push(<span key="bawahan" className="px-3 py-1 bg-purple-100/80 text-purple-700 rounded-full text-xs font-black shadow-sm ring-1 ring-inset ring-purple-200">Bawahan</span>);
+    
+    return <div className="flex gap-2 flex-wrap">{results}</div>;
 };
 
 /* ─────────────────────────────────────────────────
@@ -134,6 +141,8 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Periode</span>
                         <div className="relative">
                             <select
+                                id="periodFilter"
+                                name="periodFilter"
                                 className="appearance-none form-input py-1.5 pr-8 min-w-[220px] border-none focus:ring-0 bg-slate-50 font-bold text-slate-700 rounded-xl text-sm"
                                 value={selectedPeriod || ''}
                                 onChange={e => setSelectedPeriod(Number(e.target.value))}
@@ -228,6 +237,8 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
+                                id="searchInput"
+                                name="searchInput"
                                 placeholder="Cari nama atau NIP..."
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
@@ -251,7 +262,7 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-slate-950 text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 border-b border-slate-900">
+                                <thead className="bg-slate-950 text-xs font-black uppercase tracking-[0.1em] text-slate-300 border-b border-slate-900">
                                     <tr>
                                         <th className="px-6 py-5">Pegawai / NIP</th>
                                         <th className="px-6 py-5">Penilai Yang Masuk</th>
@@ -286,11 +297,11 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                                                         <div>
                                                             <p className="font-black text-slate-900 text-sm">{row.name}</p>
                                                             {row.jabatan?.toLowerCase().includes('inspektur') ? (
-                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[9px] font-black uppercase tracking-wider border border-indigo-200 mt-0.5">
+                                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-200 mt-1 shadow-sm">
                                                                     ★ Inspektur
                                                                 </span>
                                                             ) : (
-                                                                <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{row.nip}</p>
+                                                                <p className="text-[11px] font-mono font-bold text-slate-500 mt-0.5">{row.nip}</p>
                                                             )}
                                                         </div>
                                                     </div>
@@ -303,18 +314,18 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
 
                                                 {/* Progress bar */}
                                                 <td className="px-6 py-5">
-                                                    <div className="space-y-1.5">
-                                                        <div className="flex items-center justify-between text-[10px] font-bold">
-                                                            <span className="text-slate-500">
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center justify-between text-xs font-black">
+                                                            <span className="text-slate-600">
                                                                 {row.done_count ?? 0} / {row.total_required ?? 0} form
                                                             </span>
-                                                            <span className={`font-black ${isComplete ? 'text-emerald-600' :
+                                                            <span className={`text-sm ${isComplete ? 'text-emerald-600' :
                                                                 isPartial ? 'text-amber-600' : 'text-slate-400'
                                                                 }`}>
                                                                 {pct}%
                                                             </span>
                                                         </div>
-                                                        <div className="h-2 w-40 bg-slate-100 rounded-full overflow-hidden">
+                                                        <div className="h-2.5 w-48 bg-slate-100 rounded-full overflow-hidden shadow-inner">
                                                             <div
                                                                 className={`h-full rounded-full transition-all duration-700 ${isComplete ? 'bg-emerald-500' :
                                                                     isPartial ? 'bg-amber-400' : 'bg-slate-200'
@@ -345,19 +356,19 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
 
                     {/* Keterangan legend */}
                     {!loading && filtered.length > 0 && (
-                        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/30 flex items-center gap-6">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Keterangan:</span>
-                            <div className="flex items-center gap-1.5">
-                                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold text-slate-500">Selesai (100%)</span>
+                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center gap-6">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Keterangan:</span>
+                            <div className="flex items-center gap-2">
+                                <div className="h-3 w-3 rounded-full bg-emerald-500 shadow-sm" />
+                                <span className="text-xs font-black text-slate-600">Selesai (100%)</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                                <span className="text-[10px] font-bold text-slate-500">Sebagian (&gt;0%)</span>
+                            <div className="flex items-center gap-2">
+                                <div className="h-3 w-3 rounded-full bg-amber-400 shadow-sm" />
+                                <span className="text-xs font-black text-slate-600">Sebagian (&gt;0%)</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="h-2.5 w-2.5 rounded-full bg-slate-200" />
-                                <span className="text-[10px] font-bold text-slate-500">Belum Ada</span>
+                            <div className="flex items-center gap-2">
+                                <div className="h-3 w-3 rounded-full bg-slate-200 shadow-sm" />
+                                <span className="text-xs font-black text-slate-600">Belum Ada</span>
                             </div>
                         </div>
                     )}

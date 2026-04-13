@@ -21,6 +21,11 @@ export const updateProfile = async (data: { email?: string; nomor_hp?: string; f
     return response.data.data!;
 };
 
+// Logout (Clear HttpOnly Cookie)
+export const logoutUser = async (): Promise<void> => {
+    await api.post<ApiResponse<null>>('/auth/logout');
+};
+
 // Admin Login
 export const superAdminLogin = async (data: any): Promise<LoginResponse> => {
     const response = await api.post<ApiResponse<LoginResponse>>('/auth/super-admin/login', data);

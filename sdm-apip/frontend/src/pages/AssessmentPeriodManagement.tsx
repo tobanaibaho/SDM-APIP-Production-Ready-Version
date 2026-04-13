@@ -9,14 +9,28 @@ import {
     ToggleLeft,
     ToggleRight,
     Clock,
-    AlertCircle
+    AlertCircle,
+    RefreshCw,
+    Lock,
+    Info
 } from 'lucide-react';
+
+/* ── helpers ── */
+const isPeriodExpiredByDate = (period: AssessmentPeriod) =>
+    new Date() > new Date(period.end_date);
+
+const isPeriodUpcoming = (period: AssessmentPeriod) =>
+    new Date() < new Date(period.start_date);
+
+const daysUntilEnd = (period: AssessmentPeriod) =>
+    Math.ceil((new Date(period.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
 const AssessmentPeriodManagement: React.FC = () => {
     const [periods, setPeriods] = useState<AssessmentPeriod[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState<AssessmentPeriod | null>(null);
+    const [overrideConfirm, setOverrideConfirm] = useState<AssessmentPeriod | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [newPeriod, setNewPeriod] = useState({
         name: '',
@@ -54,13 +68,40 @@ const AssessmentPeriodManagement: React.FC = () => {
         }
     };
 
-    const handleToggleStatus = async (id: number, currentStatus: boolean) => {
+    const handleToggleStatus = async (period: AssessmentPeriod) => {
+        const expiredByDate = isPeriodExpiredByDate(period);
+
+        // Jika periode sudah expired dan Admin ingin mengaktifkan kembali → tampilkan konfirmasi
+        if (!period.is_active && expiredByDate) {
+            setOverrideConfirm(period);
+            return;
+        }
+
+        // Jika periode masih dalam rentang tanggal dan aktif → tidak perlu toggle manual
+        if (period.is_active && !expiredByDate) {
+            toast('Periode ini masih berjalan. Sistem akan menonaktifkannya otomatis saat tanggal berakhir.', { icon: 'ℹ️', id: 'period-info' });
+            return;
+        }
+
+        // Untuk periode upcoming (belum mulai) → boleh toggle bebas
         try {
-            await assessmentService.updatePeriodStatus(id, !currentStatus);
-            toast.success('Status periode diperbarui');
+            await assessmentService.updatePeriodStatus(period.id, !period.is_active);
+            toast.success('Status periode diperbarui', { id: 'period-toast' });
             fetchPeriods();
-        } catch (error) {
-            toast.error('Gagal memperbarui status');
+        } catch {
+            toast.error('Gagal memperbarui status', { id: 'period-toast' });
+        }
+    };
+
+    const handleOverrideReactivate = async () => {
+        if (!overrideConfirm) return;
+        try {
+            await assessmentService.updatePeriodStatus(overrideConfirm.id, true);
+            toast.success(`Periode "${overrideConfirm.name}" diaktifkan kembali oleh Admin.`, { id: 'period-toast' });
+            setOverrideConfirm(null);
+            fetchPeriods();
+        } catch {
+            toast.error('Gagal mengaktifkan kembali periode', { id: 'period-toast' });
         }
     };
 
@@ -84,23 +125,16 @@ const AssessmentPeriodManagement: React.FC = () => {
     };
 
     const getStatusBadge = (period: AssessmentPeriod) => {
-        const now = new Date();
-        const start = new Date(period.start_date);
-        const end = new Date(period.end_date);
-
-        if (!period.is_active) {
-            return <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800">Nonaktif</span>;
+        if (isPeriodExpiredByDate(period)) {
+            return <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700"><Lock size={10} />Berakhir</span>;
         }
-
-        if (now < start) {
-            return <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">Akan Datang</span>;
+        if (isPeriodUpcoming(period)) {
+            return <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-700">Akan Datang</span>;
         }
-
-        if (now > end) {
-            return <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">Selesai</span>;
+        if (period.is_active) {
+            return <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700"><span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />Berjalan</span>;
         }
-
-        return <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Aktif</span>;
+        return <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-600">Nonaktif</span>;
     };
 
     return (
@@ -120,6 +154,15 @@ const AssessmentPeriodManagement: React.FC = () => {
                     </button>
                 </div>
 
+                {/* Info Banner */}
+                <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800 text-sm">
+                    <Info size={18} className="shrink-0 mt-0.5" />
+                    <p>
+                        <strong>Sistem Auto-Lock aktif:</strong> Periode akan otomatis terkunci saat melewati <em>Tanggal Selesai</em> tanpa perlu tindakan manual.
+                        Anda tetap dapat mengaktifkan kembali periode yang sudah berakhir sebagai <strong>Override Darurat</strong> jika dibutuhkan.
+                    </p>
+                </div>
+
                 {/* Periods List */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {loading ? (
@@ -137,46 +180,126 @@ const AssessmentPeriodManagement: React.FC = () => {
                             <p className="text-slate-500">Klik tombol "Buat Periode Baru" untuk memulai.</p>
                         </div>
                     ) : (
-                        periods.map((period) => (
-                            <div key={period.id} className="card group relative">
-                                <div className="p-6">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="p-2 bg-primary-50 text-primary-600 rounded-lg">
-                                            <Calendar size={24} />
-                                        </div>
-                                        {getStatusBadge(period)}
-                                    </div>
-                                    <h3 className="text-lg font-bold text-slate-900 mb-1">{period.name}</h3>
-                                    <div className="space-y-2 text-sm text-slate-500">
-                                        <div className="flex items-center gap-2">
-                                            <Clock size={14} />
-                                            <span>{new Date(period.start_date).toLocaleDateString('id-ID')} - {new Date(period.end_date).toLocaleDateString('id-ID')}</span>
-                                        </div>
-                                    </div>
+                        periods.map((period) => {
+                            const expired = isPeriodExpiredByDate(period);
+                            const upcoming = isPeriodUpcoming(period);
+                            const days = daysUntilEnd(period);
+                            const nearDeadline = !expired && !upcoming && days >= 0 && days <= 3;
 
-                                    <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                                        <button
-                                            onClick={() => handleToggleStatus(period.id, period.is_active)}
-                                            className={`flex items-center gap-2 text-sm font-medium transition-colors ${period.is_active ? 'text-primary-600' : 'text-slate-400'}`}
-                                        >
-                                            {period.is_active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
-                                            {period.is_active ? 'Status Aktif' : 'Status Nonaktif'}
-                                        </button>
+                            return (
+                                <div key={period.id} className={`card group relative transition-all ${
+                                    expired ? 'opacity-75 border-red-100' :
+                                    nearDeadline ? 'border-amber-200 shadow-amber-100' : ''
+                                }`}>
+                                    <div className="p-6">
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="p-2 bg-primary-50 text-primary-600 rounded-lg">
+                                                <Calendar size={24} />
+                                            </div>
+                                            {getStatusBadge(period)}
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-900 mb-1">{period.name}</h3>
+                                        <div className="space-y-2 text-sm text-slate-500">
+                                            <div className="flex items-center gap-2">
+                                                <Clock size={14} />
+                                                <span>{new Date(period.start_date).toLocaleDateString('id-ID')} — {new Date(period.end_date).toLocaleDateString('id-ID')}</span>
+                                            </div>
+                                            {/* Countdown / info */}
+                                            {!expired && !upcoming && days >= 0 && (
+                                                <div className={`flex items-center gap-1.5 text-xs font-bold ${
+                                                    nearDeadline ? 'text-amber-600' : 'text-slate-400'
+                                                }`}>
+                                                    <Clock size={12} />
+                                                    {days === 0 ? 'Berakhir hari ini!' : `Sisa ${days} hari`}
+                                                </div>
+                                            )}
+                                            {expired && (
+                                                <div className="flex items-center gap-1.5 text-xs font-bold text-red-500">
+                                                    <Lock size={12} />
+                                                    Dikunci otomatis oleh sistem
+                                                </div>
+                                            )}
+                                        </div>
 
-                                        <button
-                                            onClick={() => handleDelete(period)}
-                                            className="text-slate-400 hover:text-red-600 transition-colors"
-                                            title="Hapus Periode"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                                            {/* Override button — konteks berbeda tiap kondisi */}
+                                            {expired ? (
+                                                <button
+                                                    onClick={() => handleToggleStatus(period)}
+                                                    className="flex items-center gap-2 text-sm font-bold text-amber-600 hover:text-amber-700 transition-colors"
+                                                    title="Aktifkan kembali sebagai override darurat"
+                                                >
+                                                    <RefreshCw size={16} /> Aktifkan Kembali
+                                                </button>
+                                            ) : upcoming ? (
+                                                <button
+                                                    onClick={() => handleToggleStatus(period)}
+                                                    className={`flex items-center gap-2 text-sm font-medium transition-colors ${period.is_active ? 'text-primary-600' : 'text-slate-400'}`}
+                                                >
+                                                    {period.is_active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+                                                    {period.is_active ? 'Akan Aktif' : 'Nonaktif'}
+                                                </button>
+                                            ) : (
+                                                <div className="flex items-center gap-2 text-sm font-medium text-green-600">
+                                                    <ToggleRight size={24} />
+                                                    <span>Berjalan Otomatis</span>
+                                                </div>
+                                            )}
+
+                                            <button
+                                                onClick={() => handleDelete(period)}
+                                                className="text-slate-400 hover:text-red-600 transition-colors"
+                                                title="Hapus Periode"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
             </div>
+
+            {/* Override Reactivation Confirmation Modal */}
+            {overrideConfirm && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+                    <div className="card w-full max-w-md animate-slide-up">
+                        <div className="px-6 py-4 border-b border-amber-100 flex items-center gap-3">
+                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                                <RefreshCw size={20} />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-900">Override Darurat</h3>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <p className="text-slate-700">
+                                Periode <span className="font-semibold text-slate-900">"{overrideConfirm.name}"</span> sudah <span className="text-red-600 font-bold">melewati tanggal berakhir</span> dan dikunci otomatis oleh sistem.
+                            </p>
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                <p className="text-sm font-semibold text-amber-800">⚠️ Dengan mengaktifkan kembali:</p>
+                                <ul className="text-sm text-amber-700 mt-2 space-y-1 list-disc list-inside">
+                                    <li>Pegawai dapat kembali mengisi penilaian pada periode ini</li>
+                                    <li>Sistem akan mengunci kembali otomatis hanya jika end_date diubah</li>
+                                    <li>Tindakan ini tercatat di audit log</li>
+                                </ul>
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    onClick={() => setOverrideConfirm(null)}
+                                    className="btn-secondary flex-1"
+                                >Batal</button>
+                                <button
+                                    onClick={handleOverrideReactivate}
+                                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors"
+                                >
+                                    <RefreshCw size={16} /> Ya, Aktifkan Kembali
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Delete Confirmation Modal */}
             {deleteConfirm && (

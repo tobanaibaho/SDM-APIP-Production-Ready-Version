@@ -22,12 +22,16 @@ func (s *AssessmentService) CreatePeriod(req models.CreatePeriodRequest) (*model
 	}
 	end = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, end.Location())
 
+	// Periode hanya aktif jika hari ini masih dalam rentang tanggal
+	now := time.Now()
+	isActive := !now.Before(start) && now.Before(end)
+
 	period := models.AssessmentPeriod{
 		Name:      req.Name,
 		StartDate: start,
 		EndDate:   end,
 		Frequency: req.Frequency,
-		IsActive:  true,
+		IsActive:  isActive,
 	}
 	if err := s.db.Create(&period).Error; err != nil {
 		return nil, ErrInternalServer
@@ -45,12 +49,14 @@ func (s *AssessmentService) GetAllPeriods() ([]models.AssessmentPeriod, error) {
 
 func (s *AssessmentService) UpdatePeriodStatus(id uint, isActive bool) error {
 	if isActive {
+		// Deactivate other periods first (only one active)
 		if err := s.db.Model(&models.AssessmentPeriod{}).
 			Where("id != ? AND is_active = ?", id, true).
 			Update("is_active", false).Error; err != nil {
 			return ErrInternalServer
 		}
 	}
+	
 	result := s.db.Model(&models.AssessmentPeriod{}).Where("id = ?", id).Update("is_active", isActive)
 	if result.Error != nil {
 		return ErrInternalServer
@@ -91,8 +97,7 @@ func (s *AssessmentService) DeletePeriod(id uint) error {
 
 func (s *AssessmentService) GetActivePeriod() (*models.AssessmentPeriod, error) {
 	var period models.AssessmentPeriod
-	now := time.Now()
-	err := s.db.Where("is_active = ? AND start_date <= ? AND end_date >= ?", true, now, now).
+	err := s.db.Where("is_active = ?", true).
 		Order("start_date DESC").First(&period).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -101,6 +106,15 @@ func (s *AssessmentService) GetActivePeriod() (*models.AssessmentPeriod, error) 
 		logger.Error("Database error in GetActivePeriod: %v", err)
 		return nil, ErrInternalServer
 	}
+
+	// Auto-lock: jika end_date sudah lewat, nonaktifkan otomatis di database
+	if time.Now().After(period.EndDate) {
+		logger.Info("Period '%s' (ID:%d) telah melewati end_date — otomatis dinonaktifkan.", period.Name, period.ID)
+		s.db.Model(&period).Update("is_active", false)
+		period.IsActive = false
+		return nil, nil
+	}
+
 	return &period, nil
 }
 

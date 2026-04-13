@@ -165,7 +165,7 @@ const MyGroupsPage: React.FC = () => {
                                             <div className="flex items-center gap-2">
                                                 <p className="font-bold text-slate-900 truncate">{member.name}</p>
                                                 {member.group_role === 'Ketua' && (
-                                                    <span className="px-1.5 py-0.5 rounded bg-amber-50 text-[8px] font-black text-amber-600 uppercase tracking-tighter border border-amber-100">Ketua</span>
+                                                    <span className="px-2 py-0.5 rounded bg-amber-50 text-[10px] font-black text-amber-600 uppercase tracking-tighter border border-amber-100">Ketua</span>
                                                 )}
                                             </div>
                                             <p className="text-xs text-slate-500 font-medium truncate">{member.jabatan || 'Anggota Tim'}</p>

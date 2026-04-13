@@ -26,6 +26,7 @@ func RegisterAuthRoutes(api *gin.RouterGroup) {
 		auth.POST("/refresh-token", loginLimit, authController.RefreshToken)
 		auth.POST("/forgot-password", loginLimit, authController.ForgotPassword)
 		auth.POST("/reset-password", loginLimit, authController.ResetPassword)
+		auth.POST("/logout", authController.Logout)
 
 		// Super admin auth
 		superAdmin := auth.Group("/super-admin")

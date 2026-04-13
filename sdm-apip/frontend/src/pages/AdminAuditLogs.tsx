@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatRelativeTime, formatAbsoluteTime } from '../hooks/useRelativeTime';
 import Layout from '../components/Layout';
 import { getAllAuditLogs, AuditLog } from '../services/auditService';
 import { Pagination } from '../types';
@@ -23,6 +24,12 @@ const AdminAuditLogs: React.FC = () => {
     const [page, setPage] = useState(1);
     const [actionFilter, setActionFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    // tick every 30s to refresh relative timestamps
+    const [, setTick] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setTick(t => t + 1), 30_000);
+        return () => clearInterval(id);
+    }, []);
 
     useEffect(() => {
         fetchLogs();
@@ -106,6 +113,8 @@ const AdminAuditLogs: React.FC = () => {
                     <div className="relative flex-1 group">
                         <Filter size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
                         <select
+                            id="action-filter"
+                            name="actionFilter"
                             className="form-input pl-11 bg-slate-50 border-slate-200 text-xs font-black uppercase tracking-widest appearance-none cursor-pointer"
                             value={actionFilter}
                             onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
@@ -124,6 +133,8 @@ const AdminAuditLogs: React.FC = () => {
                     <div className="relative w-full md:w-64 group">
                         <Filter size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
                         <select
+                            id="status-filter"
+                            name="statusFilter"
                             className="form-input pl-11 bg-slate-50 border-slate-200 text-xs font-black uppercase tracking-widest appearance-none cursor-pointer"
                             value={statusFilter}
                             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
@@ -178,11 +189,14 @@ const AdminAuditLogs: React.FC = () => {
                                     <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-black text-slate-900 font-mono tracking-tighter">
-                                                    {new Date(log.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                                <span
+                                                    className="text-xs font-black text-primary-700 cursor-help"
+                                                    title={formatAbsoluteTime(log.created_at)}
+                                                >
+                                                    {formatRelativeTime(log.created_at)}
                                                 </span>
-                                                <span className="text-[10px] font-bold text-slate-400 font-mono">
-                                                    {new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                <span className="text-[10px] font-bold text-slate-400 font-mono mt-0.5">
+                                                    {new Date(log.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                                 </span>
                                             </div>
                                         </td>

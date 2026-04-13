@@ -173,17 +173,20 @@ const GroupRelationsTab: React.FC<Props> = ({
                             {/* Relation type */}
                             {(['relation_type', 'target_position'] as const).map((field, fi) => (
                                 <div key={field}>
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 block">
-                                        {fi === 0 ? 'Tipe Relasi (Perspektif Penilai)' : 'Posisi Target dalam Tim'}
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block flex items-center justify-between">
+                                        <span>{fi === 0 ? 'Tipe Penilai (Role Evaluator)' : 'Tipe Target (Role Yang Dinilai)'}</span>
+                                        <span className="text-[8px] opacity-70 font-normal normal-case italic">
+                                            {fi === 0 ? 'Pilih "Atasan" jika penilai adalah bos' : 'Pilih "Bawahan" jika target adalah staf'}
+                                        </span>
                                     </label>
                                     <div className="grid grid-cols-3 gap-2">
                                         {(['Atasan', 'Peer', 'Bawahan'] as const).map(t => (
                                             <button
                                                 key={t} type="button"
                                                 onClick={() => setNewRelation({ ...newRelation, [field]: t })}
-                                                className={`py-2 rounded-lg text-[10px] font-bold uppercase transition-all border ${newRelation[field] === t
-                                                    ? (fi === 0 ? 'bg-primary-600 border-primary-500 text-white' : 'bg-green-600 border-green-500 text-white')
-                                                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}
+                                                className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border-2 ${newRelation[field] === t
+                                                    ? (fi === 0 ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-900/40' : 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-900/40')
+                                                    : 'bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-300'}`}
                                             >
                                                 {t}
                                             </button>

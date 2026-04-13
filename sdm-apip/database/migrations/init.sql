@@ -145,8 +145,6 @@ CREATE TABLE IF NOT EXISTS peer_assessments (
     loyal INTEGER NOT NULL DEFAULT 0 CHECK (loyal >= 0 AND loyal <= 100),
     adaptif INTEGER NOT NULL DEFAULT 0 CHECK (adaptif >= 0 AND adaptif <= 100),
     kolaboratif INTEGER NOT NULL DEFAULT 0 CHECK (kolaboratif >= 0 AND kolaboratif <= 100),
-    -- Add-on: Ide Baru / Inovasi (0-20) — khusus Inspektur/Atasan
-    ide_inovasi INTEGER NOT NULL DEFAULT 0 CHECK (ide_inovasi >= 0 AND ide_inovasi <= 20),
     
     comment TEXT,
     relation_type VARCHAR(20) DEFAULT 'Peer',

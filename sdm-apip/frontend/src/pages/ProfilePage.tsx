@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { getProfile, setupMFA, enableMFA, disableMFA } from '../services/authService';
 import { SDM, MFASetupResponse } from '../types';
+import { useRelativeTime, formatAbsoluteTime } from '../hooks/useRelativeTime';
 import {
     Shield,
     Fingerprint,
@@ -22,6 +23,9 @@ const ProfilePage: React.FC = () => {
     const [sdmData, setSdmData] = useState<SDM | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // Realtime relative timestamps
+    const loginLabel = useRelativeTime(user?.last_login_at);
+    const activityLabel = useRelativeTime(user?.last_activity_at);
     // MFA States
     const [showMFAModal, setShowMFAModal] = useState(false);
     const [mfaData, setMfaData] = useState<MFASetupResponse | null>(null);
@@ -113,7 +117,7 @@ const ProfilePage: React.FC = () => {
             title="Profil Saya"
             subtitle={isAdmin ? "Kelola informasi profil dan detail akun Anda di sini." : "Detail informasi profil dan akun resmi Anda."}
         >
-            <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+            <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
                 {/* Hero Header */}
                 <div className="relative overflow-hidden rounded-[2rem] bg-slate-900 shadow-2xl">
                     <div className="absolute inset-0 opacity-10">
@@ -121,10 +125,10 @@ const ProfilePage: React.FC = () => {
                         <div className="absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-accent-500 blur-3xl"></div>
                     </div>
 
-                    <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 md:gap-8">
+                    <div className="relative z-10 p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-10">
                         {/* Avatar */}
-                        <div className="relative group">
-                            <div className="h-28 w-28 rounded-3xl bg-white p-1 shadow-2xl transform transition-transform group-hover:scale-[1.02]">
+                        <div className="relative group shrink-0">
+                            <div className="h-32 w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 rounded-3xl bg-white p-1 shadow-2xl transform transition-transform group-hover:scale-[1.02]">
                                 <div className="h-full w-full rounded-[1.4rem] bg-slate-100 flex items-center justify-center overflow-hidden">
                                     {formData.foto ? (
                                         <img src={formData.foto} alt="Profile" className="h-full w-full object-cover" />
@@ -133,30 +137,34 @@ const ProfilePage: React.FC = () => {
                                     )}
                                 </div>
                             </div>
-                            <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl bg-accent-500 border-4 border-slate-900 flex items-center justify-center shadow-xl">
+                            <div className="absolute -bottom-2 -right-2 h-10 w-10 md:h-12 md:w-12 rounded-xl bg-accent-500 border-4 border-slate-900 flex items-center justify-center shadow-xl">
                                 <CheckCircle2 size={20} className="text-slate-900" />
                             </div>
                         </div>
 
                         {/* Name & Title */}
-                        <div className="text-center md:text-left">
-                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
-                                <h2 className="text-3xl font-black text-white tracking-tight">{sdmData?.nama || 'Pengguna'}</h2>
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold text-accent-400 backdrop-blur-md border border-white/10 uppercase tracking-widest">
-                                    <Shield size={12} />
-                                    {user?.role || 'Personil APIP'}
-                                </span>
-                            </div>
-                            <p className="text-lg text-slate-400 font-medium max-w-xl">{sdmData?.jabatan || 'Jabatan Belum Terdata'}</p>
-
-                            <div className="mt-5 flex flex-wrap justify-center md:justify-start gap-2">
-                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-3 py-1.5 rounded-xl text-xs border border-white/5 backdrop-blur-sm">
-                                    <Fingerprint size={14} className="text-accent-500" />
-                                    <span className="font-mono">{user?.nip}</span>
+                        <div className="flex-1 min-w-0 text-center md:text-left">
+                            <div className="flex flex-col gap-2">
+                                <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight break-words leading-tight">
+                                    {sdmData?.nama || 'Pengguna'}
+                                </h2>
+                                <div className="flex justify-center md:justify-start">
+                                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-accent-400 backdrop-blur-md border border-white/10 uppercase tracking-widest w-max">
+                                        <Shield size={14} />
+                                        {user?.role || 'Personil APIP'}
+                                    </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-3 py-1.5 rounded-xl text-xs border border-white/5 backdrop-blur-sm">
-                                    <Building2 size={14} className="text-accent-500" />
-                                    <span>{sdmData?.unit_kerja || 'Inspektorat'}</span>
+                            </div>
+                            <p className="text-lg md:text-xl lg:text-2xl text-slate-400 font-medium max-w-2xl break-words leading-snug">{sdmData?.jabatan || 'Jabatan Belum Terdata'}</p>
+
+                            <div className="mt-6 flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-3">
+                                <div className="flex items-center gap-2.5 text-slate-300 bg-white/5 px-4 py-2.5 rounded-xl text-sm md:text-base border border-white/5 backdrop-blur-sm shadow-inner">
+                                    <Fingerprint size={18} className="text-accent-500 shrink-0" />
+                                    <span className="font-mono truncate">{user?.nip}</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 text-slate-300 bg-white/5 px-4 py-2.5 rounded-xl text-sm md:text-base border border-white/5 backdrop-blur-sm shadow-inner">
+                                    <Building2 size={18} className="text-accent-500 shrink-0" />
+                                    <span className="truncate max-w-[200px] sm:max-w-md">{sdmData?.unit_kerja || 'Inspektorat'}</span>
                                 </div>
                             </div>
                         </div>
@@ -239,15 +247,13 @@ const ProfilePage: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Login Terakhir</p>
-                                    <p className="text-xs font-bold text-slate-700">
-                                        {user?.last_login_at ? new Date(user.last_login_at).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : 'Baru saja'}
-                                    </p>
+                                    <p className="text-xs font-black text-primary-600">{loginLabel}</p>
+                                    <p className="text-[10px] text-slate-400 mt-1">{formatAbsoluteTime(user?.last_login_at)}</p>
                                 </div>
                                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Aktivitas Terakhir</p>
-                                    <p className="text-xs font-bold text-slate-700">
-                                        {user?.last_activity_at ? new Date(user.last_activity_at).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : 'Aktif'}
-                                    </p>
+                                    <p className="text-xs font-black text-emerald-600">{activityLabel}</p>
+                                    <p className="text-[10px] text-slate-400 mt-1">{formatAbsoluteTime(user?.last_activity_at)}</p>
                                 </div>
                             </div>
                         </div>
