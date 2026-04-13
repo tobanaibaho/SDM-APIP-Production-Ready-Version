@@ -1,0 +1,96 @@
+image: docker:24.0.5
+
+services:
+  - docker:24.0.5-dind
+
+variables:
+  # Konfigurasi Docker-in-Docker
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  
+  # Anda dapat menyesuaikan tag ini dengan registry Gitlab lokal Kementerian Anda
+  BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA
+  FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+
+stages:
+  - lint-test
+  - build
+  - containerize
+
+# ──────────────────────────────────────────
+# BAGIAN 1: BACKEND (Golang)
+# ──────────────────────────────────────────
+
+test-backend:
+  stage: lint-test
+  image: golang:1.24-alpine
+  script:
+    - cd backend
+    - echo "Menjalankan Test & Pengecekan Modul Backend..."
+    - go mod tidy
+    # Jika nanti Anda membuat file _test.go, baris ini otomatis akan mengujinya
+    - go test -v ./... 
+  only:
+    - master
+    - main
+    - merge_requests
+
+build-backend:
+  stage: build
+  image: golang:1.24-alpine
+  script:
+    - cd backend
+    - echo "Kompilasi Binary Backend..."
+    - CGO_ENABLED=0 GOOS=linux go build -buildvcs=false -a -installsuffix cgo -o main .
+  artifacts:
+    paths:
+      - backend/main
+    expire_in: 1 day
+  only:
+    - master
+    - main
+
+# ──────────────────────────────────────────
+# BAGIAN 2: FRONTEND (React / Node.js)
+# ──────────────────────────────────────────
+
+build-frontend:
+  stage: build
+  image: node:18-alpine
+  script:
+    - cd frontend
+    - echo "Menginstal NPM Dependencies..."
+    - npm ci || npm install
+    - echo "Membangun Static Vite Bundle..."
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
+    expire_in: 1 day
+  only:
+    - master
+    - main
+
+# ──────────────────────────────────────────
+# BAGIAN 3: DOCKER CONTAINER IMAGE (Opsional)
+# ──────────────────────────────────────────
+
+# Buka komentar di bawah ini jika GitLab Container Registry Anda aktif!
+
+# docker-build-push:
+#   stage: containerize
+#   dependencies:
+#     - build-backend
+#     - build-frontend
+#   script:
+#     - echo "Login ke Gitlab Registry..."
+#     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#     - echo "Membangun Images..."
+#     - docker build -t $BACKEND_IMAGE -f backend/Dockerfile .
+#     - docker build -t $FRONTEND_IMAGE -f frontend/Dockerfile .
+#     - echo "Mengirim ke Registry..."
+#     - docker push $BACKEND_IMAGE
+#     - docker push $FRONTEND_IMAGE
+#   only:
+#     - master
+#     - tags
