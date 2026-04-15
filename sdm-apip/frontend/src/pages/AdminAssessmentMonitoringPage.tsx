@@ -4,18 +4,15 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 
 import {
-    Eye,
     ClipboardCheck,
     Users,
     CheckCircle2,
     AlertTriangle,
-    BarChart3,
     Search,
     TrendingUp,
     ShieldCheck,
     Activity,
     ChevronDown,
-    Info,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -121,29 +118,31 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
             <div className="space-y-6 animate-fade-in">
 
                 {/* ── Admin Observer Banner ── */}
-                <div className="flex items-start gap-4 bg-blue-50 border border-blue-200 rounded-2xl px-6 py-4">
-                    <div className="p-2 bg-blue-100 rounded-xl shrink-0 mt-0.5">
-                        <ShieldCheck size={18} className="text-blue-600" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-black text-blue-800 mb-0.5">Mode Pengawas Administrator</p>
-                        <p className="text-xs text-blue-600 leading-relaxed">
-                            Halaman ini hanya untuk <span className="font-bold">memantau</span> progress penilaian pegawai.
-                            Admin tidak berpartisipasi dalam proses penilaian 360° dan tidak masuk dalam grup manapun.
-                            Untuk melihat hasil lengkap, gunakan menu <span className="font-bold">Laporan &amp; Analitik</span>.
-                        </p>
+                <div className="relative overflow-hidden bg-white/50 backdrop-blur-xl border border-white/50 shadow-sm rounded-3xl p-6">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
+                    <div className="relative flex items-start gap-4">
+                        <div className="p-3 bg-blue-500/10 rounded-2xl shrink-0">
+                            <ShieldCheck size={24} className="text-blue-600" />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-black text-slate-900 mb-1">Mode Pengawas Administrator</h4>
+                            <p className="text-xs text-slate-500 leading-relaxed max-w-2xl">
+                                Halaman ini hanya untuk <span className="font-bold text-slate-700">memantau</span> progress penilaian pegawai.
+                                Admin tidak berpartisipasi dalam proses penilaian 360° dan tidak masuk dalam grup manapun.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 {/* ── Period Selector ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <div className="flex items-center gap-3 bg-white p-2 pl-4 rounded-2xl shadow-sm border border-slate-100 w-fit">
+                    <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm p-2 pl-4 rounded-2xl shadow-sm border border-slate-200 w-fit">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Periode</span>
                         <div className="relative">
                             <select
                                 id="periodFilter"
                                 name="periodFilter"
-                                className="appearance-none form-input py-1.5 pr-8 min-w-[220px] border-none focus:ring-0 bg-slate-50 font-bold text-slate-700 rounded-xl text-sm"
+                                className="appearance-none form-input py-1.5 pr-8 min-w-[220px] border-none focus:ring-0 bg-transparent font-bold text-slate-700 rounded-xl text-sm cursor-pointer"
                                 value={selectedPeriod || ''}
                                 onChange={e => setSelectedPeriod(Number(e.target.value))}
                             >
@@ -158,91 +157,45 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                     </div>
 
                     {selectedPeriodObj?.is_active && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-[11px] font-black uppercase tracking-wider border border-green-200">
-                            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                            Periode Aktif Berjalan
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-black uppercase tracking-wider border border-emerald-100">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Periode Aktif
                         </span>
                     )}
                 </div>
 
                 {/* ── Summary Stats Row ── */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {/* Overall Progress */}
-                    <div className="card p-5 col-span-2 sm:col-span-1 border-l-4 border-l-primary-500 relative overflow-hidden group">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Rata-rata Progress</p>
-                        <h3 className="text-3xl font-black text-slate-900">{avgPct}%</h3>
-                        <p className="text-[9px] text-slate-400 mt-1">Keseluruhan pengisian</p>
-                        <Activity size={48} className="absolute -right-2 -bottom-3 text-primary-50 group-hover:-rotate-12 transition-all" />
-                    </div>
-                    {/* Selesai */}
-                    <div className="card p-5 border-l-4 border-l-emerald-500 relative overflow-hidden group">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Selesai</p>
-                        <h3 className="text-3xl font-black text-emerald-600">{done}</h3>
-                        <p className="text-[9px] text-slate-400 mt-1">Dari {total} pegawai</p>
-                        <CheckCircle2 size={48} className="absolute -right-2 -bottom-3 text-emerald-50 group-hover:-rotate-12 transition-all" />
-                    </div>
-                    {/* Sebagian */}
-                    <div className="card p-5 border-l-4 border-l-amber-500 relative overflow-hidden group">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Sebagian</p>
-                        <h3 className="text-3xl font-black text-amber-600">{partial}</h3>
-                        <p className="text-[9px] text-slate-400 mt-1">Pengisian belum penuh</p>
-                        <TrendingUp size={48} className="absolute -right-2 -bottom-3 text-amber-50 group-hover:-rotate-12 transition-all" />
-                    </div>
-                    {/* Belum */}
-                    <div className="card p-5 border-l-4 border-l-rose-400 relative overflow-hidden group">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Belum Dinilai</p>
-                        <h3 className="text-3xl font-black text-rose-500">{none}</h3>
-                        <p className="text-[9px] text-slate-400 mt-1">Belum ada penilai masuk</p>
-                        <AlertTriangle size={48} className="absolute -right-2 -bottom-3 text-rose-50 group-hover:-rotate-12 transition-all" />
-                    </div>
-                </div>
-
-                {/* ── Overall Progress Bar ── */}
-                <div className="card p-5">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                            <BarChart3 size={15} className="text-primary-600" />
-                            <span className="text-xs font-black text-slate-600 uppercase tracking-widest">Progres Keseluruhan Periode</span>
+                    {[
+                        { label: 'Rata-rata Progress', val: `${avgPct}%`, color: 'text-primary-600', icon: Activity },
+                        { label: 'Selesai', val: done, color: 'text-emerald-600', icon: CheckCircle2 },
+                        { label: 'Sebagian', val: partial, color: 'text-amber-600', icon: TrendingUp },
+                        { label: 'Belum Dinilai', val: none, color: 'text-rose-500', icon: AlertTriangle },
+                    ].map((stat, i) => (
+                        <div key={i} className="bg-white/80 backdrop-blur-sm p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{stat.label}</p>
+                            <h3 className={`text-3xl font-black ${stat.color}`}>{stat.val}</h3>
                         </div>
-                        <span className="text-sm font-black text-slate-900">{done} / {total} Selesai</span>
-                    </div>
-                    <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                            className="h-full rounded-full transition-all duration-1000"
-                            style={{
-                                width: `${total > 0 ? (done / total) * 100 : 0}%`,
-                                background: done === total && total > 0 ? '#10b981' : avgPct >= 50 ? '#f59e0b' : '#6366f1'
-                            }}
-                        />
-                    </div>
-                    <div className="flex justify-between mt-2 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                        <span>0%</span>
-                        <span>{total > 0 ? Math.round((done / total) * 100) : 0}% Tuntas</span>
-                        <span>100%</span>
-                    </div>
+                    ))}
                 </div>
 
                 {/* ── Matrix Table ── */}
-                <div className="card overflow-hidden">
-                    {/* Table Header */}
-                    <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
-                            <ClipboardCheck size={15} className="text-primary-600" />
-                            <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest">Matriks Kelengkapan Seluruh Pegawai</h3>
-                            <span className="ml-1 text-[10px] font-black bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">{total}</span>
+                            <div className="p-2 bg-primary-50 rounded-xl">
+                                <ClipboardCheck size={16} className="text-primary-600" />
+                            </div>
+                            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Matriks Kelengkapan</h3>
                         </div>
-
-                        {/* Search */}
-                        <div className="relative w-full sm:w-64">
+                        <div className="relative w-full sm:w-72">
                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
-                                id="searchInput"
-                                name="searchInput"
                                 placeholder="Cari nama atau NIP..."
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-300 outline-none bg-white font-medium text-slate-700"
+                                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-slate-50/50"
                             />
                         </div>
                     </div>
@@ -250,100 +203,45 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                     {loading ? (
                         <div className="py-20 flex flex-col items-center gap-3">
                             <div className="loading-spinner" />
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Menyinkronkan data pengawasan...</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Memuat data...</p>
                         </div>
                     ) : filtered.length === 0 ? (
                         <div className="py-20 text-center">
                             <Users size={40} className="mx-auto text-slate-200 mb-3" />
-                            <p className="text-sm font-bold text-slate-400">
-                                {search ? 'Tidak ada pegawai yang cocok dengan pencarian.' : 'Belum ada data pegawai untuk periode ini.'}
-                            </p>
+                            <p className="text-sm font-bold text-slate-400">Data tidak ditemukan</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-slate-950 text-xs font-black uppercase tracking-[0.1em] text-slate-300 border-b border-slate-900">
+                                <thead className="bg-slate-50/50 text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">
                                     <tr>
-                                        <th className="px-6 py-5">Pegawai / NIP</th>
-                                        <th className="px-6 py-5">Penilai Yang Masuk</th>
-                                        <th className="px-6 py-5">
-                                            <div className="flex items-center gap-1.5">
-                                                Progress Kelengkapan
-                                                <span title="Persentase berdasarkan jumlah form penilaian yang sudah masuk vs. yang dibutuhkan">
-                                                    <Info size={11} className="text-slate-600 cursor-help" />
-                                                </span>
-                                            </div>
-                                        </th>
-                                        <th className="px-6 py-5 text-right">Aksi Pengawas</th>
+                                        <th className="px-6 py-4">Pegawai</th>
+                                        <th className="px-6 py-4">Status Penilai</th>
+                                        <th className="px-6 py-4">Progress</th>
+                                        <th className="px-6 py-4 text-right">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-slate-50">
                                     {filtered.map(row => {
                                         const pct = row.completion_pct ?? 0;
-                                        const isComplete = pct >= 100;
-                                        const isPartial = pct > 0 && pct < 100;
-
                                         return (
-                                            <tr key={row.user_id} className="hover:bg-slate-50/70 transition-colors group">
-                                                {/* Identitas */}
-                                                <td className="px-6 py-5">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`h-9 w-9 rounded-xl flex items-center justify-center font-black text-sm shrink-0 ${isComplete ? 'bg-emerald-100 text-emerald-700' :
-                                                            isPartial ? 'bg-amber-100 text-amber-700' :
-                                                                'bg-slate-100 text-slate-500'
-                                                            }`}>
-                                                            {row.name.charAt(0).toUpperCase()}
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-black text-slate-900 text-sm">{row.name}</p>
-                                                            {row.jabatan?.toLowerCase().includes('inspektur') ? (
-                                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-200 mt-1 shadow-sm">
-                                                                    ★ Inspektur
-                                                                </span>
-                                                            ) : (
-                                                                <p className="text-[11px] font-mono font-bold text-slate-500 mt-0.5">{row.nip}</p>
-                                                            )}
-                                                        </div>
+                                            <tr key={row.user_id} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <p className="font-black text-slate-900 text-sm">{row.name}</p>
+                                                    <p className="text-[11px] font-mono text-slate-400">{row.nip}</p>
+                                                </td>
+                                                <td className="px-6 py-4">{getStatusBadge(row.status)}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-primary-500 rounded-full" style={{ width: `${pct}%` }} />
                                                     </div>
                                                 </td>
-
-                                                {/* Status badge */}
-                                                <td className="px-6 py-5">
-                                                    {getStatusBadge(row.status)}
-                                                </td>
-
-                                                {/* Progress bar */}
-                                                <td className="px-6 py-5">
-                                                    <div className="space-y-2">
-                                                        <div className="flex items-center justify-between text-xs font-black">
-                                                            <span className="text-slate-600">
-                                                                {row.done_count ?? 0} / {row.total_required ?? 0} form
-                                                            </span>
-                                                            <span className={`text-sm ${isComplete ? 'text-emerald-600' :
-                                                                isPartial ? 'text-amber-600' : 'text-slate-400'
-                                                                }`}>
-                                                                {pct}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="h-2.5 w-48 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                                                            <div
-                                                                className={`h-full rounded-full transition-all duration-700 ${isComplete ? 'bg-emerald-500' :
-                                                                    isPartial ? 'bg-amber-400' : 'bg-slate-200'
-                                                                    }`}
-                                                                style={{ width: `${pct}%` }}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </td>
-
-                                                {/* Aksi */}
-                                                <td className="px-6 py-5 text-right">
+                                                <td className="px-6 py-4 text-right">
                                                     <button
                                                         onClick={() => navigate(`/admin/assessments/detail/${row.user_id}?period_id=${selectedPeriod}`)}
-                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-slate-200 text-slate-600 rounded-xl text-xs font-black uppercase tracking-wider hover:border-primary-500 hover:text-primary-700 hover:bg-primary-50 transition-all group-hover:scale-105 active:scale-95"
+                                                        className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase hover:bg-slate-800 transition-all"
                                                     >
-                                                        <Eye size={14} />
-                                                        Lihat Laporan
+                                                        Detail
                                                     </button>
                                                 </td>
                                             </tr>
@@ -354,22 +252,19 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Keterangan legend */}
                     {!loading && filtered.length > 0 && (
-                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center gap-6">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Keterangan:</span>
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-emerald-500 shadow-sm" />
-                                <span className="text-xs font-black text-slate-600">Selesai (100%)</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-amber-400 shadow-sm" />
-                                <span className="text-xs font-black text-slate-600">Sebagian (&gt;0%)</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-slate-200 shadow-sm" />
-                                <span className="text-xs font-black text-slate-600">Belum Ada</span>
-                            </div>
+                        <div className="px-8 py-5 border-t border-slate-100/50 flex items-center gap-8 bg-slate-50/30">
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Keterangan:</span>
+                            {[
+                                { color: 'bg-emerald-500', label: 'Selesai (100%)' },
+                                { color: 'bg-amber-400',   label: 'Sebagian (>0%)' },
+                                { color: 'bg-slate-200',   label: 'Belum Ada' },
+                            ].map(({ color, label }) => (
+                                <div key={label} className="flex items-center gap-2">
+                                    <div className={`h-3 w-3 rounded-full ${color} shadow-sm`} />
+                                    <span className="text-[10px] font-black text-slate-500">{label}</span>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>

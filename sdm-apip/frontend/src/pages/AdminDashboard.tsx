@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatRelativeTime, formatAbsoluteTime } from '../hooks/useRelativeTime';
+import { formatRelativeTime } from '../hooks/useRelativeTime';
 import { NavLink } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getDashboardStats } from '../services/sdmService';
@@ -7,21 +7,14 @@ import { DashboardStats } from '../types';
 import auditService, { AuditLog } from '../services/auditService';
 import {
     Users,
-    Calendar,
     ShieldAlert,
     Clock,
     Activity,
-    ArrowRight,
     Plus,
     Link2,
     FileText,
     UserPlus,
     Database,
-    BarChart3,
-    AlertTriangle,
-    CheckCircle2,
-    TrendingUp,
-    Info,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -45,7 +38,6 @@ const SparkBar: React.FC<{ value: number; max: number; label: string }> = ({ val
     const pct = max > 0 ? Math.round((value / max) * 100) : 0;
     return (
         <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-            {/* Fixed-height container: bar grows from bottom up */}
             <div className="relative w-full" style={{ height: '64px' }}>
                 <div
                     className="absolute bottom-0 left-0 right-0 rounded-t-md transition-all duration-700"
@@ -72,7 +64,7 @@ const CircleProgress: React.FC<{ pct: number; size?: number; strokeWidth?: numbe
     const dash = (pct / 100) * circ;
     return (
         <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={strokeWidth} />
+            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={strokeWidth} />
             <circle
                 cx={size / 2} cy={size / 2} r={r}
                 fill="none" stroke={color} strokeWidth={strokeWidth}
@@ -91,6 +83,7 @@ const AdminDashboard: React.FC = () => {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [recentLogs, setRecentLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
+    
     // tick every 30s to refresh relative timestamps
     const [, setTick] = useState(0);
     useEffect(() => {
@@ -116,19 +109,6 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
-    const QuickAction = ({ to, label, icon: Icon, color, desc }: any) => (
-        <NavLink to={to} className="group p-4 bg-white border border-slate-100 rounded-2xl hover:border-primary-200 hover:shadow-lg hover:shadow-primary-500/5 transition-all flex items-center gap-3">
-            <div className={`p-3 rounded-xl ${color} bg-opacity-10 group-hover:scale-110 transition-transform shrink-0`}>
-                <Icon size={20} className={color.replace('bg-', 'text-')} />
-            </div>
-            <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-bold text-slate-800 group-hover:text-primary-700 truncate">{label}</h4>
-                <p className="text-[10px] text-slate-400 truncate">{desc}</p>
-            </div>
-            <ArrowRight size={14} className="text-slate-300 group-hover:text-primary-400 -translate-x-1 group-hover:translate-x-0 transition-transform" />
-        </NavLink>
-    );
-
     if (loading) {
         return (
             <Layout title="Dashboard Admin" subtitle="Memuat pusat kendali...">
@@ -139,375 +119,212 @@ const AdminDashboard: React.FC = () => {
         );
     }
 
-    // Derived
     const prog = stats?.assessment_progress;
     const groupProg = stats?.group_progress ?? [];
-    const neverLogin = stats?.never_login_users ?? [];
     const trend = stats?.monthly_trend ?? [];
     const maxTrend = trend.length > 0 ? Math.max(...trend.map(t => t.count), 1) : 1;
 
     return (
         <Layout
             title="Pusat Kendali Admin"
-            subtitle={`Halo Administrator — Sistem SDM APIP berjalan normal.`}
+            subtitle="Bento Grid Architecture — Tampilan dashboard yang struktural, dinamis, dan terintegrasi penuh."
         >
-            <div className="space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 auto-rows-min animate-fade-in pb-10">
 
                 {/* ══════════════════════════════════════════
-                    ROW 1: 5 Stat Cards
+                    BENTO 1: HERO WIDGET (COL-SPAN 8)
                 ══════════════════════════════════════════ */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {/* Total Personil */}
-                    <div className="card p-5 border-l-4 border-l-blue-500 relative overflow-hidden group col-span-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Personil</p>
-                        <h3 className="text-3xl font-black text-slate-900">{stats?.total_sdm ?? 0}</h3>
-                        <p className="text-[9px] text-slate-400 mt-1">Data Master SDM</p>
-                        <Users size={48} className="absolute -right-2 -bottom-3 text-blue-50 group-hover:-rotate-12 transition-all" />
-                    </div>
-
-                    {/* User Aktif */}
-                    <div className="card p-5 border-l-4 border-l-emerald-500 relative overflow-hidden group col-span-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Akun Aktif</p>
-                        <h3 className="text-3xl font-black text-slate-900">{stats?.active_users ?? 0}</h3>
-                        <p className="text-[9px] text-slate-400 mt-1">Dapat login ke sistem</p>
-                        <ShieldAlert size={48} className="absolute -right-2 -bottom-3 text-emerald-50 group-hover:-rotate-12 transition-all" />
-                    </div>
-
-                    {/* Registrasi Baru */}
-                    <div className="card p-5 border-l-4 border-l-amber-500 relative overflow-hidden group col-span-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Registrasi Baru</p>
-                        <h3 className="text-3xl font-black text-slate-900">{stats?.pending_users ?? 0}</h3>
-                        <p className="text-[9px] text-slate-400 mt-1">Menunggu verifikasi</p>
-                        {(stats?.pending_users ?? 0) > 0 && (
-                            <span className="absolute top-3 right-3 h-2 w-2 bg-amber-400 rounded-full animate-pulse" />
-                        )}
-                        <Clock size={48} className="absolute -right-2 -bottom-3 text-amber-50 group-hover:-rotate-12 transition-all" />
-                    </div>
-
-                    {/* Total Grup */}
-                    <div className="card p-5 border-l-4 border-l-purple-500 relative overflow-hidden group col-span-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Grup</p>
-                        <h3 className="text-3xl font-black text-slate-900">{stats?.total_groups ?? 0}</h3>
-                        <p className="text-[9px] text-slate-400 mt-1">Tim aktif berjalan</p>
-                        <Users size={48} className="absolute -right-2 -bottom-3 text-purple-50 group-hover:-rotate-12 transition-all" />
-                    </div>
-
-                    {/* Periode */}
-                    <div className={`card p-5 border-l-4 ${stats?.active_period ? 'border-l-green-500' : 'border-l-slate-300'} relative overflow-hidden group col-span-1`}>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Periode</p>
-                        <div className="flex items-center gap-2">
-                            <h3 className={`text-2xl font-black ${stats?.active_period ? 'text-green-600' : 'text-slate-400'}`}>
-                                {stats?.active_period ? 'AKTIF' : 'NON-AKTIF'}
-                            </h3>
-                            {stats?.active_period && <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />}
+                <div className="lg:col-span-8 bg-gradient-to-br from-slate-900 via-primary-900 to-indigo-900 rounded-[2rem] p-8 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-8 border border-white/10">
+                    <div className="relative z-10 flex-1 w-full">
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black tracking-widest uppercase border border-white/20">
+                                {stats?.active_period ? 'Periode Aktif' : 'Standby Mode'}
+                            </span>
                         </div>
-                        <p className="text-[9px] text-slate-400 mt-1 truncate">{stats?.active_period_name || '—'}</p>
-                        <Calendar size={48} className="absolute -right-2 -bottom-3 text-slate-50 group-hover:-rotate-12 transition-all" />
+                        <h2 className="text-3xl md:text-5xl font-black mb-3 tracking-tighter leading-tight">
+                            {stats?.active_period_name || 'Tidak ada periode penilaian'}
+                        </h2>
+                        
+                        {prog && stats?.active_period ? (
+                            <div className="mt-8 flex items-end gap-8 border-t border-white/10 pt-8">
+                                <div>
+                                    <p className="text-[10px] text-white/90 uppercase tracking-widest font-black mb-2">Target Form Tersubmit</p>
+                                    <p className="text-5xl font-black tracking-tighter leading-none">{prog.total_submitted}<span className="text-2xl text-white/80">/{prog.total_required}</span></p>
+                                </div>
+                                <div className="flex-1 max-w-[200px]">
+                                    <div className="h-3 w-full bg-black/40 rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" 
+                                            style={{ width: `${prog.completion_pct}%` }} 
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-emerald-300 font-bold mt-3 tracking-widest uppercase">
+                                        {prog.completion_pct >= 100 ? 'SELESAI 100%' : `BERJALAN ${prog.completion_pct}%`}
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-white mt-4 max-w-md leading-relaxed">Aktifkan periode baru untuk mulai melacak progress penilaian kinerja secara langsung.</p>
+                        )}
                     </div>
+                    
+                    {prog && stats?.active_period && (
+                        <div className="relative z-10 shrink-0 bg-white/5 p-6 rounded-[2.5rem] backdrop-blur-2xl border border-white/10 shadow-2xl">
+                            <CircleProgress pct={prog.completion_pct} size={150} strokeWidth={14} color="#34d399" />
+                            <span className="absolute inset-0 flex items-center justify-center text-4xl font-black text-white tracking-tighter">
+                                {prog.completion_pct}%
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Decorative Modern Background */}
+                    <div className="absolute -top-32 -right-32 w-96 h-96 bg-cyan-500 rounded-full mix-blend-screen filter blur-[100px] opacity-40"></div>
+                    <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-purple-500 rounded-full mix-blend-overlay filter blur-[100px] opacity-50"></div>
+                </div>
+
+                {/* ══════════════════════════════════════════
+                    BENTO 2: QUICK ACTIONS (COL-SPAN 4)
+                ══════════════════════════════════════════ */}
+                <div className="lg:col-span-4 grid grid-cols-2 gap-5">
+                    <NavLink to="/super-admin/periods" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
+                        <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-purple-100 to-fuchsia-100 flex items-center justify-center text-purple-600 shadow-inner"><Plus size={28} /></div>
+                        <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Buat Periode</h4></div>
+                    </NavLink>
+                    <NavLink to="/super-admin/users" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
+                        <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center text-emerald-600 shadow-inner relative">
+                            <UserPlus size={28} />
+                            {(stats?.pending_users ?? 0) > 0 && <span className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-rose-500 rounded-full animate-pulse border-2 border-white shadow-sm" />}
+                        </div>
+                        <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Verifikasi</h4></div>
+                    </NavLink>
+                    <NavLink to="/super-admin/groups" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
+                        <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center text-blue-600 shadow-inner"><Users size={28} /></div>
+                        <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Tim & Grup</h4></div>
+                    </NavLink>
+                    <NavLink to="/super-admin/report" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
+                        <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-rose-100 to-orange-100 flex items-center justify-center text-rose-600 shadow-inner"><FileText size={28} /></div>
+                        <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Laporan</h4></div>
+                    </NavLink>
+                </div>
+
+                {/* ══════════════════════════════════════════
+                    BENTO 3: 4 METRIC SQUARES (EACH COL-SPAN 3)
+                ══════════════════════════════════════════ */}
+                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
+                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2">Total Personil</p>
+                    <h3 className="text-5xl font-black text-slate-900 tracking-tighter">{stats?.total_sdm ?? 0}</h3>
+                    <Users size={80} className="absolute -bottom-6 -right-6 text-blue-500/10 group-hover:scale-110 group-hover:text-blue-500/20 transition-all duration-500" />
                 </div>
                 
+                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
+                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2">Login Aktif</p>
+                    <h3 className="text-5xl font-black text-slate-900 tracking-tighter">{stats?.active_users ?? 0}</h3>
+                    <ShieldAlert size={80} className="absolute -bottom-6 -right-6 text-emerald-500/10 group-hover:scale-110 group-hover:text-emerald-500/20 transition-all duration-500" />
+                </div>
+
+                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-rose-500/20 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
+                    <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-2">Antrian Akun</p>
+                    <h3 className="text-5xl font-black text-rose-600 tracking-tighter">{stats?.pending_users ?? 0}</h3>
+                    <Clock size={80} className="absolute -bottom-6 -right-6 text-rose-500/10 group-hover:scale-110 group-hover:text-rose-500/20 transition-all duration-500" />
+                </div>
+
+                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
+                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2">Grup Terdaftar</p>
+                    <h3 className="text-5xl font-black text-slate-900 tracking-tighter">{stats?.total_groups ?? 0}</h3>
+                    <Activity size={80} className="absolute -bottom-6 -right-6 text-purple-500/10 group-hover:scale-110 group-hover:text-purple-500/20 transition-all duration-500" />
+                </div>
+
                 {/* ══════════════════════════════════════════
-                    ROW 1.5: Legend
+                    BENTO 4: PROGRESS DETAIL (COL-SPAN 5)
                 ══════════════════════════════════════════ */}
-                <div className="card p-4 sm:p-5 bg-slate-50/50 border-slate-200">
-                    <div className="flex flex-col md:flex-row md:items-center gap-4">
-                        <div className="shrink-0 flex items-center gap-2">
-                            <div className="p-1.5 bg-primary-100 rounded-lg">
-                                <Info size={14} className="text-primary-600" />
-                            </div>
-                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Panduan Range Predikat</h4>
-                        </div>
-                        <div className="hidden md:block h-4 w-px bg-slate-200" />
-                        <div className="flex flex-wrap gap-3 text-sm font-black">
-                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
-                                <span className="bg-emerald-50 text-emerald-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&ge; 110</span>
-                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Baik</span>
-                            </div>
-                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
-                                <span className="bg-blue-50 text-blue-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">90 – 109.9</span>
-                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Baik</span>
-                            </div>
-                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
-                                <span className="bg-amber-50 text-amber-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">70 – 89.9</span>
-                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Cukup</span>
-                            </div>
-                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
-                                <span className="bg-orange-50 text-orange-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">50 – 69.9</span>
-                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Kurang</span>
-                            </div>
-                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-60">
-                                <span className="bg-red-50 text-red-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&lt; 50</span>
-                                <span className="px-4 text-slate-700 uppercase tracking-widest text-xs font-black flex-1">Sangat Kurang</span>
-                            </div>
-                        </div>
+                <div className="lg:col-span-5 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col h-[420px]">
+                    <div className="p-8 pb-5 border-b border-black/5 flex items-center justify-between">
+                        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Progress Grup</h3>
+                        <Activity size={18} className="text-slate-400" />
+                    </div>
+                    <div className="p-8 pt-4 overflow-y-auto flex-1 space-y-5">
+                        {groupProg.length === 0 ? (
+                            <div className="h-full flex items-center justify-center text-xs text-slate-400 font-bold uppercase tracking-wider">Belum ada grup aktif</div>
+                        ) : (
+                            groupProg.map(g => (
+                                <div key={g.group_id}>
+                                    <div className="flex items-center justify-between text-sm mb-2.5">
+                                        <span className="font-bold text-slate-700 truncate pr-4">{g.group_name}</span>
+                                        <span className={`font-black tracking-widest ${g.pct >= 100 ? 'text-emerald-500' : 'text-primary-600'}`}>
+                                            {g.pct}%
+                                        </span>
+                                    </div>
+                                    <div className="h-2.5 w-full bg-slate-200/50 rounded-full overflow-hidden shadow-inner">
+                                        <div
+                                            className="h-full rounded-full transition-all duration-1000"
+                                            style={{
+                                                width: `${g.pct}%`,
+                                                background: g.pct >= 100 ? '#10b981' : g.pct > 0 ? '#6366f1' : '#cbd5e1'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
                 {/* ══════════════════════════════════════════
-                    ROW 2: Progress Penilaian + Trend
+                    BENTO 5: AUDIT LOGS (COL-SPAN 4)
                 ══════════════════════════════════════════ */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                    {/* Progress Penilaian Besar */}
-                    <div className="card p-6 flex flex-col gap-4">
-                        <div className="flex items-center gap-2">
-                            <BarChart3 size={16} className="text-primary-600" />
-                            <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">Progress Penilaian Aktif</h3>
-                        </div>
-                        {prog && stats?.active_period ? (
-                            <>
-                                <p className="text-xs font-bold text-slate-400 -mt-2">{prog.period_name}</p>
-                                <div className="flex items-center gap-5">
-                                    <div className="relative shrink-0">
-                                        <CircleProgress
-                                            pct={prog.completion_pct}
-                                            size={96}
-                                            strokeWidth={10}
-                                            color={prog.completion_pct >= 80 ? '#10b981' : prog.completion_pct >= 40 ? '#f59e0b' : '#6366f1'}
-                                        />
-                                        <span className="absolute inset-0 flex items-center justify-center text-xl font-black text-slate-900">
-                                            {prog.completion_pct}%
-                                        </span>
-                                    </div>
-                                    <div className="space-y-2 flex-1">
-                                        <div>
-                                            <p className="text-[10px] text-slate-400 uppercase tracking-widest">Tersubmit</p>
-                                            <p className="text-2xl font-black text-slate-900">
-                                                {prog.total_submitted}
-                                                <span className="text-sm font-bold text-slate-400"> / {prog.total_required}</span>
-                                            </p>
-                                        </div>
-                                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full rounded-full transition-all duration-1000"
-                                                style={{
-                                                    width: `${prog.completion_pct}%`,
-                                                    background: prog.completion_pct >= 80 ? '#10b981' : prog.completion_pct >= 40 ? '#f59e0b' : '#6366f1'
-                                                }}
-                                            />
-                                        </div>
-                                        <p className="text-[10px] text-slate-400">
-                                            {prog.months_required > 1 ? `Periode ${prog.months_required} bulan` : 'Periode bulanan'}
-                                            &nbsp;· sisa {prog.total_required - prog.total_submitted} formulir
-                                        </p>
-                                    </div>
-                                </div>
-                            </>
+                <div className="lg:col-span-4 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col h-[420px]">
+                    <div className="p-8 pb-5 border-b border-black/5 flex items-center justify-between">
+                        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Aktivitas Live</h3>
+                        <Link2 size={18} className="text-slate-400" />
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                        {recentLogs.length === 0 ? (
+                            <div className="h-full flex items-center justify-center text-xs text-slate-400 font-bold uppercase tracking-wider">Sunyi Senyap</div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
-                                <Calendar size={36} className="text-slate-200" />
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tidak ada periode aktif</p>
-                                <NavLink to="/super-admin/periods" className="text-[10px] font-bold text-primary-600 hover:underline">
-                                    Buat Periode Baru →
-                                </NavLink>
+                            recentLogs.map(log => (
+                                <div key={log.id} className="p-4 rounded-2xl hover:bg-white transition-colors flex gap-4 items-start shadow-sm border border-transparent hover:border-slate-100">
+                                    <div className={`mt-1.5 h-3 w-3 rounded-full shrink-0 ${log.action.includes('LOGIN') ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : log.action.includes('DELETE') ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]' : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]'}`} />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-xs font-black text-slate-800 truncate mb-1">{log.user?.name || log.user?.nip || 'Robot Sistem'}</p>
+                                        <p className="text-[11px] text-slate-500 leading-snug line-clamp-2"><span className="font-bold text-slate-700">[{log.action}]</span> {log.details}</p>
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap mt-1">{formatRelativeTime(log.created_at).replace('yang ','')}</span>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* ══════════════════════════════════════════
+                    BENTO 6: SERVER & TREND (COL-SPAN 3)
+                ══════════════════════════════════════════ */}
+                <div className="lg:col-span-3 flex flex-col gap-5 h-[420px]">
+                    {/* Trend Sparkline */}
+                    <div className="flex-1 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col">
+                        <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Tren Transaksi</h3>
+                        {trend.length === 0 ? (
+                            <div className="flex-1 flex items-center justify-center text-[10px] font-bold uppercase text-slate-300">Kosong</div>
+                        ) : (
+                            <div className="flex-1 flex items-end gap-2">
+                                {trend.map(t => (
+                                    <SparkBar key={t.month} value={t.count} max={maxTrend} label={formatMonth(t.month)} />
+                                ))}
                             </div>
                         )}
                     </div>
-
-                    {/* Progress Per Grup */}
-                    <div className="card overflow-hidden lg:col-span-2">
-                        <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                            <div className="flex items-center gap-2">
-                                <Activity size={14} className="text-primary-600" />
-                                <h3 className="text-xs font-black text-slate-600 uppercase tracking-wider">Progress Per Grup</h3>
-                            </div>
-                            <NavLink to="/super-admin/groups" className="text-[10px] font-bold text-primary-600 hover:underline">
-                                Kelola Grup →
-                            </NavLink>
+                    {/* Server Status Mini */}
+                    <div className="h-40 bg-slate-900 border border-slate-700 text-white rounded-[2rem] p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between group">
+                        <div className="relative z-10 flex items-center justify-between">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-300">Server Health</h4>
+                            <div className="h-3 w-3 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_15px_rgba(52,211,153,0.8)]" />
                         </div>
-                        <div className="p-4 space-y-3 max-h-52 overflow-y-auto">
-                            {groupProg.length === 0 ? (
-                                <p className="text-center text-xs text-slate-400 py-8">
-                                    {stats?.active_period ? 'Belum ada relasi penilaian dikonfigurasi' : 'Aktifkan periode terlebih dahulu'}
-                                </p>
-                            ) : (
-                                groupProg.map(g => (
-                                    <div key={g.group_id}>
-                                        <div className="flex items-center justify-between text-[11px] mb-1.5">
-                                            <span className="font-bold text-slate-700 truncate max-w-[160px]">{g.group_name}</span>
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                {g.pct >= 100
-                                                    ? <CheckCircle2 size={12} className="text-emerald-500" />
-                                                    : g.pct > 0
-                                                        ? <TrendingUp size={12} className="text-amber-500" />
-                                                        : <Clock size={12} className="text-slate-300" />
-                                                }
-                                                <span className={`font-black ${g.pct >= 100 ? 'text-emerald-600' : g.pct > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
-                                                    {g.pct}%
-                                                </span>
-                                                <span className="text-slate-400">({g.submitted}/{g.required})</span>
-                                            </div>
-                                        </div>
-                                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full rounded-full transition-all duration-700"
-                                                style={{
-                                                    width: `${g.pct}%`,
-                                                    background: g.pct >= 100 ? '#10b981' : g.pct > 0 ? '#f59e0b' : '#e2e8f0'
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))
-                            )}
+                        <div className="relative z-10">
+                            <h2 className="text-2xl font-black tracking-tighter leading-tight text-white group-hover:text-emerald-300 transition-colors">All Operational</h2>
                         </div>
+                        <Database size={100} className="absolute -right-6 -bottom-8 text-white/5 rotate-12 group-hover:text-emerald-400/10 transition-colors duration-500" />
                     </div>
                 </div>
 
-                {/* ══════════════════════════════════════════
-                    ROW 3: Main Content (3 col)
-                ══════════════════════════════════════════ */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-                    {/* LEFT: Quick Actions + Trend Chart */}
-                    <div className="xl:col-span-2 space-y-6">
-                        {/* Quick Actions */}
-                        <section>
-                            <div className="flex items-center gap-2 mb-3 px-1">
-                                <Activity size={16} className="text-primary-600" />
-                                <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">Aksi Cepat</h3>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <QuickAction to="/super-admin/periods" label="Buat Periode Baru" desc="Mulai siklus penilaian 360°"
-                                    icon={Plus} color="bg-purple-500 text-purple-600" />
-                                <QuickAction to="/super-admin/users" label="Verifikasi User" desc={`${stats?.pending_users ?? 0} pendaftar menunggu`}
-                                    icon={UserPlus} color="bg-emerald-500 text-emerald-600" />
-                                <QuickAction to="/super-admin/cross-group-relations" label="Relasi Lintas Grup" desc="Hubungkan penilai antar unit"
-                                    icon={Link2} color="bg-blue-500 text-blue-600" />
-                                <QuickAction to="/super-admin/report" label="Unduh Laporan" desc="Export nilai akhir ke Excel/PDF"
-                                    icon={FileText} color="bg-rose-500 text-rose-600" />
-                            </div>
-                        </section>
-
-                        {/* Monthly Trend Sparkline */}
-                        <section className="card p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2">
-                                    <TrendingUp size={14} className="text-primary-600" />
-                                    <h3 className="text-xs font-black text-slate-600 uppercase tracking-wider">Tren Pengisian Penilaian (6 Bulan Terakhir)</h3>
-                                </div>
-                            </div>
-                            {trend.length === 0 ? (
-                                <div className="flex items-center justify-center h-20 text-xs text-slate-400">
-                                    Belum ada data penilaian
-                                </div>
-                            ) : (
-                                <div className="flex items-end gap-2 h-20">
-                                    {trend.map(t => (
-                                        <SparkBar key={t.month} value={t.count} max={maxTrend} label={formatMonth(t.month)} />
-                                    ))}
-                                </div>
-                            )}
-                        </section>
-
-                        {/* Recent Audit Logs */}
-                        <section className="card overflow-hidden">
-                            <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                                <h3 className="text-xs font-black text-slate-600 uppercase tracking-wider">Aktivitas Sistem Terkini</h3>
-                                <NavLink to="/super-admin/audit-logs" className="text-[10px] font-bold text-primary-600 hover:underline">
-                                    Lihat Semua Log
-                                </NavLink>
-                            </div>
-                            <div className="divide-y divide-slate-50">
-                                {recentLogs.length === 0 ? (
-                                    <div className="p-8 text-center">
-                                        <Activity size={32} className="mx-auto text-slate-200 mb-2" />
-                                        <p className="text-xs text-slate-400">Belum ada aktivitas tercatat</p>
-                                    </div>
-                                ) : (
-                                    recentLogs.map(log => (
-                                        <div key={log.id} className="px-5 py-3 flex items-start gap-3 hover:bg-slate-50 transition-colors group">
-                                            <div className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${log.action.includes('LOGIN') ? 'bg-green-500 ring-2 ring-green-100' :
-                                                log.action.includes('DELETE') ? 'bg-red-500 ring-2 ring-red-100' :
-                                                    log.action.includes('UPDATE') ? 'bg-amber-500 ring-2 ring-amber-100' : 'bg-blue-500 ring-2 ring-blue-100'
-                                                }`} />
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-0.5">
-                                                    <span className="text-[11px] font-bold text-slate-800">{log.user?.name || log.user?.nip || 'System'}</span>
-                                                    <span className="text-[9px] font-mono text-slate-400 px-1 rounded bg-slate-100">{log.ip_address}</span>
-                                                </div>
-                                                <p className="text-[10px] text-slate-500 truncate group-hover:text-slate-700 group-hover:whitespace-normal transition-all">
-                                                    <span className="font-bold text-slate-600 mr-1">[{log.action}]</span>{log.details}
-                                                </p>
-                                            </div>
-                                            <span
-                                                className="text-[9px] text-slate-400 whitespace-nowrap mt-1 cursor-help"
-                                                title={formatAbsoluteTime(log.created_at)}
-                                            >
-                                                {formatRelativeTime(log.created_at)}
-                                            </span>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </section>
-                    </div>
-
-                    {/* RIGHT: Server status + Unit kerja + Never-login users */}
-                    <div className="space-y-6">
-                        {/* Server Status */}
-                        <div className="card p-5 bg-slate-800 text-white relative overflow-hidden">
-                            <div className="relative z-10 space-y-4">
-                                <div>
-                                    <h4 className="font-bold text-sm">Status Server</h4>
-                                    <p className="text-[10px] text-slate-400">Real-time monitoring</p>
-                                </div>
-                                <div className="space-y-2">
-                                    {[['Database', true], ['API Gateway', true], ['Auth Service', true]].map(([label, ok]) => (
-                                        <div key={label as string} className="flex justify-between items-center text-[10px]">
-                                            <span className="text-slate-400">{label as string}</span>
-                                            <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                                <div className="h-1 w-1 bg-emerald-400 rounded-full animate-pulse" />
-                                                {ok ? 'Online' : 'Offline'}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <Database size={60} className="absolute -right-2 -bottom-6 text-white/5 rotate-12" />
-                        </div>
-
-
-                        {/* Belum Pernah Login */}
-                        <div className="card overflow-hidden">
-                            <div className="px-4 py-3 border-b border-slate-100 bg-amber-50/50 flex items-center gap-2">
-                                <AlertTriangle size={13} className="text-amber-500" />
-                                <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Belum Pernah Login</h4>
-                                {neverLogin.length > 0 && (
-                                    <span className="ml-auto text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                                        {neverLogin.length}
-                                    </span>
-                                )}
-                            </div>
-                            {neverLogin.length === 0 ? (
-                                <div className="p-6 text-center">
-                                    <CheckCircle2 size={28} className="mx-auto text-emerald-300 mb-2" />
-                                    <p className="text-xs text-slate-400">Semua akun sudah login</p>
-                                </div>
-                            ) : (
-                                <div className="divide-y divide-slate-50 max-h-64 overflow-y-auto">
-                                    {neverLogin.map(u => (
-                                        <div key={u.user_id} className="px-4 py-2.5 flex items-center gap-3 hover:bg-amber-50/30 transition-colors">
-                                            <div className="h-8 w-8 rounded-full bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center shrink-0 uppercase">
-                                                {u.nama?.charAt(0) || u.nip?.slice(-1)}
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-[11px] font-bold text-slate-800 truncate">{u.nama || 'N/A'}</p>
-                                                <p className="text-[9px] text-slate-400 truncate">{u.jabatan || u.nip}</p>
-                                            </div>
-                                            <NavLink
-                                                to="/super-admin/users"
-                                                className="shrink-0 text-[9px] font-black text-primary-600 hover:underline uppercase tracking-wider"
-                                            >
-                                                Cek
-                                            </NavLink>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
             </div>
         </Layout>
     );

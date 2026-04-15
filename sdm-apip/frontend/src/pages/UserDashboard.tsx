@@ -9,6 +9,7 @@ import RoleBadge from '../components/RoleBadge';
 import api from '../services/api';
 import { SDM, Group } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
     Building2,
     Shield,
@@ -26,8 +27,7 @@ import {
     AlertCircle,
     ChevronRight,
     Zap,
-    Calendar,
-    Loader2
+    Calendar
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -36,8 +36,7 @@ interface AssessmentTarget {
     relation: {
         id: number;
         target_user_id: number;
-        relation_type: 'Atasan' | 'Peer' | 'Bawahan';
-        target_position: 'Atasan' | 'Peer' | 'Bawahan';
+        relation_type?: string;
         target_user: {
             id: number;
             name: string;
@@ -52,10 +51,10 @@ interface AssessmentTarget {
 /* ─────────────────────── Helpers ─────────────────────── */
 const getPredikat = (score: number) => {
     if (score >= 110) return { label: 'Sangat Baik', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' };
-    if (score >= 90)  return { label: 'Baik',         color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200' };
-    if (score >= 70)  return { label: 'Cukup',        color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200' };
-    if (score >= 50)  return { label: 'Kurang',       color: 'text-orange-700',  bg: 'bg-orange-50 border-orange-200' };
-    return                   { label: 'Sangat Kurang',color: 'text-red-700',     bg: 'bg-red-50 border-red-200' };
+    if (score >= 90) return { label: 'Baik', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' };
+    if (score >= 70) return { label: 'Cukup', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' };
+    if (score >= 50) return { label: 'Kurang', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' };
+    return { label: 'Sangat Kurang', color: 'text-red-700', bg: 'bg-red-50 border-red-200' };
 };
 
 /* ─────────────────────── Component ─────────────────────── */
@@ -151,7 +150,7 @@ const UserDashboard: React.FC = () => {
     const pct = totalForms > 0 ? Math.round((doneForms / totalForms) * 100) : 0;
     const remaining = totalForms - doneForms;
     const partial = targets.filter(t => !t.is_done && t.months_done.length > 0).length;
-    const selectedPeriod = periods.find(p => p.id === selectedPeriodId);
+    // selectedPeriod is the same as currentPeriod below
 
     /* ── Loading state ── */
     if (loading) {
@@ -175,155 +174,163 @@ const UserDashboard: React.FC = () => {
 
     return (
         <Layout title="Dashboard Pegawai" subtitle="Pantau capaian kinerja dan penilaian BerAKHLAK Anda.">
-            <div className="space-y-8 animate-in fade-in duration-1000">
+            <div className="space-y-8">
                 {/* ═══════════════════════════════════════════
-                    TOP STATS & SELECTOR
+                    TOP SELECTOR & STATS (FLOATING BENTO)
                 ═══════════════════════════════════════════ */}
                 {selectedPeriodId && (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-slate-800 rounded-[2.5rem] p-4 sm:p-6 border border-white/5 shadow-2xl">
-                        <div className="lg:col-span-5 flex items-center gap-4">
-                            <div className="h-14 w-14 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400 shrink-0">
-                                <Calendar size={28} />
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white/70 backdrop-blur-3xl rounded-[2.5rem] p-6 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+                    >
+                        {/* Selector */}
+                        <div className="lg:col-span-5 flex items-center gap-5">
+                            <div className="h-16 w-16 rounded-3xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0 shadow-sm">
+                                <Calendar size={32} strokeWidth={2.5} />
                             </div>
                             <div className="min-w-0">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 block">Periode Penilaian</label>
-                                <select
-                                    className="bg-transparent text-white font-bold text-lg focus:ring-0 border-none p-0 cursor-pointer hover:text-primary-400 transition-colors w-full"
-                                    value={selectedPeriodId}
-                                    onChange={(e) => setSelectedPeriodId(Number(e.target.value))}
-                                >
-                                    {periods.map(p => (
-                                        <option key={p.id} value={p.id} className="bg-slate-900 text-white">
-                                            {p.name} {p.is_active ? '(Aktif)' : ''}
-                                        </option>
-                                    ))}
-                                </select>
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1.5 opacity-80">Periode Aktif</p>
+                                <div className="relative group">
+                                    <select
+                                        className="appearance-none bg-transparent text-slate-900 font-black text-2xl focus:ring-0 border-none p-0 cursor-pointer pr-8 w-full"
+                                        value={selectedPeriodId}
+                                        onChange={(e) => setSelectedPeriodId(Number(e.target.value))}
+                                    >
+                                        {periods.map(p => (
+                                            <option key={p.id} value={p.id} className="bg-white text-slate-900 text-base font-bold">
+                                                {p.name} {p.is_active ? '✓' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
+                                        <ChevronRight size={20} className="rotate-90" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Middle: Progress / Warning */}
-                        <div className="lg:col-span-4 px-4 border-l border-r border-white/5 h-full flex flex-col justify-center">
+                        {/* Status Guard */}
+                        <div className="lg:col-span-4 px-6 lg:border-l lg:border-r border-slate-100 h-full flex flex-col justify-center">
                             {isExpired ? (
-                                <div className="flex items-center gap-3 text-red-400">
-                                    <Clock size={20} className="shrink-0" />
+                                <div className="flex items-center gap-4 text-rose-600">
+                                    <Clock size={24} className="shrink-0" />
                                     <div>
                                         <p className="text-xs font-black uppercase tracking-wider">Periode Berakhir</p>
-                                        <p className="text-[11px] opacity-80 leading-tight">
-                                            Masa penilaian ditutup otomatis per {currentPeriod?.end_date ? new Date(currentPeriod.end_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
+                                        <p className="text-[11px] text-slate-600 font-bold opacity-80 leading-tight">
+                                            Sistem ditutup pada {currentPeriod?.end_date ? new Date(currentPeriod.end_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long' }) : '-'}
                                         </p>
                                     </div>
                                 </div>
                             ) : isNearDeadline ? (
-                                <div className="flex items-center gap-3 text-amber-400">
-                                    <AlertCircle size={20} className="shrink-0 animate-pulse" />
+                                <div className="flex items-center gap-4 text-amber-600">
+                                    <AlertCircle size={24} className="shrink-0 animate-pulse" />
                                     <div>
                                         <p className="text-xs font-black uppercase tracking-wider">
-                                            {daysRemaining === 0 ? 'Berakhir Hari Ini!' : `Sisa ${daysRemaining} Hari!`}
+                                            {daysRemaining === 0 ? 'Hari Terakhir!' : `Sisa ${daysRemaining} Hari!`}
                                         </p>
-                                        <p className="text-[11px] opacity-80 leading-tight">
-                                            Segera selesaikan sebelum {currentPeriod?.end_date ? new Date(currentPeriod.end_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long' }) : '-'}
+                                        <p className="text-[11px] text-slate-600 font-bold opacity-80 leading-tight">
+                                            Segera selesaikan semua formulir
                                         </p>
                                     </div>
-                                </div>
-                            ) : targetsLoading ? (
-                                <div className="flex items-center gap-2 text-slate-400">
-                                    <Loader2 size={16} className="animate-spin" />
-                                    <span className="text-xs font-bold uppercase tracking-widest text-[10px]">Memuat...</span>
                                 </div>
                             ) : (
                                 <div>
-                                    <div className="flex justify-between items-end mb-1.5">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress Anda</span>
-                                        <span className="text-xs font-bold text-accent-400">{pct}%</span>
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress Kolektif</span>
+                                        <span className="text-xs font-black text-indigo-600">{pct}%</span>
                                     </div>
-                                    <div className="h-2 w-full bg-slate-700/50 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-accent-400 rounded-full transition-all duration-700"
-                                            style={{ width: `${pct}%` }}
+                                    <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${pct}%` }}
+                                            transition={{ duration: 1, ease: 'easeOut' }}
+                                            className="h-full bg-indigo-500 rounded-full"
                                         />
                                     </div>
-                                    <p className="text-[9px] text-slate-400 mt-1 font-bold">
-                                        {doneForms}/{totalForms} formulir — {pct}% selesai
-                                        {daysRemaining !== null && daysRemaining > 3 && (
-                                            <span className="ml-2 text-slate-500">· Sisa {daysRemaining} hari</span>
-                                        )}
+                                    <p className="text-[9px] text-slate-500 mt-2 font-bold tracking-tight">
+                                        {doneForms}/{totalForms} formulir selesai ({remaining} tersisa)
                                     </p>
                                 </div>
                             )}
                         </div>
 
-                        {/* Right: Quick Action */}
+                        {/* CTA */}
                         <div className="lg:col-span-3 flex justify-end">
-                             <button
+                            <button
                                 onClick={() => !isExpired && (remaining > 0 ? navigate('/user/assessments') : toast.success('Semua penilaian selesai!'))}
                                 disabled={isExpired && remaining > 0}
-                                className={`group relative flex items-center justify-center gap-3 w-full sm:w-auto px-6 py-3.5 rounded-2xl font-bold text-sm transition-all duration-300 ${isExpired && remaining > 0 
-                                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed border border-white/5' 
-                                    : 'bg-white text-slate-900 hover:scale-105 active:scale-95 shadow-xl hover:shadow-primary-500/20'}`}
+                                className={`group relative flex items-center justify-center gap-3 w-full px-8 py-4 rounded-2xl font-black text-sm transition-all duration-300 shadow-lg ${isExpired && remaining > 0
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                                    : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-[1.03] active:scale-95 shadow-indigo-200'}`}
                             >
-                                {isExpired && remaining > 0 ? <Clock size={16} /> : <Zap size={16} className="text-accent-500" />}
-                                {isExpired && remaining > 0 ? 'Waktu Berakhir' : (remaining > 0 ? 'Mulai Sekarang' : 'Lihat Progress')}
+                                {isExpired && remaining > 0 ? <Clock size={18} /> : <Zap size={18} className="fill-white/20" />}
+                                {isExpired && remaining > 0 ? 'Waktu Selesai' : (remaining > 0 ? 'Lanjut Menilai' : 'Penilaian Selesai')}
                             </button>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* ═══════════════════════════════════════════
-                    HERO: Profile Card
+                    HERO: Profile Glass Bento
                 ═══════════════════════════════════════════ */}
-                <div className="relative overflow-hidden rounded-3xl bg-slate-900 shadow-2xl border border-white/5">
-                    <div className="absolute inset-0 opacity-10">
-                        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-primary-500 blur-3xl" />
-                        <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-accent-500 blur-3xl" />
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative overflow-hidden rounded-[3rem] bg-white/70 backdrop-blur-3xl border border-white/60 shadow-[0_20px_60px_rgb(0,0,0,0.08)] group"
+                >
+                    <div className="absolute inset-0 opacity-20 pointer-events-none">
+                        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-indigo-500 blur-[100px] group-hover:bg-indigo-400 transition-colors duration-2000" />
+                        <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-emerald-500 blur-[100px] group-hover:bg-emerald-400 transition-colors duration-2000" />
                     </div>
-                    <div className="relative z-10 flex flex-col items-center gap-6 p-8 md:flex-row md:p-10">
+                    <div className="relative z-10 flex flex-col items-center gap-10 p-10 md:flex-row md:items-start">
                         {/* Avatar */}
-                        <div className="shrink-0 h-28 w-28 md:h-32 md:w-32 lg:h-36 lg:w-36 rounded-[2rem] bg-gradient-to-br from-accent-400 to-accent-600 font-bold text-slate-900 text-4xl shadow-lg ring-4 ring-white/10 overflow-hidden flex items-center justify-center">
+                        <div className="shrink-0 h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] bg-gradient-to-br from-indigo-500 to-indigo-700 font-black text-white text-5xl shadow-2xl shadow-indigo-200 ring-8 ring-white/50 overflow-hidden flex items-center justify-center transition-transform duration-500 group-hover:rotate-2 group-hover:scale-105">
                             {sdmData?.foto
                                 ? <img src={sdmData.foto} alt="Profile" className="h-full w-full object-cover" />
                                 : (sdmData?.nama?.charAt(0).toUpperCase() || 'U')}
                         </div>
 
-                        {/* Info */}
-                        <div className="flex-1 min-w-0 text-center md:text-left">
-                            <div className="flex flex-col gap-2">
-                                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight break-words leading-tight">
+                        {/* Info Section */}
+                        <div className="flex-1 min-w-0 flex flex-col justify-center items-center md:items-start text-center md:text-left">
+                            <div className="space-y-3">
+                                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">
                                     {sdmData?.nama || 'Pengguna'}
                                 </h2>
-                                <div className="flex justify-center md:justify-start">
-                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-slate-300 backdrop-blur-md border border-white/10 uppercase tracking-widest">
-                                        <Shield size={12} className="text-accent-400 shrink-0" /> Personil APIP
+                                <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                                    <span className="inline-flex items-center gap-2 rounded-2xl bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-700 border border-indigo-100 uppercase tracking-widest shadow-sm">
+                                        <Shield size={14} strokeWidth={3} /> Personil APIP
                                     </span>
+                                    <div className="flex items-center gap-2 text-slate-600 font-black px-4 py-2 rounded-2xl border border-slate-100 bg-white/50 shadow-sm text-xs tracking-wider">
+                                        <Fingerprint size={14} className="text-indigo-500" strokeWidth={3} />
+                                        <span className="font-mono">{user?.nip}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <p className="mt-2 text-lg md:text-xl text-slate-400 font-medium break-words">{sdmData?.jabatan || 'Unit Kerja Belum Terdaftar'}</p>
-                            <div className="mt-4 flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-3">
-                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2.5 rounded-xl text-sm md:text-base border border-white/5">
-                                    <Fingerprint size={16} className="text-accent-500 shrink-0" />
-                                    <span className="font-mono truncate">{user?.nip}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-slate-300 bg-white/5 px-4 py-2.5 rounded-xl text-sm md:text-base border border-white/5">
-                                    <Building2 size={16} className="text-accent-500 shrink-0" />
-                                    <span className="truncate max-w-[200px] sm:max-w-xs">{sdmData?.unit_kerja || 'Inspektorat'}</span>
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* Status & action */}
-                        <div className="shrink-0 flex flex-col items-center gap-3 mt-4 md:mt-0">
-                            <button
-                                onClick={() => navigate('/profile')}
-                                className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-all hover:bg-slate-100 hover:scale-105 active:scale-95 shadow-xl"
-                            >
-                                <User size={18} className="text-primary-600" /> Profil
-                            </button>
-                            <div className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full ${user?.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                <span className={`h-1.5 w-1.5 rounded-full ${user?.status === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                                {user?.status === 'active' ? 'Akun Aktif' : 'Menunggu Verifikasi'}
+                            <div className="mt-6 flex flex-col gap-2">
+                                <div className="flex items-center justify-center md:justify-start gap-2.5 text-slate-600 font-bold text-lg md:text-xl">
+                                    <Building2 size={24} className="text-indigo-400" />
+                                    <span>{sdmData?.jabatan || 'Unit Kerja Belum Terdaftar'}</span>
+                                </div>
+                                <p className="text-sm text-slate-500 font-medium">{sdmData?.unit_kerja || 'Inspektorat Jenderal'}</p>
+                            </div>
+
+                            <div className="mt-8 flex flex-wrap justify-center md:justify-start gap-4">
+                                <button
+                                    onClick={() => navigate('/profile')}
+                                    className="flex items-center gap-3 rounded-2xl bg-slate-900 px-8 py-4 text-[13px] font-black text-white transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 shadow-xl shadow-slate-200 uppercase tracking-widest"
+                                >
+                                    <User size={18} /> Edit Profil
+                                </button>
+                                <div className={`flex items-center gap-3 text-xs font-black px-5 py-4 rounded-2xl border ${user?.status === 'active' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-amber-50 border-amber-100 text-amber-700'} uppercase tracking-widest shadow-sm`}>
+                                    <div className={`h-2 w-2 rounded-full ${user?.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                                    {user?.status === 'active' ? 'Status: Akun Aktif' : 'Status: Peninjauan'}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* ═══════════════════════════════════════════
                     MAIN GRID
@@ -334,152 +341,168 @@ const UserDashboard: React.FC = () => {
                     <div className="lg:col-span-8">
 
                         {/* ── Hasil Penilaian Saya ── */}
-                        <div className="card overflow-hidden mb-8">
-                            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-emerald-50/40">
-                                <div className="flex items-center gap-2">
-                                    <TrendingUp size={20} className="text-emerald-500" />
-                                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">Hasil Penilaian Saya ({selectedPeriod?.name})</h3>
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="card overflow-hidden mb-8"
+                        >
+                            <div className="px-8 py-6 border-b border-white/60 flex items-center justify-between bg-emerald-50/30">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm">
+                                        <TrendingUp size={22} strokeWidth={2.5} />
+                                    </div>
+                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Rangkuman Kinerja BerAKHLAK</h3>
                                 </div>
                             </div>
-                            <div className="p-6">
+                            <div className="p-8">
                                 {resultsLoading ? (
-                                    <div className="flex justify-center py-8"><div className="loading-spinner" /></div>
+                                    <div className="flex justify-center py-12"><div className="loading-spinner" /></div>
                                 ) : !myResults || !myResults.average_score || myResults.average_score === 0 ? (
-                                    <div className="text-center py-8">
-                                        <p className="text-slate-400 font-bold">Belum ada penilaian yang masuk untuk Anda pada periode ini.</p>
+                                    <div className="text-center py-12 bg-white/40 rounded-[2rem] border border-dashed border-slate-200">
+                                        <div className="h-16 w-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto text-slate-300 mb-4">
+                                            <AlertCircle size={32} />
+                                        </div>
+                                        <p className="text-slate-500 font-bold mb-1">Belum Ada Data Penilaian</p>
+                                        <p className="text-xs text-slate-400">Nilai akan muncul setelah proses tabulasi sistem selesai.</p>
                                     </div>
                                 ) : (
-                                    <div className="animate-fade-in">
-                                        <div className="mb-6 flex flex-col sm:flex-row gap-6 items-center">
-                                            <div className="bg-emerald-50 text-emerald-700 p-6 rounded-2xl text-center w-full sm:w-1/3">
-                                                <p className="text-[11px] font-black uppercase tracking-widest mb-2">Nilai Rata-rata Total</p>
-                                                <p className="text-5xl font-black">{myResults.average_score.toFixed(2)}</p>
-                                                <div className="mt-3">
+                                    <div className="animate-fade-in space-y-8">
+                                        <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+                                            <div className="bg-white/80 backdrop-blur-md border border-white p-8 rounded-[2rem] text-center w-full lg:w-2/5 shadow-sm flex flex-col justify-center">
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 opacity-70">Skor Rata-rata Kumulatif</p>
+                                                <p className="text-7xl font-black text-slate-900 tracking-tighter">{myResults.average_score.toFixed(2)}</p>
+                                                <div className="mt-6">
                                                     {(() => {
                                                         const p = getPredikat(myResults.average_score);
                                                         return (
-                                                            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-black border ${p.bg} ${p.color}`}>
-                                                                {p.label}
+                                                            <span className={`inline-flex px-6 py-2 rounded-2xl text-[11px] font-black border shadow-sm uppercase tracking-widest ${p.bg} ${p.color}`}>
+                                                                Predikat: {p.label}
                                                             </span>
                                                         );
                                                     })()}
                                                 </div>
                                             </div>
-                                            <div className="text-sm text-slate-500 w-full sm:w-2/3">
-                                                <p className="mb-2"><strong className="text-slate-800">Capaian Anda sejauh ini:</strong> Nilai ini merupakan akumulasi dari seluruh penilaian yang masuk secara sistem terpusat dan rahasia.</p>
-                                                <div className="inline-flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                                                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                    <span className="text-xs font-bold text-slate-600">Skor dapat berubah selama periode aktif</span>
+                                            <div className="w-full lg:w-3/5 flex flex-col justify-center">
+                                                <div className="p-6 rounded-[2rem] bg-indigo-50/50 border border-indigo-100/50">
+                                                    <h4 className="flex items-center gap-2 text-indigo-900 font-black text-sm mb-3">
+                                                        <Zap size={16} className="text-indigo-500" /> Insight Performa
+                                                    </h4>
+                                                    <p className="text-slate-600 font-medium text-sm leading-relaxed mb-4">
+                                                        Nilai ditarik otomatis dari sistem 360-degree feedback. Ini mencerminkan persepsi terhadap perilaku kerja Anda.
+                                                    </p>
+                                                    <div className="flex items-center gap-2.5 bg-white/60 px-4 py-3 rounded-2xl border border-white shadow-sm">
+                                                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">Kerahasiaan Terjamin 100%</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <h4 className="text-xs font-black text-slate-400 mb-4 uppercase tracking-widest">Rincian per Indikator BerAKHLAK</h4>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                                            {Object.entries(myResults.details || {}).map(([key, value]: [string, any]) => {
-                                                if (key === "Ide Inovasi (Bonus)") return null;
-                                                return (
-                                                <div key={key} className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center text-center hover:bg-white hover:border-emerald-200 transition-colors">
-                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 min-h-[24px] flex items-center justify-center">{key.replace(/_/g, ' ')}</p>
-                                                    <p className="text-2xl font-black text-slate-800">{Number(value).toFixed(2)}</p>
-                                                    <div className="flex gap-0.5 mt-2">
-                                                        {[1, 2, 3, 4, 5].map(star => {
-                                                            const filled = Math.round((Number(value) / 100) * 5);
-                                                            return <Star key={star} size={10} className={star <= filled ? 'fill-amber-400 text-amber-400' : 'text-slate-200'} />;
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            )})}
+
+                                        <div>
+                                            <h4 className="text-[10px] font-black text-slate-400 mb-5 uppercase tracking-[0.2em]">Pecahan Nilai per Indikator</h4>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                                                {Object.entries(myResults.details || {}).map(([key, value]: [string, any]) => {
+                                                    if (key === "Ide Inovasi (Bonus)") return null;
+                                                    return (
+                                                        <motion.div
+                                                            whileHover={{ y: -5, scale: 1.02 }}
+                                                            key={key}
+                                                            className="bg-white/60 backdrop-blur-sm p-5 rounded-2xl border border-white shadow-sm flex flex-col items-center text-center transition-all hover:bg-white hover:border-indigo-200"
+                                                        >
+                                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 min-h-[24px] flex items-center justify-center">{key.replace(/_/g, ' ')}</p>
+                                                            <p className="text-3xl font-black text-slate-900 mb-3">{Number(value).toFixed(2)}</p>
+                                                            <div className="flex gap-1">
+                                                                {[1, 2, 3, 4, 5].map(star => {
+                                                                    const filled = Math.round((Number(value) / 100) * 5);
+                                                                    return <Star key={star} size={11} className={star <= filled ? 'fill-amber-400 text-amber-400' : 'text-slate-200'} />;
+                                                                })}
+                                                            </div>
+                                                        </motion.div>
+                                                    )
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        </motion.div>
 
                         <div className="card overflow-hidden">
                             {/* Header */}
-                            <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/40">
-                                <div className="flex items-center gap-2">
-                                    <Star size={20} className="text-amber-500" />
-                                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">Antrian Tugas Penilaian</h3>
+                            <div className="px-8 py-6 border-b border-white/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/40">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-sm">
+                                        <ClipboardCheck size={22} strokeWidth={2.5} />
+                                    </div>
+                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Antrian Tugas Penilaian</h3>
                                 </div>
-                                <select
-                                    className="text-xs font-bold border border-slate-200 bg-white rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-300 cursor-pointer"
-                                    value={selectedPeriodId || ''}
-                                    onChange={e => setSelectedPeriodId(Number(e.target.value))}
-                                >
-                                    {periods.map(p => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.name} ({new Date(p.start_date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })})
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="relative group min-w-[240px]">
+                                    <select
+                                        className="w-full text-xs font-black border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-4 focus:ring-indigo-500/10 cursor-pointer appearance-none pr-10"
+                                        value={selectedPeriodId || ''}
+                                        onChange={e => setSelectedPeriodId(Number(e.target.value))}
+                                    >
+                                        {periods.map(p => (
+                                            <option key={p.id} value={p.id}>
+                                                Periode: {p.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                        <ChevronRight size={16} className="rotate-90" />
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="p-6">
+                            <div className="p-8">
                                 {targetsLoading ? (
-                                    <div className="flex justify-center items-center py-16">
+                                    <div className="flex justify-center items-center py-20">
                                         <div className="loading-spinner" />
                                     </div>
                                 ) : targets.length === 0 ? (
                                     /* ── Empty state ── */
-                                    <div className="py-16 text-center rounded-[2rem] border-2 border-dashed border-slate-200 bg-slate-50/50">
-                                        <div className="mb-5 relative inline-block">
-                                            <div className="h-20 w-20 rounded-full bg-white shadow-xl flex items-center justify-center mx-auto text-primary-400 relative z-10">
-                                                <ClipboardCheck size={40} />
+                                    <div className="py-20 text-center rounded-[3rem] border-2 border-dashed border-slate-100 bg-slate-50/30">
+                                        <div className="mb-6 relative inline-block">
+                                            <div className="h-24 w-24 rounded-3xl bg-white shadow-xl flex items-center justify-center mx-auto text-indigo-200 relative z-10">
+                                                <ClipboardCheck size={48} />
                                             </div>
-                                            <div className="absolute inset-0 bg-primary-400 rounded-full blur-2xl opacity-10 scale-150 animate-pulse" />
+                                            <div className="absolute inset-0 bg-indigo-500 rounded-full blur-[40px] opacity-20 scale-150 animate-pulse" />
                                         </div>
-                                        <h4 className="text-xl font-black text-slate-700 mb-2">Belum Ada Penugasan Penilaian</h4>
-                                        <p className="text-slate-400 text-sm max-w-sm mx-auto">
-                                            Anda belum ditetapkan sebagai penilai di periode ini. Hubungi Admin untuk konfigurasi relasi penilaian.
+                                        <h4 className="text-2xl font-black text-slate-900 mb-2">Tugas Bersih!</h4>
+                                        <p className="text-slate-500 text-sm max-w-[280px] mx-auto font-medium">
+                                            Anda belum memiliki penugasan penilaian pada periode yang dipilih.
                                         </p>
                                     </div>
                                 ) : (
                                     <>
                                         {/* ── Summary Stats Row ── */}
-                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                                            <div className="bg-slate-50 rounded-2xl p-4 text-center">
-                                                <p className="text-2xl font-black text-slate-900">{totalForms}</p>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Total Formulir</p>
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                                            <div className="bg-white/60 p-5 rounded-[2rem] border border-white shadow-sm text-center">
+                                                <p className="text-3xl font-black text-slate-900">{totalForms}</p>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Total Formulir</p>
                                             </div>
-                                            <div className="bg-emerald-50 rounded-2xl p-4 text-center">
-                                                <p className="text-2xl font-black text-emerald-600">{doneForms}</p>
-                                                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mt-0.5">Terisi</p>
+                                            <div className="bg-emerald-50/50 p-5 rounded-[2rem] border border-emerald-100/50 shadow-sm text-center">
+                                                <p className="text-3xl font-black text-emerald-600">{doneForms}</p>
+                                                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-1">Selesai</p>
                                             </div>
-                                            <div className="bg-amber-50 rounded-2xl p-4 text-center">
-                                                <p className="text-2xl font-black text-amber-600">{partial}</p>
-                                                <p className="text-[10px] font-bold text-amber-400 uppercase tracking-widest mt-0.5">Sebagian</p>
+                                            <div className="bg-amber-50/50 p-5 rounded-[2rem] border border-amber-100/50 shadow-sm text-center">
+                                                <p className="text-3xl font-black text-amber-600">{partial}</p>
+                                                <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mt-1">Parsial</p>
                                             </div>
-                                            <div className={`${remaining > 0 ? 'bg-red-50' : 'bg-emerald-50'} rounded-2xl p-4 text-center`}>
-                                                <p className={`text-2xl font-black ${remaining > 0 ? 'text-red-500' : 'text-emerald-600'}`}>{remaining}</p>
-                                                <p className={`text-[10px] font-bold ${remaining > 0 ? 'text-red-400' : 'text-emerald-400'} uppercase tracking-widest mt-0.5`}>Sisa</p>
+                                            <div className={`${remaining > 0 ? 'bg-indigo-50/50 border-indigo-100/50' : 'bg-emerald-50/50 border-emerald-100/50'} p-5 rounded-[2rem] border shadow-sm text-center`}>
+                                                <p className={`text-3xl font-black ${remaining > 0 ? 'text-indigo-600' : 'text-emerald-600'}`}>{remaining}</p>
+                                                <p className={`text-[10px] font-black ${remaining > 0 ? 'text-indigo-500' : 'text-emerald-500'} uppercase tracking-widest mt-1`}>Tunggakan</p>
                                             </div>
-                                        </div>
-
-                                        {/* ── Overall Progress Bar ── */}
-                                        <div className="mb-6">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-xs font-bold text-slate-500">Progress Keseluruhan</span>
-                                                <span className={`text-xs font-black ${pct === 100 ? 'text-emerald-600' : pct > 50 ? 'text-amber-600' : 'text-primary-600'}`}>{pct}%</span>
-                                            </div>
-                                            <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full rounded-full transition-all duration-700"
-                                                    style={{
-                                                        width: `${pct}%`,
-                                                        background: pct === 100 ? '#10b981' : pct > 50 ? '#f59e0b' : '#6366f1',
-                                                    }}
-                                                />
-                                            </div>
-                                            {selectedPeriod && selectedPeriod.frequency !== 'monthly' && (
-                                                <p className="text-[10px] text-slate-400 mt-1.5">
-                                                    Periode <span className="font-bold">{selectedPeriod.name}</span> — wajib diisi <span className="font-bold">{targets[0]?.months_required ?? '?'} bulan</span> per target
-                                                </p>
-                                            )}
                                         </div>
 
                                         {/* ── Target Cards ── */}
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="h-0.5 flex-1 bg-slate-100"></div>
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Daftar Rekan Kerja</span>
+                                                <div className="h-0.5 flex-1 bg-slate-100"></div>
+                                            </div>
+
                                             {targets.map(t => {
                                                 const { months_done, months_required, is_done, relation } = t;
                                                 const isPartial = months_done.length > 0 && !is_done;
@@ -489,74 +512,80 @@ const UserDashboard: React.FC = () => {
                                                 const jabatan = relation?.target_user?.jabatan ?? '';
 
                                                 return (
-                                                    <div
+                                                    <motion.div
+                                                        whileHover={{ x: 4 }}
                                                         key={relation?.id}
-                                                        className={`rounded-2xl border transition-all overflow-hidden ${is_done
-                                                            ? 'bg-emerald-50/60 border-emerald-100'
+                                                        className={`rounded-3xl border transition-all overflow-hidden ${is_done
+                                                            ? 'bg-emerald-50/40 border-emerald-100/60 shadow-sm'
                                                             : isPartial
-                                                                ? 'bg-amber-50/50 border-amber-200 hover:border-amber-300'
-                                                                : 'bg-white border-slate-100 hover:border-primary-200 hover:shadow-md'
+                                                                ? 'bg-amber-50/40 border-amber-200 shadow-sm'
+                                                                : 'bg-white border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:border-indigo-200'
                                                             }`}
                                                     >
                                                         {/* Top row: Avatar + Nama + Bulan + Action */}
-                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4">
+                                                        <div className="flex flex-col md:flex-row md:items-center gap-6 p-5">
                                                             {/* Avatar */}
-                                                            <div className="shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center uppercase">
+                                                            <div className="shrink-0 h-14 w-14 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 font-black text-xl flex items-center justify-center uppercase shadow-sm">
                                                                 {userName.charAt(0)}
                                                             </div>
 
                                                             {/* Name + jabatan */}
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="font-bold text-slate-900 text-sm truncate">{userName}</p>
-                                                                {jabatan && <p className="text-xs text-slate-400 truncate mt-0.5">{jabatan}</p>}
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <p className="font-black text-slate-900 text-base truncate">{userName}</p>
+                                                                </div>
+                                                                <p className="text-xs text-slate-500 font-bold truncate">{jabatan || 'Personil APIP'}</p>
                                                             </div>
 
                                                             {/* Monthly bubbles */}
                                                             {months_required > 1 && (
-                                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                                <div className="flex items-center gap-2 shrink-0">
                                                                     {Array.from({ length: months_required }, (_, i) => i + 1).map(m => (
                                                                         <div
                                                                             key={m}
-                                                                            title={months_done.includes(m) ? `Bulan ${m} ✓` : `Bulan ${m} — belum diisi`}
-                                                                            className={`flex flex-col items-center gap-0.5 w-10 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all shadow-sm ${months_done.includes(m)
-                                                                                ? 'bg-emerald-500 text-white'
-                                                                                : m === nextMonth && !is_done
-                                                                                    ? 'bg-amber-400 text-white ring-2 ring-amber-300 ring-offset-1 animate-pulse'
-                                                                                    : 'bg-slate-100 text-slate-400'
+                                                                            className={`flex flex-col items-center gap-0.5 w-11 py-2 rounded-xl text-[9px] font-black uppercase transition-all shadow-sm border ${months_done.includes(m)
+                                                                                ? 'bg-emerald-500 border-emerald-400 text-white'
+                                                                                : m === nextMonth && !is_done && !isExpired
+                                                                                    ? 'bg-white border-indigo-500 text-indigo-600 ring-4 ring-indigo-500/10'
+                                                                                    : 'bg-slate-50 border-slate-100 text-slate-400'
                                                                                 }`}
                                                                         >
                                                                             <span>Bln</span>
-                                                                            <span>{m}</span>
-                                                                            {months_done.includes(m) && <span>✓</span>}
+                                                                            <span className="text-xs leading-none">{m}</span>
                                                                         </div>
                                                                     ))}
                                                                 </div>
                                                             )}
 
                                                             {/* Action */}
-                                                            {is_done ? (
-                                                                <div className="shrink-0 flex items-center gap-1.5 text-emerald-600 bg-emerald-100 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase">
-                                                                    <CheckCircle2 size={13} /> Selesai
-                                                                </div>
-                                                            ) : (
-                                                                <button
-                                                                    onClick={() => navigate(
-                                                                        `/user/assessments/new?target_id=${relation?.target_user_id}&period_id=${selectedPeriodId}&relation=${relation?.relation_type}`
-                                                                    )}
-                                                                    className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all hover:scale-105 active:scale-95 ${isPartial
-                                                                        ? 'bg-amber-500 text-white hover:bg-amber-400'
-                                                                        : 'bg-slate-900 text-white hover:bg-primary-600'
-                                                                        }`}
-                                                                >
-                                                                    {isPartial ? `Lanjut Bln ${nextMonth}` : 'Isi Sekarang'}
-                                                                    <ChevronRight size={14} />
-                                                                </button>
-                                                            )}
+                                                            <div className="shrink-0">
+                                                                {is_done ? (
+                                                                    <div className="flex items-center gap-2 text-emerald-600 bg-white border border-emerald-100 px-5 py-3 rounded-2xl text-[11px] font-black uppercase shadow-sm">
+                                                                        <CheckCircle2 size={14} strokeWidth={3} /> Selesai
+                                                                    </div>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={() => !isExpired && navigate(
+                                                                            `/user/assessments/new?target_id=${relation?.target_user_id}&period_id=${selectedPeriodId}&relation=${relation?.relation_type}`
+                                                                        )}
+                                                                        disabled={isExpired}
+                                                                        className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-xs font-black transition-all shadow-lg ${isExpired
+                                                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                                            : isPartial
+                                                                                ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-200'
+                                                                                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'
+                                                                            }`}
+                                                                    >
+                                                                        {isExpired ? 'Waktu Habis' : isPartial ? `Lanjut: Bln ${nextMonth}` : 'Isi Survei'}
+                                                                        {!isExpired && <ChevronRight size={16} strokeWidth={3} />}
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </div>
 
                                                         {/* Panel Referensi — full width di bawah, hanya untuk relasi Atasan */}
                                                         {relation?.relation_type === 'Atasan' && sdmData?.jabatan?.toLowerCase().includes('inspektur') && (
-                                                            <div className="px-4 pb-4 border-t border-slate-100">
+                                                            <div className="px-5 pb-5 mt-2 border-t border-slate-100/50">
                                                                 <AssessmentReferencePanel
                                                                     targetUserId={relation?.target_user_id ? String(relation.target_user_id) : null}
                                                                     periodId={selectedPeriodId ? String(selectedPeriodId) : null}
@@ -565,12 +594,10 @@ const UserDashboard: React.FC = () => {
                                                                 />
                                                             </div>
                                                         )}
-                                                    </div>
+                                                    </motion.div>
                                                 );
                                             })}
                                         </div>
-
-                                        {/* ── Bottom CTA jika ada yang sisa ── */}
                                         {remaining > 0 && (
                                             <div className="mt-5 p-4 bg-primary-50 rounded-2xl border border-primary-100 flex items-center justify-between">
                                                 <div className="flex items-center gap-2 text-primary-700">

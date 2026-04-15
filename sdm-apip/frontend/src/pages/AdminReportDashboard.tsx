@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-    LineChart, Line,
-    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+    AreaChart, Area, BarChart, Bar, LabelList,
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import {
     TrendingUp, Users, Award, Filter, Search,
@@ -184,14 +184,14 @@ const AdminReportDashboard: React.FC = () => {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4"
+            className="bg-white/70 backdrop-blur-3xl rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/60 flex items-center gap-4"
         >
-            <div className={`p-4 rounded-xl ${color} bg-opacity-10 text-${color.split('-')[1]}-600`}>
+            <div className={`p-4 rounded-2xl ${color} bg-opacity-10`}>
                 <Icon size={24} />
             </div>
             <div>
-                <p className="text-slate-500 text-sm font-medium">{title}</p>
-                <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
+                <p className="text-slate-600 text-sm font-bold">{title}</p>
+                <h3 className="text-2xl font-black text-slate-900">{value}</h3>
             </div>
         </motion.div>
     );
@@ -204,7 +204,7 @@ const AdminReportDashboard: React.FC = () => {
             <div className="space-y-8">
 
                 {/* Tab Switcher & Header Actions */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/70 backdrop-blur-xl p-5 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
                     <div className="flex bg-slate-100 p-1.5 rounded-2xl w-fit">
                         <button
                             onClick={() => setActiveTab('users')}
@@ -265,13 +265,13 @@ const AdminReportDashboard: React.FC = () => {
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm overflow-hidden"
+                            className="bg-white/70 backdrop-blur-xl rounded-[2rem] p-6 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden"
                         >
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-slate-700 block">Cari Pegawai</label>
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                         <input
                                             type="text"
                                             id="searchReport"
@@ -346,87 +346,176 @@ const AdminReportDashboard: React.FC = () => {
                             <StatsCard title="User Dinilai" value={dashboardData?.summary?.total_users || 0} icon={Users} color="bg-purple-600" />
                         </div>
 
-                        {/* Charts Row 1 */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm h-[400px]">
-                                <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                    <TrendingUp className="text-indigo-600" size={20} />
-                                    Tren Performa (6 Bulan Terakhir)
-                                </h3>
-                                <ResponsiveContainer width="100%" height="85%">
-                                    <LineChart data={dashboardData?.performance_trend}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
-                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dx={-10} domain={[0, 100]} />
-                                        <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                        <Line type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={4} dot={{ r: 6, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
-                                    </LineChart>
+                        {/* Charts Row 1 — Trend + Radar */}
+                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                            {/* Area Chart — Tren Performa */}
+                            <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl p-7 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                                            <TrendingUp className="text-indigo-500" size={18} />
+                                            Tren Performa
+                                        </h3>
+                                        <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Rata-rata skor 6 bulan terakhir</p>
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100">Live Data</span>
+                                </div>
+                                <ResponsiveContainer width="100%" height={260}>
+                                    <AreaChart data={dashboardData?.performance_trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
+                                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }} dy={8} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} domain={[0, 120]} tickCount={7} />
+                                        <Tooltip
+                                            contentStyle={{ background: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(12px)', border: 'none', borderRadius: '16px', color: '#fff', fontSize: 12, fontWeight: 700, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+                                            labelStyle={{ color: '#94a3b8', fontWeight: 600, marginBottom: 4 }}
+                                            formatter={(v: any) => [`${Number(v).toFixed(2)}`, 'Skor Rata-rata']}
+                                        />
+                                        <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fill="url(#trendGrad)" dot={{ r: 5, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 8, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }} />
+                                    </AreaChart>
                                 </ResponsiveContainer>
                             </div>
 
-                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm h-[400px]">
-                                <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                    <Star className="text-amber-500" size={20} />
-                                    Analisis BerAKHLAK (0-100)
-                                </h3>
-                                <ResponsiveContainer width="100%" height="85%">
-                                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={dashboardData?.category_breakdown}>
-                                        <PolarGrid stroke="#f1f5f9" />
-                                        <PolarAngleAxis dataKey="category" tick={{ fill: '#64748b', fontSize: 10 }} />
-                                        <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                                        <Radar name="Skor Rata-rata" dataKey="average" stroke="#6366f1" fill="#6366f1" fillOpacity={0.4} />
-                                        <Tooltip contentStyle={{ borderRadius: '12px' }} />
-                                    </RadarChart>
+                            {/* Radar Chart — BerAKHLAK */}
+                            <div className="lg:col-span-2 bg-white/70 backdrop-blur-3xl p-7 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col">
+                                <div className="mb-4">
+                                    <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                                        <Star className="text-amber-500" size={18} />
+                                        Analisis BerAKHLAK
+                                    </h3>
+                                    <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Skor rata-rata per indikator (0–100)</p>
+                                </div>
+                                <ResponsiveContainer width="100%" height={320}>
+                                    <BarChart
+                                        layout="vertical"
+                                        data={dashboardData?.category_breakdown}
+                                        margin={{ top: 10, right: 35, left: 10, bottom: 10 }}
+                                    >
+                                        <defs>
+                                            <linearGradient id="berakhlakGrad" x1="0" y1="0" x2="1" y2="0">
+                                                <stop offset="0%" stopColor="#c084fc" />
+                                                <stop offset="100%" stopColor="#db2777" />
+                                            </linearGradient>
+                                        </defs>
+                                        <XAxis type="number" domain={[0, 100]} hide />
+                                        <YAxis 
+                                            dataKey="category" 
+                                            type="category" 
+                                            axisLine={false} 
+                                            tickLine={false} 
+                                            tick={{ fill: '#1e293b', fontSize: 11, fontWeight: 800 }} 
+                                            width={150}
+                                        />
+                                        <Tooltip
+                                            cursor={{ fill: 'rgba(219, 39, 119, 0.05)' }}
+                                            contentStyle={{ background: 'rgba(15,23,42,0.95)', border: 'none', borderRadius: '16px', color: '#fff', fontSize: 13, fontWeight: 700, padding: '12px 18px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}
+                                            itemStyle={{ color: '#fbcfe8' }}
+                                            formatter={(v: any) => [`${Number(v).toFixed(2)}`, 'Skor Rata-rata']}
+                                        />
+                                        <Bar 
+                                            dataKey="average" 
+                                            fill="url(#berakhlakGrad)" 
+                                            radius={[0, 12, 12, 0]} 
+                                            maxBarSize={24}
+                                            background={{ fill: '#f1f5f9', radius: 12 }}
+                                            animationDuration={1500}
+                                        >
+                                            <LabelList 
+                                                dataKey="average" 
+                                                position="right" 
+                                                formatter={(v: any) => Number(v).toFixed(1)} 
+                                                style={{ fill: '#db2777', fontSize: 12, fontWeight: 900 }} 
+                                            />
+                                        </Bar>
+                                    </BarChart>
                                 </ResponsiveContainer>
                             </div>
                         </div>
 
-                        {/* Top Performers Row */}
-                        <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                            <h3 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-2">
-                                <Award className="text-indigo-600" size={24} />
-                                Pegawai Berprestasi (Top & Low)
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                <div className="space-y-4">
-                                    <p className="text-xs font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-lg w-fit">Top 5 Performa</p>
-                                    {(dashboardData?.top_performers || []).map((p, i) => (
-                                        <div key={p.user_id} className="flex items-center justify-between p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 hover:scale-[1.02] transition-transform cursor-pointer">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-lg shadow-emerald-200">#{i + 1}</div>
-                                                <div>
-                                                    <p className="font-bold text-slate-900">{p.name}</p>
-                                                    <p className="text-xs text-slate-500">Inspektorat</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-lg font-black text-emerald-700">{p.score.toFixed(2)}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                        {/* Charts Row 2 — Top & Low BarCharts side by side */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* TOP Performers Bar */}
+                            <div className="bg-white/70 backdrop-blur-3xl p-7 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                                <div className="flex items-center gap-2 mb-6">
+                                    <div className="h-8 w-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                                        <Award size={16} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-black text-slate-900">🏆 Top 5 Performa Terbaik</h3>
+                                        <p className="text-[10px] text-slate-500 font-medium">Pegawai dengan skor tertinggi</p>
+                                    </div>
                                 </div>
-                                <div className="space-y-4">
-                                    <p className="text-xs font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-3 py-1.5 rounded-lg w-fit">Bottom 5 Performa</p>
-                                    {(dashboardData?.low_performers || []).map((p, i) => (
-                                        <div key={p.user_id} className="flex items-center justify-between p-4 bg-rose-50/50 rounded-2xl border border-rose-100 hover:scale-[1.02] transition-transform cursor-pointer">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold shadow-lg shadow-rose-200">#{i + 1}</div>
-                                                <div>
-                                                    <p className="font-bold text-slate-900">{p.name}</p>
-                                                    <p className="text-xs text-slate-500">Inspektorat</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-lg font-black text-rose-700">{p.score.toFixed(2)}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                <ResponsiveContainer width="100%" height={220}>
+                                    <BarChart
+                                        layout="vertical"
+                                        data={(dashboardData?.top_performers || []).map((p, i) => ({ name: p.name.split(' ').slice(0, 2).join(' '), score: Number(p.score.toFixed(1)), rank: i + 1 }))}
+                                        margin={{ top: 0, right: 60, left: 0, bottom: 0 }}
+                                    >
+                                        <defs>
+                                            <linearGradient id="topGrad" x1="0" y1="0" x2="1" y2="0">
+                                                <stop offset="0%" stopColor="#10b981" />
+                                                <stop offset="100%" stopColor="#34d399" />
+                                            </linearGradient>
+                                        </defs>
+                                        <XAxis type="number" domain={[0, 120]} tickCount={5} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                                        <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#334155', fontSize: 11, fontWeight: 700 }} width={90} />
+                                        <Tooltip
+                                            contentStyle={{ background: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(12px)', border: 'none', borderRadius: '14px', color: '#fff', fontSize: 12, fontWeight: 700 }}
+                                            formatter={(v: any) => [`${v}`, 'Skor']}
+                                            cursor={{ fill: 'rgba(16,185,129,0.05)' }}
+                                        />
+                                        <Bar dataKey="score" fill="url(#topGrad)" radius={[0, 8, 8, 0]} maxBarSize={28}>
+                                            <LabelList dataKey="score" position="right" style={{ fill: '#10b981', fontSize: 11, fontWeight: 900 }} />
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            {/* LOW Performers Bar */}
+                            <div className="bg-white/70 backdrop-blur-3xl p-7 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                                <div className="flex items-center gap-2 mb-6">
+                                    <div className="h-8 w-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
+                                        <TrendingUp size={16} className="rotate-180" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-black text-slate-900">⚡ Perlu Perhatian Khusus</h3>
+                                        <p className="text-[10px] text-slate-500 font-medium">Pegawai dengan skor terendah</p>
+                                    </div>
                                 </div>
+                                <ResponsiveContainer width="100%" height={220}>
+                                    <BarChart
+                                        layout="vertical"
+                                        data={(dashboardData?.low_performers || []).map((p, i) => ({ name: p.name.split(' ').slice(0, 2).join(' '), score: Number(p.score.toFixed(1)), rank: i + 1 }))}
+                                        margin={{ top: 0, right: 60, left: 0, bottom: 0 }}
+                                    >
+                                        <defs>
+                                            <linearGradient id="lowGrad" x1="0" y1="0" x2="1" y2="0">
+                                                <stop offset="0%" stopColor="#f43f5e" />
+                                                <stop offset="100%" stopColor="#fb7185" />
+                                            </linearGradient>
+                                        </defs>
+                                        <XAxis type="number" domain={[0, 120]} tickCount={5} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                                        <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#334155', fontSize: 11, fontWeight: 700 }} width={90} />
+                                        <Tooltip
+                                            contentStyle={{ background: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(12px)', border: 'none', borderRadius: '14px', color: '#fff', fontSize: 12, fontWeight: 700 }}
+                                            formatter={(v: any) => [`${v}`, 'Skor']}
+                                            cursor={{ fill: 'rgba(244,63,94,0.05)' }}
+                                        />
+                                        <Bar dataKey="score" fill="url(#lowGrad)" radius={[0, 8, 8, 0]} maxBarSize={28}>
+                                            <LabelList dataKey="score" position="right" style={{ fill: '#f43f5e', fontSize: 11, fontWeight: 900 }} />
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
+                    <div className="bg-white/70 backdrop-blur-3xl rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden animate-fade-in">
                         <div className="p-6 border-b border-slate-100 bg-slate-50/30">
                             <div className="space-y-6">
                                 {/* Title + counter */}
@@ -444,7 +533,7 @@ const AdminReportDashboard: React.FC = () => {
 
                                 {/* Predicate Legend (FULL WIDTH ROW) */}
                                 <div>
-                                    <p className="text-[10px] font-black text-slate-400 mb-3 uppercase tracking-widest">Panduan Range Predikat</p>
+                                    <p className="text-[10px] font-black text-slate-500 mb-3 uppercase tracking-widest">Panduan Range Predikat</p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-sm font-black">
                                         <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-full">
                                             <span className="bg-emerald-50 text-emerald-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&ge; 110</span>
@@ -491,7 +580,7 @@ const AdminReportDashboard: React.FC = () => {
                                                     className="text-left font-bold text-slate-900 hover:text-indigo-600 transition-colors"
                                                 >
                                                     {user.name}
-                                                    <p className="text-[10px] text-slate-400 font-mono mt-0.5">{user.nip}</p>
+                                                    <p className="text-[10px] text-slate-500 font-mono mt-0.5">{user.nip}</p>
                                                 </button>
                                             </td>
                                             <td className="px-8 py-5">
@@ -523,10 +612,10 @@ const AdminReportDashboard: React.FC = () => {
                                                 </span>
                                             </td>
                                             <td className="px-8 py-5 text-right">
-                                                <button
-                                                    onClick={() => handleUserClick(user)}
-                                                    className="p-2 rounded-lg bg-slate-100 text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm"
-                                                >
+                                                    <button
+                                                        onClick={() => handleUserClick(user)}
+                                                        className="p-2 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm"
+                                                    >
                                                     <Eye size={18} />
                                                 </button>
                                             </td>

@@ -239,65 +239,74 @@ const CrossGroupRelationPage: React.FC = () => {
             title="Relasi Penilaian Lintas Grup"
             subtitle="Atur relasi penilaian antar pegawai dari grup yang berbeda untuk sistem evaluasi 360° yang komprehensif."
         >
-            <div className="space-y-6">
-                {/* Info Card */}
-                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex gap-4">
-                    <Info size={22} className="text-blue-500 shrink-0 mt-0.5" />
-                    <div className="text-sm text-blue-800">
-                        <p className="font-bold mb-1">Panduan Relasi Lintas Grup</p>
-                        <ul className="space-y-1 list-disc list-inside text-xs leading-relaxed">
-                            <li>Gunakan halaman ini untuk menghubungkan pegawai dari <strong>Grup yang berbeda</strong> sebagai penilai satu sama lain.</li>
-                            <li>Rekomendasi: Sesama <strong>Dalnis ↔ Dalnis</strong>, <strong>KT ↔ KT</strong>, atau <strong>AT ↔ AT</strong> dikategorikan sebagai <strong>Peer</strong>.</li>
-                            <li>Aktifkan <strong>"Buat Relasi Timbal-Balik"</strong> agar sistem otomatis membuat relasi kebalikannya (A→B dan B→A sekaligus).</li>
-                            <li>Relasi intra-grup (dalam satu grup) dikelola di halaman <strong>Manajemen Grup</strong>.</li>
-                        </ul>
+            <div className="space-y-8 animate-fade-in">
+                {/* ══════════════════════════════════════════
+                    Info Card & Period Selector
+                ══════════════════════════════════════════ */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    {/* Info Card */}
+                    <div className="md:col-span-7 flex items-start gap-4 bg-indigo-50 border border-indigo-100 rounded-[2rem] p-6">
+                        <div className="h-10 w-10 bg-indigo-100 rounded-2xl flex items-center justify-center shrink-0">
+                            <Info size={20} className="text-indigo-600" />
+                        </div>
+                        <div>
+                            <p className="font-black text-indigo-900 mb-2">Panduan Relasi Lintas Grup</p>
+                            <ul className="space-y-1.5 list-disc list-inside text-xs leading-relaxed text-indigo-700/80 font-medium">
+                                <li>Gunakan halaman ini untuk menghubungkan pegawai dari <strong className="font-black">Grup yang berbeda</strong>.</li>
+                                <li>Rekomendasi: Sesama Dalnis, KT, atau AT dikategorikan sebagai <strong className="font-black">Peer</strong>.</li>
+                                <li>Aktifkan <strong className="font-black">"Buat Relasi Timbal-Balik"</strong> agar sistem otomatis membuat relasi kebalikannya.</li>
+                                <li>Relasi intra-grup dikelola di halaman <strong className="font-black">Manajemen Grup</strong>.</li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
 
-                {/* Period Selector */}
-                <div className="card p-5 flex items-center gap-4">
-                    <Filter size={20} className="text-primary-500 shrink-0" />
-                    <div className="flex-1">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-1">Periode Aktif</label>
-                        <select
-                            className="form-input text-sm font-bold"
-                            value={selectedPeriodId}
-                            onChange={e => setSelectedPeriodId(Number(e.target.value) || '')}
-                        >
-                            <option value="">-- Pilih Periode Penilaian --</option>
-                            {periods.map(p => (
-                                <option key={p.id} value={p.id}>
-                                    {p.name} {p.is_active ? '(Aktif)' : ''}
-                                </option>
-                            ))}
-                        </select>
+                    {/* Period Selector */}
+                    <div className="md:col-span-5 bg-white/70 backdrop-blur-3xl rounded-[2rem] p-6 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-center gap-3">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Filter size={16} className="text-primary-500" />
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Periode Aktif</label>
+                        </div>
+                        <div className="relative group">
+                            <select
+                                className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-black text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer hover:bg-white pr-10"
+                                value={selectedPeriodId}
+                                onChange={e => setSelectedPeriodId(Number(e.target.value) || '')}
+                            >
+                                <option value="">-- Pilih Periode Penilaian --</option>
+                                {periods.map(p => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.name} {p.is_active ? '✓' : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-                    {/* Form Add Relation */}
-                    <div className="xl:col-span-2 card p-6 h-fit">
-                        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                            <div className="h-10 w-10 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center">
-                                <Link2 size={20} />
+                    {/* ══════════════════════════════════════════
+                        Form Add Relation
+                    ══════════════════════════════════════════ */}
+                    <div className="xl:col-span-2 bg-white/70 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_10px_40px_rgb(0,0,0,0.04)] h-fit">
+                        <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
+                            <div className="h-14 w-14 rounded-[1.25rem] bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                <Link2 size={24} strokeWidth={2.5} />
                             </div>
                             <div>
-                                <h3 className="font-black text-slate-900">Tambah Relasi Baru</h3>
-                                <p className="text-xs text-slate-500">Hubungkan dua pegawai lintas grup</p>
+                                <h3 className="font-black text-slate-900 text-lg">Tambah Relasi Baru</h3>
+                                <p className="text-xs font-bold text-slate-400">Hubungkan pegawai lintas grup</p>
                             </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Evaluator Picker */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
-                                    Penilai (Evaluator)
-                                </label>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Penilai (Evaluator)</label>
                                 <div className="relative">
-                                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="text"
-                                        className="form-input pl-10"
+                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         placeholder="Cari nama / NIP..."
                                         value={selectedEvaluator ? `${selectedEvaluator.name} (${selectedEvaluator.nip})` : evaluatorSearch}
                                         onChange={e => {
@@ -310,14 +319,14 @@ const CrossGroupRelationPage: React.FC = () => {
                                         onBlur={() => setTimeout(() => setShowEvaluatorDropdown(false), 150)}
                                     />
                                     {showEvaluatorDropdown && evaluatorSearch && !selectedEvaluator && (
-                                        <div className="absolute z-20 mt-1 w-full bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden">
+                                        <div className="absolute z-30 mt-2 w-full bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden py-2">
                                             {filteredEvaluators.length === 0 ? (
-                                                <div className="p-3 text-xs text-slate-400 text-center">Tidak ditemukan</div>
+                                                <div className="p-4 text-xs font-bold text-slate-400 text-center">Tidak ditemukan</div>
                                             ) : filteredEvaluators.map(u => (
                                                 <button
                                                     key={u.id}
                                                     type="button"
-                                                    className="w-full text-left px-4 py-3 hover:bg-primary-50 transition-colors border-b border-slate-50 last:border-0"
+                                                    className="w-full text-left px-5 py-3 hover:bg-indigo-50/50 transition-colors"
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
                                                         setSelectedEvaluator(u);
@@ -326,24 +335,22 @@ const CrossGroupRelationPage: React.FC = () => {
                                                     }}
                                                 >
                                                     <p className="text-xs font-black text-slate-900">{u.name}</p>
-                                                    <p className="text-[10px] text-slate-400 font-mono">{u.nip} · {u.jabatan || u.email}</p>
+                                                    <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{u.nip} · {u.jabatan || u.email}</p>
                                                 </button>
                                             ))}
                                         </div>
                                     )}
                                 </div>
                                 {selectedEvaluator && (
-                                    <p className="text-[10px] text-primary-600 font-bold">✓ {selectedEvaluator.email}</p>
+                                    <p className="text-[10px] text-emerald-600 font-black pl-2">✓ Terpilih: {selectedEvaluator.email}</p>
                                 )}
                             </div>
 
                             {/* Relation Type */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
-                                    Tipe Relasi Penilai
-                                </label>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipe Relasi Penilai</label>
                                 <select
-                                    className="form-input font-bold"
+                                    className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-black text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all cursor-pointer"
                                     value={form.relation_type}
                                     onChange={e => setForm(f => ({ ...f, relation_type: e.target.value }))}
                                 >
@@ -352,44 +359,44 @@ const CrossGroupRelationPage: React.FC = () => {
                                     ))}
                                 </select>
                                 {selectedRelationType && (
-                                    <p className="text-[10px] text-slate-500 italic">{selectedRelationType.desc}</p>
+                                    <p className="text-[10px] text-slate-500 font-bold italic pl-2">{selectedRelationType.desc}</p>
                                 )}
                             </div>
 
                             {/* Arrow indicator */}
-                            <div className="flex items-center justify-center gap-3 py-2">
+                            <div className="flex items-center justify-center gap-4 py-2 opacity-60">
                                 <div className="h-px flex-1 bg-slate-200"></div>
-                                <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider">
-                                    <span className="text-primary-600">{form.relation_type || '?'}</span>
-                                    <ArrowRight size={16} className="text-slate-300" />
+                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100">
+                                    <span className="text-indigo-600">{form.relation_type || '?'}</span>
+                                    <ArrowRight size={14} className="text-slate-300 mx-1" />
                                     <span className="text-slate-500">{reciprocalLabel}</span>
                                 </div>
                                 <div className="h-px flex-1 bg-slate-200"></div>
                             </div>
 
                             {/* Target Picker */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center justify-between">
-                                    <span>Target yang Dinilai (Bisa Lebih Dari Satu)</span>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-between">
+                                    <span>Target yang Dinilai</span>
                                     {selectedTargets.length > 0 && (
-                                        <span className="bg-primary-100 text-primary-600 px-2 py-0.5 rounded-md text-[10px]">{selectedTargets.length} Orang Terpilih</span>
+                                        <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg text-[9px]">{selectedTargets.length} Orang</span>
                                     )}
                                 </label>
 
                                 {selectedTargets.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 mb-2 p-3 bg-slate-50 border border-slate-100 rounded-xl max-h-48 overflow-y-auto shadow-inner">
+                                    <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-100 rounded-2xl max-h-48 overflow-y-auto">
                                         {selectedTargets.map(t => (
-                                            <div key={t.id} className="flex items-center gap-1.5 bg-white border shadow-sm px-2.5 py-1.5 rounded-lg text-[10px] font-black group">
+                                            <div key={t.id} className="flex items-center gap-2 bg-white border border-slate-200 shadow-sm px-3 py-2 rounded-xl text-[10px] font-black group">
                                                 <div className="flex flex-col">
                                                     <span className="text-slate-800">{t.name}</span>
-                                                    <span className="text-slate-400 font-normal">{t.jabatan || t.nip}</span>
+                                                    <span className="text-slate-400 font-mono mt-0.5">{t.nip}</span>
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={() => removeTarget(t.id)}
-                                                    className="ml-1 text-slate-300 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors"
+                                                    className="ml-2 h-6 w-6 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
                                                 >
-                                                    <X size={12} />
+                                                    <X size={14} />
                                                 </button>
                                             </div>
                                         ))}
@@ -397,11 +404,11 @@ const CrossGroupRelationPage: React.FC = () => {
                                 )}
 
                                 <div className="relative">
-                                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="text"
-                                        className="form-input pl-10"
-                                        placeholder="Cari dan klik nama/NIP untuk menambahkan..."
+                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        placeholder="Ketik untuk menambah target..."
                                         value={targetSearch}
                                         onChange={e => {
                                             setTargetSearch(e.target.value);
@@ -411,14 +418,14 @@ const CrossGroupRelationPage: React.FC = () => {
                                         onBlur={() => setTimeout(() => setShowTargetDropdown(false), 150)}
                                     />
                                     {showTargetDropdown && targetSearch && (
-                                        <div className="absolute z-20 mt-1 w-full bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden max-h-60 overflow-y-auto">
+                                        <div className="absolute z-30 mt-2 w-full bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden py-2 max-h-60 overflow-y-auto">
                                             {filteredTargets.length === 0 ? (
-                                                <div className="p-3 text-xs text-slate-400 text-center">Tidak ditemukan atau sudah ditambahkan</div>
+                                                <div className="p-4 text-xs font-bold text-slate-400 text-center">Tidak ditemukan atau sudah ditambahkan</div>
                                             ) : filteredTargets.map(u => (
                                                 <button
                                                     key={u.id}
                                                     type="button"
-                                                    className="w-full text-left px-4 py-3 hover:bg-primary-50 transition-colors border-b border-slate-50 last:border-0"
+                                                    className="w-full text-left px-5 py-3 hover:bg-indigo-50/50 transition-colors"
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
                                                         if (!form.target_user_ids.includes(u.id)) {
@@ -430,7 +437,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                                     }}
                                                 >
                                                     <p className="text-xs font-black text-slate-900">{u.name}</p>
-                                                    <p className="text-[10px] text-slate-400 font-mono">{u.nip} · {u.jabatan || u.email}</p>
+                                                    <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{u.nip} · {u.jabatan || u.email}</p>
                                                 </button>
                                             ))}
                                         </div>
@@ -439,161 +446,167 @@ const CrossGroupRelationPage: React.FC = () => {
                             </div>
 
                             {/* Reciprocal toggle */}
-                            <div className="flex items-start gap-3 bg-slate-50 rounded-xl p-4 border border-slate-100">
+                            <div className="flex items-start gap-4 bg-slate-50 rounded-2xl p-5 border border-slate-200">
                                 <input
                                     type="checkbox"
                                     id="reciprocal"
-                                    className="w-4 h-4 rounded accent-primary-600 mt-0.5"
+                                    className="w-5 h-5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-600/20 mt-0.5 cursor-pointer"
                                     checked={form.createReciprocal}
                                     onChange={e => setForm(f => ({ ...f, createReciprocal: e.target.checked }))}
                                 />
-                                <label htmlFor="reciprocal" className="cursor-pointer">
-                                    <p className="text-xs font-black text-slate-800">Buat Relasi Timbal-Balik Otomatis</p>
-                                    <p className="text-[10px] text-slate-500 mt-0.5">
-                                        Akan membuat 2 relasi: A sebagai <strong>{form.relation_type}</strong> B, dan B sebagai <strong>{reciprocalLabel}</strong> A. Direkomendasikan untuk relasi Peer.
+                                <label htmlFor="reciprocal" className="cursor-pointer flex-1">
+                                    <p className="text-xs font-black text-slate-900">Buat Relasi Timbal-Balik Otomatis</p>
+                                    <p className="text-[10px] font-bold text-slate-500 mt-1 leading-relaxed">
+                                        Akan membuat 2 relasi: A sebagai <span className="text-indigo-600 px-1">{form.relation_type}</span> B, dan B sebagai <span className="text-indigo-600 px-1">{reciprocalLabel}</span> A.
                                     </p>
                                 </label>
                             </div>
 
                             {!selectedPeriodId && (
-                                <div className="flex items-center gap-2 text-amber-600 bg-amber-50 p-3 rounded-xl text-xs font-bold border border-amber-100">
-                                    <AlertCircle size={14} />
-                                    Pilih periode terlebih dahulu
+                                <div className="flex items-center gap-3 text-amber-700 bg-amber-50 p-4 rounded-2xl text-xs font-black border border-amber-200/50">
+                                    <AlertCircle size={16} className="shrink-0" />
+                                    Pilih periode terlebih dahulu di atas
                                 </div>
                             )}
 
                             <button
                                 type="submit"
                                 disabled={saving || !selectedPeriodId || !form.evaluator_id || form.target_user_ids.length === 0}
-                                className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="w-full bg-slate-900 text-white rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:bg-slate-900"
                             >
-                                {saving ? <RefreshCw size={16} className="animate-spin" /> : <Plus size={16} />}
-                                {saving ? 'Menyimpan...' : 'Tambah Relasi'}
+                                {saving ? <RefreshCw size={18} className="animate-spin" /> : <Plus size={18} />}
+                                {saving ? 'Memproses...' : 'Tambah Relasi Baru'}
                             </button>
                         </form>
                     </div>
 
-                    {/* Relations List */}
-                    <div className="xl:col-span-3 card overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="h-9 w-9 rounded-xl bg-slate-100 flex items-center justify-center">
-                                    <ArrowLeftRight size={18} className="text-slate-600" />
+                    {/* ══════════════════════════════════════════
+                        Relations List
+                    ══════════════════════════════════════════ */}
+                    <div className="xl:col-span-3 bg-white/70 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 shadow-[0_20px_50px_rgb(0,0,0,0.05)] overflow-hidden flex flex-col">
+                        <div className="px-8 py-6 border-b border-slate-100/50 flex items-center justify-between bg-slate-50/30">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-[1rem] bg-indigo-50 flex items-center justify-center">
+                                    <ArrowLeftRight size={20} className="text-indigo-600" />
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-slate-900 text-sm">Relasi Lintas Grup Aktif</h3>
-                                    <p className="text-[10px] text-slate-400">{crossRelations.length} relasi terdaftar</p>
+                                    <h3 className="font-black text-slate-900 text-sm">Daftar Relasi Lintas Grup</h3>
+                                    <p className="text-[10px] font-bold text-slate-400 mt-0.5">{crossRelations.length} relasi terdaftar</p>
                                 </div>
                             </div>
-                            <button onClick={loadCrossRelations} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-slate-50 rounded-xl transition-all" title="Refresh">
-                                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                            <button onClick={loadCrossRelations} className="p-3 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-[1rem] shadow-sm border border-transparent hover:border-slate-100 transition-all" title="Segarkan Data">
+                                <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                             </button>
                         </div>
 
-                        {!selectedPeriodId ? (
-                            <div className="py-16 text-center">
-                                <Filter size={40} className="mx-auto text-slate-200 mb-3" />
-                                <p className="text-sm font-bold text-slate-400">Pilih periode untuk melihat relasi</p>
-                            </div>
-                        ) : loading ? (
-                            <div className="divide-y divide-slate-50">
-                                {Array(5).fill(0).map((_, i) => (
-                                    <div key={i} className="px-6 py-4 animate-pulse flex items-center gap-4">
-                                        <div className="h-8 w-8 bg-slate-100 rounded-lg"></div>
-                                        <div className="flex-1 space-y-2">
-                                            <div className="h-3 bg-slate-100 rounded w-2/3"></div>
-                                            <div className="h-2 bg-slate-50 rounded w-1/2"></div>
+                        <div className="flex-1 overflow-hidden flex flex-col">
+                            {!selectedPeriodId ? (
+                                <div className="py-24 text-center flex-1">
+                                    <Filter size={60} className="mx-auto text-slate-200 mb-4" />
+                                    <p className="text-sm font-black text-slate-900 tracking-tight">Pilih periode untuk melihat data</p>
+                                </div>
+                            ) : loading ? (
+                                <div className="divide-y divide-slate-100/50">
+                                    {Array(5).fill(0).map((_, i) => (
+                                        <div key={i} className="px-8 py-5 animate-pulse flex items-center gap-6">
+                                            <div className="h-10 w-10 bg-slate-100 rounded-xl"></div>
+                                            <div className="flex-1 space-y-3">
+                                                <div className="h-3 bg-slate-100 rounded w-1/3"></div>
+                                                <div className="h-2 bg-slate-50 rounded w-1/4"></div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : crossRelations.length === 0 ? (
-                            <div className="py-16 text-center">
-                                <Users size={40} className="mx-auto text-slate-200 mb-3" />
-                                <p className="text-sm font-bold text-slate-400">Belum ada relasi lintas grup</p>
-                                <p className="text-xs text-slate-300 mt-1">Tambah relasi menggunakan form di sebelah kiri</p>
-                            </div>
-                        ) : (
-                            <div className="overflow-auto max-h-[520px]">
-                                <table className="w-full text-left">
-                                    <thead className="bg-slate-50 sticky top-0">
-                                        <tr>
-                                            <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Penilai</th>
-                                            <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Relasi</th>
-                                            <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Target</th>
-                                            <th className="px-4 py-3"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {crossRelations.map(rel => (
-                                            <tr key={rel.id} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-8 w-8 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-black">
-                                                            {(rel.evaluator?.name || rel.evaluator?.email || 'U')[0].toUpperCase()}
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs font-black text-slate-900 truncate max-w-[120px]">
-                                                                {rel.evaluator?.name || rel.evaluator?.email || `User #${rel.evaluator_id}`}
-                                                            </p>
-                                                            <p className="text-[9px] font-mono text-slate-400">{rel.evaluator?.nip}</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <div className="flex flex-col items-center gap-1">
-                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${getRelationBadge(rel.relation_type)}`}>
-                                                            {rel.relation_type}
-                                                        </span>
-                                                        <ArrowRight size={12} className="text-slate-300" />
-                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${getRelationBadge(rel.target_position)}`}>
-                                                            {rel.target_position}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-8 w-8 rounded-lg bg-accent-100 text-accent-700 flex items-center justify-center text-xs font-black">
-                                                            {(rel.target_user?.name || rel.target_user?.email || 'U')[0].toUpperCase()}
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs font-black text-slate-900 truncate max-w-[120px]">
-                                                                {rel.target_user?.name || rel.target_user?.email || `User #${rel.target_user_id}`}
-                                                            </p>
-                                                            <p className="text-[9px] font-mono text-slate-400">{rel.target_user?.nip}</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <button
-                                                        onClick={() => handleDelete(rel.id)}
-                                                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                        title="Hapus relasi ini"
-                                                    >
-                                                        <Trash2 size={15} />
-                                                    </button>
-                                                </td>
+                                    ))}
+                                </div>
+                            ) : crossRelations.length === 0 ? (
+                                <div className="py-24 text-center flex-1">
+                                    <Users size={60} className="mx-auto text-slate-200 mb-4" />
+                                    <p className="text-sm font-black text-slate-900 tracking-tight">Belum ada relasi lintas grup.</p>
+                                    <p className="text-xs text-slate-400 font-bold mt-2">Tambahkan melalui form di samping.</p>
+                                </div>
+                            ) : (
+                                <div className="overflow-auto flex-1 max-h-[600px]">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-slate-50/50 sticky top-0 backdrop-blur-md z-10 border-b border-slate-100">
+                                            <tr>
+                                                <th className="px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Penilai</th>
+                                                <th className="px-4 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Status Relasi</th>
+                                                <th className="px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 w-full">Target</th>
+                                                <th className="px-6 py-4"></th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100/50">
+                                            {crossRelations.map(rel => (
+                                                <tr key={rel.id} className="hover:bg-slate-50/50 transition-colors group">
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="h-10 w-10 rounded-[0.8rem] bg-indigo-50 text-indigo-700 flex items-center justify-center text-sm font-black group-hover:scale-110 transition-transform">
+                                                                {(rel.evaluator?.name || rel.evaluator?.email || 'U')[0].toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs font-black text-slate-900 truncate max-w-[140px]">
+                                                                    {rel.evaluator?.name || rel.evaluator?.email || `User #${rel.evaluator_id}`}
+                                                                </p>
+                                                                <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{rel.evaluator?.nip}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-5 text-center">
+                                                        <div className="flex flex-col items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${getRelationBadge(rel.relation_type)}`}>
+                                                                {rel.relation_type}
+                                                            </span>
+                                                            <ArrowRight size={14} className="text-slate-300" />
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${getRelationBadge(rel.target_position)}`}>
+                                                                {rel.target_position}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex items-center gap-4 flex-row-reverse justify-end text-right sm:flex-row sm:text-left sm:justify-start">
+                                                            <div className="h-10 w-10 rounded-[0.8rem] bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-black group-hover:scale-110 transition-transform">
+                                                                {(rel.target_user?.name || rel.target_user?.email || 'U')[0].toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs font-black text-slate-900 truncate max-w-[140px]">
+                                                                    {rel.target_user?.name || rel.target_user?.email || `User #${rel.target_user_id}`}
+                                                                </p>
+                                                                <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{rel.target_user?.nip}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-right">
+                                                        <button
+                                                            onClick={() => handleDelete(rel.id)}
+                                                            className="p-3 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0"
+                                                            title="Hapus relasi"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Bobot System Info */}
-                <div className="card p-6">
-                    <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
-                        <div className="h-10 w-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
-                            <CheckCircle2 size={20} />
+                {/* ══════════════════════════════════════════
+                    Bobot System Info
+                ══════════════════════════════════════════ */}
+                <div className="bg-white/70 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 shadow-[0_10px_30px_rgb(0,0,0,0.03)] p-8">
+                    <div className="flex items-center gap-4 mb-6 pb-5 border-b border-slate-100">
+                        <div className="h-12 w-12 rounded-[1rem] bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <CheckCircle2 size={24} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <h3 className="font-black text-slate-900">Sistem Pembobotan Adaptif (7 Status)</h3>
-                            <p className="text-xs text-slate-500">Bobot penilaian dihitung otomatis berdasarkan ketersediaan rater dari semua grup</p>
+                            <h3 className="font-black text-slate-900 text-base">Sistem Pembobotan Adaptif (7 Status)</h3>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Bobot penilaian dihitung otomatis berdasarkan ketersediaan rater</p>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                         {[
                             { s: 1, a: true, p: true, b: true, wA: '60%', wP: '20%', wB: '20%' },
                             { s: 2, a: false, p: true, b: true, wA: '-', wP: '50%', wB: '50%' },
@@ -603,16 +616,16 @@ const CrossGroupRelationPage: React.FC = () => {
                             { s: 6, a: false, p: true, b: false, wA: '-', wP: '100%', wB: '-' },
                             { s: 7, a: true, p: false, b: false, wA: '100%', wP: '-', wB: '-' },
                         ].map(stat => (
-                            <div key={stat.s} className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Status {stat.s}</p>
-                                <div className="space-y-1">
-                                    <div className={`text-[9px] font-black rounded px-1.5 py-0.5 ${stat.a ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-300 line-through'}`}>
+                            <div key={stat.s} className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 text-center hover:bg-white transition-colors hover:shadow-sm">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Status {stat.s}</p>
+                                <div className="space-y-2">
+                                    <div className={`text-[10px] font-black rounded-lg px-2 py-1 ${stat.a ? 'bg-amber-100/50 text-amber-700' : 'bg-slate-100/50 text-slate-300 line-through'}`}>
                                         Atasan: {stat.wA}
                                     </div>
-                                    <div className={`text-[9px] font-black rounded px-1.5 py-0.5 ${stat.p ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-300 line-through'}`}>
+                                    <div className={`text-[10px] font-black rounded-lg px-2 py-1 ${stat.p ? 'bg-indigo-100/50 text-indigo-700' : 'bg-slate-100/50 text-slate-300 line-through'}`}>
                                         Peer: {stat.wP}
                                     </div>
-                                    <div className={`text-[9px] font-black rounded px-1.5 py-0.5 ${stat.b ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-300 line-through'}`}>
+                                    <div className={`text-[10px] font-black rounded-lg px-2 py-1 ${stat.b ? 'bg-violet-100/50 text-violet-700' : 'bg-slate-100/50 text-slate-300 line-through'}`}>
                                         Bawahan: {stat.wB}
                                     </div>
                                 </div>

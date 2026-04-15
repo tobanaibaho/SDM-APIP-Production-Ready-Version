@@ -4,7 +4,12 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased min-h-screen selection:bg-primary-100 selection:text-primary-900;
+    @apply text-slate-900 font-sans antialiased min-h-screen selection:bg-primary-100 selection:text-primary-900;
+    background-color: #f8fafc;
+    background-image: radial-gradient(at 80% 0%, hsla(189,100%,56%,0.15) 0px, transparent 50%),
+                      radial-gradient(at 0% 50%, hsla(280,100%,70%,0.12) 0px, transparent 50%),
+                      radial-gradient(at 40% 100%, hsla(228,100%,74%,0.15) 0px, transparent 50%);
+    background-attachment: fixed;
   }
 }
 
@@ -14,7 +19,7 @@
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-all duration-200 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50 font-medium;
+    @apply px-4 py-2 bg-white/50 backdrop-blur-md text-slate-700 border border-white/60 rounded-xl hover:bg-white/80 transition-all duration-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 disabled:opacity-50 font-medium;
   }
 
   .btn-danger {
@@ -22,21 +27,34 @@
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden;
+    @apply bg-white/70 backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/60 overflow-hidden rounded-[2rem];
   }
 
   .form-input {
-    @apply w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none text-slate-900 placeholder:text-slate-400 text-sm;
+    @apply w-full px-3 py-2.5 bg-white/50 backdrop-blur-sm border border-white/60 rounded-xl focus:bg-white/90 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all outline-none text-slate-900 placeholder:text-slate-400 text-sm;
   }
 
   .form-label {
     @apply block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-0.5;
   }
 
-  /* Animations are in tailwind config */
+  /* Blob Animations for aesthetic background */
   .animate-blob {
     animation: blob 7s infinite;
   }
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+}
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
 }
 
 /* Scrollbar styles */

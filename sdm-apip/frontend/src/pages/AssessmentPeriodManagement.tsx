@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import assessmentService, { AssessmentPeriod } from '../services/assessmentService';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Calendar,
     Plus,
@@ -12,7 +13,9 @@ import {
     AlertCircle,
     RefreshCw,
     Lock,
-    Info
+    Info,
+    Loader2,
+    X
 } from 'lucide-react';
 
 /* ── helpers ── */
@@ -126,302 +129,334 @@ const AssessmentPeriodManagement: React.FC = () => {
 
     const getStatusBadge = (period: AssessmentPeriod) => {
         if (isPeriodExpiredByDate(period)) {
-            return <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700"><Lock size={10} />Berakhir</span>;
+            return (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-rose-50 border border-rose-100 text-[10px] font-black text-rose-700 uppercase tracking-widest">
+                    <Lock size={12} strokeWidth={3} /> Berakhir
+                </div>
+            );
         }
         if (isPeriodUpcoming(period)) {
-            return <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-700">Akan Datang</span>;
+            return (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-indigo-50 border border-indigo-100 text-[10px] font-black text-indigo-700 uppercase tracking-widest">
+                    Akan Datang
+                </div>
+            );
         }
         if (period.is_active) {
-            return <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700"><span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />Berjalan</span>;
+            return (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-100 text-[10px] font-black text-emerald-700 uppercase tracking-widest shadow-sm">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Berjalan
+                </div>
+            );
         }
-        return <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-600">Nonaktif</span>;
+        return (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                Nonaktif
+            </div>
+        );
     };
 
     return (
         <Layout
-            title="Periode Penilaian"
-            subtitle="Kelola rentang waktu penilaian peer-to-peer 360 derajat"
+            title="Governance Periode"
+            subtitle="Konfigurasi temporal dan manajemen siklus penilaian kinerja 360 derajat."
         >
-            <div className="space-y-6">
-                {/* Header Actions */}
-                <div className="flex justify-end">
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="btn-primary flex items-center gap-2"
+            <div className="space-y-8 animate-fade-in">
+                {/* Header Action Bento Banner */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="md:col-span-8 bg-white/70 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_8px_30px_rgba(0,0,0,0.04)] flex items-start gap-6 relative overflow-hidden group"
                     >
-                        <Plus size={18} />
-                        Buat Periode Baru
-                    </button>
+                        <div className="absolute top-0 right-0 p-8 opacity-5 scale-150 rotate-12 transition-transform duration-1000 group-hover:rotate-0">
+                            <Calendar size={120} />
+                        </div>
+                        <div className="h-14 w-14 rounded-[1.5rem] bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm border border-indigo-100/50">
+                            <Info size={28} strokeWidth={2.5} />
+                        </div>
+                        <div className="relative z-10 space-y-3">
+                            <h4 className="text-xl font-black text-slate-900 tracking-tight">Tata Kelola Otomatis Aktif</h4>
+                            <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-2xl">
+                                Seluruh periode akan terkunci secara otomatis tepat pada <span className="text-slate-900 font-black">pukul 00:00</span> setelah tanggal berakhir terlampaui. Gunakan fitur <span className="text-indigo-600 font-black">Override</span> hanya untuk situasi mendesak.
+                            </p>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="md:col-span-4 bg-slate-900 rounded-[2.5rem] p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden border border-slate-800"
+                    >
+                        <div className="absolute top-0 right-0 p-8 opacity-10">
+                            <Plus size={80} className="text-white" />
+                        </div>
+                        <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-4">Administrasi</p>
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="bg-white text-slate-900 w-full py-5 rounded-[1.8rem] font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-indigo-500 hover:text-white transition-all shadow-xl active:scale-95"
+                        >
+                            <Plus size={20} strokeWidth={3} /> Buat Periode Baru
+                        </button>
+                    </motion.div>
                 </div>
 
-                {/* Info Banner */}
-                <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800 text-sm">
-                    <Info size={18} className="shrink-0 mt-0.5" />
-                    <p>
-                        <strong>Sistem Auto-Lock aktif:</strong> Periode akan otomatis terkunci saat melewati <em>Tanggal Selesai</em> tanpa perlu tindakan manual.
-                        Anda tetap dapat mengaktifkan kembali periode yang sudah berakhir sebagai <strong>Override Darurat</strong> jika dibutuhkan.
-                    </p>
-                </div>
-
-                {/* Periods List */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {/* Periods Grid Bento */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {loading ? (
                         Array(3).fill(0).map((_, i) => (
-                            <div key={i} className="card p-6 animate-pulse">
-                                <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
-                                <div className="h-3 bg-slate-100 rounded w-3/4 mb-2"></div>
-                                <div className="h-3 bg-slate-100 rounded w-2/3"></div>
-                            </div>
+                            <div key={i} className="bg-white/50 backdrop-blur-sm rounded-[2.5rem] h-[320px] animate-pulse border border-white/50" />
                         ))
                     ) : periods.length === 0 ? (
-                        <div className="col-span-full py-12 text-center card bg-slate-50 border-dashed">
-                            <Calendar size={48} className="mx-auto text-slate-300 mb-4" />
-                            <h3 className="text-lg font-semibold text-slate-900">Belum ada periode</h3>
-                            <p className="text-slate-500">Klik tombol "Buat Periode Baru" untuk memulai.</p>
+                        <div className="col-span-full py-32 text-center bg-white/40 backdrop-blur-3xl rounded-[3rem] border-4 border-dashed border-white/60">
+                            <Calendar size={80} className="mx-auto text-slate-200 mb-6 drop-shadow-sm" />
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight italic">Tabula Rasa.</h3>
+                            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.4em] mt-3">Tidak ada periode penilaian aktif</p>
                         </div>
                     ) : (
-                        periods.map((period) => {
+                        periods.map((period, idx) => {
                             const expired = isPeriodExpiredByDate(period);
                             const upcoming = isPeriodUpcoming(period);
                             const days = daysUntilEnd(period);
                             const nearDeadline = !expired && !upcoming && days >= 0 && days <= 3;
 
                             return (
-                                <div key={period.id} className={`card group relative transition-all ${
-                                    expired ? 'opacity-75 border-red-100' :
-                                    nearDeadline ? 'border-amber-200 shadow-amber-100' : ''
-                                }`}>
-                                    <div className="p-6">
-                                        <div className="flex items-start justify-between mb-4">
-                                            <div className="p-2 bg-primary-50 text-primary-600 rounded-lg">
-                                                <Calendar size={24} />
+                                <motion.div
+                                    key={period.id}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    className={`bg-white/70 backdrop-blur-3xl rounded-[2.8rem] border border-white/60 p-8 shadow-[0_15px_45px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.06)] transition-all flex flex-col justify-between group h-full relative overflow-hidden ${expired ? 'grayscale-[0.5] opacity-80' : ''}`}
+                                >
+                                    {nearDeadline && (
+                                        <div className="absolute top-0 right-0 px-6 py-2 bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest rounded-bl-3xl shadow-lg animate-pulse">
+                                            Urgent Deadline
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-sm transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
+                                                <Calendar size={24} strokeWidth={2.5} />
                                             </div>
                                             {getStatusBadge(period)}
                                         </div>
-                                        <h3 className="text-lg font-bold text-slate-900 mb-1">{period.name}</h3>
-                                        <div className="space-y-2 text-sm text-slate-500">
-                                            <div className="flex items-center gap-2">
-                                                <Clock size={14} />
-                                                <span>{new Date(period.start_date).toLocaleDateString('id-ID')} — {new Date(period.end_date).toLocaleDateString('id-ID')}</span>
-                                            </div>
-                                            {/* Countdown / info */}
-                                            {!expired && !upcoming && days >= 0 && (
-                                                <div className={`flex items-center gap-1.5 text-xs font-bold ${
-                                                    nearDeadline ? 'text-amber-600' : 'text-slate-400'
-                                                }`}>
-                                                    <Clock size={12} />
-                                                    {days === 0 ? 'Berakhir hari ini!' : `Sisa ${days} hari`}
-                                                </div>
-                                            )}
-                                            {expired && (
-                                                <div className="flex items-center gap-1.5 text-xs font-bold text-red-500">
-                                                    <Lock size={12} />
-                                                    Dikunci otomatis oleh sistem
-                                                </div>
-                                            )}
+
+                                        <div>
+                                            <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-3 group-hover:text-indigo-600 transition-colors">{period.name}</h3>
+                                            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                                <RefreshCw size={10} strokeWidth={3} /> {period.frequency.replace('_', ' ')}
+                                            </p>
                                         </div>
 
-                                        <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                                            {/* Override button — konteks berbeda tiap kondisi */}
-                                            {expired ? (
-                                                <button
-                                                    onClick={() => handleToggleStatus(period)}
-                                                    className="flex items-center gap-2 text-sm font-bold text-amber-600 hover:text-amber-700 transition-colors"
-                                                    title="Aktifkan kembali sebagai override darurat"
-                                                >
-                                                    <RefreshCw size={16} /> Aktifkan Kembali
-                                                </button>
-                                            ) : upcoming ? (
-                                                <button
-                                                    onClick={() => handleToggleStatus(period)}
-                                                    className={`flex items-center gap-2 text-sm font-medium transition-colors ${period.is_active ? 'text-primary-600' : 'text-slate-400'}`}
-                                                >
-                                                    {period.is_active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
-                                                    {period.is_active ? 'Akan Aktif' : 'Nonaktif'}
-                                                </button>
-                                            ) : (
-                                                <div className="flex items-center gap-2 text-sm font-medium text-green-600">
-                                                    <ToggleRight size={24} />
-                                                    <span>Berjalan Otomatis</span>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3 text-slate-600 bg-slate-50/50 p-4 rounded-2xl border border-slate-100/50 shadow-inner">
+                                                <Clock size={16} className="text-indigo-400" strokeWidth={2.5} />
+                                                <span className="text-xs font-black uppercase tracking-widest font-mono">
+                                                    {new Date(period.start_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })} — {new Date(period.end_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                </span>
+                                            </div>
+
+                                            {!expired && !upcoming && days >= 0 && (
+                                                <div className={`text-[10px] font-black tracking-[0.2em] uppercase px-4 py-2 rounded-xl text-center w-full transition-colors ${nearDeadline ? 'bg-rose-500 text-white animate-bounce' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                                                    {days === 0 ? 'HARI TERAKHIR' : `SISA ${days} HARI LAGI`}
                                                 </div>
                                             )}
 
-                                            <button
-                                                onClick={() => handleDelete(period)}
-                                                className="text-slate-400 hover:text-red-600 transition-colors"
-                                                title="Hapus Periode"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
+                                            {expired && (
+                                                <div className="text-[10px] font-black tracking-[0.2em] uppercase px-4 py-2 rounded-xl text-center w-full bg-slate-800 text-white italic">
+                                                    SYSTEM LOCKED
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
+
+                                    <div className="mt-10 pt-6 border-t border-slate-100 flex items-center justify-between">
+                                        {expired ? (
+                                            <button
+                                                onClick={() => handleToggleStatus(period)}
+                                                className="flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg shadow-amber-200 active:scale-95"
+                                            >
+                                                <RefreshCw size={14} strokeWidth={3} /> Override
+                                            </button>
+                                        ) : upcoming ? (
+                                            <button
+                                                onClick={() => handleToggleStatus(period)}
+                                                className={`flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border ${period.is_active ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100' : 'bg-white text-slate-400 border-slate-200'}`}
+                                            >
+                                                {period.is_active ? <ToggleRight size={20} strokeWidth={2.5} /> : <ToggleLeft size={20} strokeWidth={2.5} />}
+                                                <span>{period.is_active ? 'ENABLED' : 'DISABLED'}</span>
+                                            </button>
+                                        ) : (
+                                            <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                                                <ToggleRight size={20} strokeWidth={2.5} />
+                                                <span>RUNNING</span>
+                                            </div>
+                                        )}
+
+                                        <button
+                                            onClick={() => handleDelete(period)}
+                                            className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                                            title="Archive Sequence"
+                                        >
+                                            <Trash2 size={18} strokeWidth={2.5} />
+                                        </button>
+                                    </div>
+                                </motion.div>
                             );
                         })
                     )}
                 </div>
             </div>
 
-            {/* Override Reactivation Confirmation Modal */}
-            {overrideConfirm && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="card w-full max-w-md animate-slide-up">
-                        <div className="px-6 py-4 border-b border-amber-100 flex items-center gap-3">
-                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
-                                <RefreshCw size={20} />
+            {/* Premium Modals */}
+            <AnimatePresence>
+                {overrideConfirm && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-md">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0" onClick={() => setOverrideConfirm(null)} />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            className="relative bg-white w-full max-w-md rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.4)] overflow-hidden"
+                        >
+                            <div className="bg-amber-500 px-8 py-8 text-white text-center">
+                                <div className="h-20 w-20 rounded-[1.8rem] bg-white text-amber-500 flex items-center justify-center mx-auto mb-6 shadow-xl">
+                                    <RefreshCw size={40} strokeWidth={3} className="animate-spin-slow" />
+                                </div>
+                                <h3 className="text-2xl font-black italic tracking-tight">KONTROL OVERRIDE</h3>
+                                <p className="text-amber-100 text-[9px] font-black uppercase tracking-[0.3em] mt-2">Daftar Audit Keamanan Diperlukan</p>
                             </div>
-                            <h3 className="text-lg font-bold text-slate-900">Override Darurat</h3>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <p className="text-slate-700">
-                                Periode <span className="font-semibold text-slate-900">"{overrideConfirm.name}"</span> sudah <span className="text-red-600 font-bold">melewati tanggal berakhir</span> dan dikunci otomatis oleh sistem.
-                            </p>
-                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                                <p className="text-sm font-semibold text-amber-800">⚠️ Dengan mengaktifkan kembali:</p>
-                                <ul className="text-sm text-amber-700 mt-2 space-y-1 list-disc list-inside">
-                                    <li>Pegawai dapat kembali mengisi penilaian pada periode ini</li>
-                                    <li>Sistem akan mengunci kembali otomatis hanya jika end_date diubah</li>
-                                    <li>Tindakan ini tercatat di audit log</li>
-                                </ul>
-                            </div>
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    onClick={() => setOverrideConfirm(null)}
-                                    className="btn-secondary flex-1"
-                                >Batal</button>
-                                <button
-                                    onClick={handleOverrideReactivate}
-                                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors"
-                                >
-                                    <RefreshCw size={16} /> Ya, Aktifkan Kembali
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Delete Confirmation Modal */}
-            {deleteConfirm && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="card w-full max-w-md animate-slide-up">
-                        <div className="px-6 py-4 border-b border-red-100 flex items-center gap-3">
-                            <div className="p-2 bg-red-100 text-red-600 rounded-lg">
-                                <AlertCircle size={20} />
-                            </div>
-                            <h3 className="text-lg font-bold text-slate-900">Hapus Periode Penilaian</h3>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <p className="text-slate-700">
-                                Anda akan menghapus periode <span className="font-semibold text-slate-900">"{deleteConfirm.name}"</span>.
-                            </p>
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2">
-                                <p className="text-sm font-semibold text-red-800">⚠️ Peringatan — Tindakan ini akan menghapus secara permanen:</p>
-                                <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
-                                    <li>Semua <strong>relasi penilaian</strong> yang terdaftar pada periode ini</li>
-                                    <li>Semua <strong>data penilaian</strong> (nilai & komentar) yang sudah disubmit</li>
-                                    <li>Periode itu sendiri</li>
-                                </ul>
-                                <p className="text-xs text-red-600 mt-2 font-medium">Tindakan ini tidak dapat dibatalkan.</p>
-                            </div>
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setDeleteConfirm(null)}
-                                    disabled={deleting}
-                                    className="btn-secondary flex-1"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={confirmDelete}
-                                    disabled={deleting}
-                                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
-                                >
-                                    {deleting ? (
-                                        <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Menghapus...</>
-                                    ) : (
-                                        <><Trash2 size={16} />Ya, Hapus Permanen</>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Create Modal */}
-            {showModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-                    <div className="card w-full max-w-md animate-slide-up">
-                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900">Buat Periode Baru</h3>
-                            <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600"><Plus size={24} className="rotate-45" /></button>
-                        </div>
-                        <form onSubmit={handleCreate} className="p-6 space-y-4">
-                            <div>
-                                <label className="form-label">Nama Periode</label>
-                                <input
-                                    type="text"
-                                    value={newPeriod.name}
-                                    onChange={(e) => setNewPeriod({ ...newPeriod, name: e.target.value })}
-                                    className="form-input"
-                                    placeholder="Contoh: Triwulan I 2024"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="form-label">Frekuensi Penilaian</label>
-                                <select
-                                    value={newPeriod.frequency}
-                                    onChange={(e) => setNewPeriod({ ...newPeriod, frequency: e.target.value })}
-                                    className="form-input"
-                                    required
-                                >
-                                    <option value="monthly">Bulanan (1 bulan)</option>
-                                    <option value="quarterly">Triwulan (3 bulan)</option>
-                                    <option value="semi_annual">Semester (6 bulan)</option>
-                                    <option value="annual">Tahunan (12 bulan)</option>
-                                </select>
-                                <p className="text-xs text-slate-500 mt-1">
-                                    User akan melakukan penilaian setiap bulan dalam periode ini
+                            <div className="p-10 space-y-6">
+                                <p className="text-sm font-bold text-slate-600 text-center leading-relaxed">
+                                    Membuka kembali akses pada periode <span className="text-slate-900 font-black italic">"{overrideConfirm.name}"</span> memungkinkan personil kembali mengisi data di luar jadwal reguler.
                                 </p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="form-label">Tanggal Mulai</label>
-                                    <input
-                                        type="date"
-                                        value={newPeriod.start_date}
-                                        onChange={(e) => setNewPeriod({ ...newPeriod, start_date: e.target.value })}
-                                        className="form-input"
-                                        required
-                                    />
+                                <div className="bg-slate-900 rounded-3xl p-6 text-white space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <AlertCircle size={14} className="text-amber-400" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white">RESIKO AKSES</span>
+                                    </div>
+                                    <ul className="text-[11px] font-medium text-slate-400 space-y-2">
+                                        <li className="flex items-start gap-2 italic">✓ Penilaian Peer-to-Peer diaktifkan kembali</li>
+                                        <li className="flex items-start gap-2 italic">✓ Data terkirim akan ditandai LATE-SUBMISSION</li>
+                                        <li className="flex items-start gap-2 italic">✓ Log Admin segera direkam oleh KERNEL</li>
+                                    </ul>
                                 </div>
-                                <div>
-                                    <label className="form-label">Tanggal Selesai</label>
-                                    <input
-                                        type="date"
-                                        value={newPeriod.end_date}
-                                        onChange={(e) => setNewPeriod({ ...newPeriod, end_date: e.target.value })}
-                                        className="form-input"
-                                        required
-                                    />
+                                <div className="flex flex-col gap-3 pt-4">
+                                    <button onClick={handleOverrideReactivate} className="w-full py-5 rounded-2xl bg-amber-500 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-200 hover:bg-amber-600 transition-all active:scale-95">Yakin, Aktifkan Kembali</button>
+                                    <button onClick={() => setOverrideConfirm(null)} className="w-full py-2 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors">Batal</button>
                                 </div>
                             </div>
-                            <div className="bg-amber-50 rounded-lg p-3 flex gap-3 text-amber-800 text-xs">
-                                <AlertCircle size={16} className="shrink-0" />
-                                <p>Pastikan rentang tanggal tidak tumpang tindih dengan periode aktif lainnya untuk menghindari kebingungan user.</p>
-                            </div>
-                            <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary flex-1">Batal</button>
-                                <button type="submit" className="btn-primary flex-1">Simpan Periode</button>
-                            </div>
-                        </form>
+                        </motion.div>
                     </div>
-                </div>
-            )}
+                )}
+
+                {deleteConfirm && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/70 backdrop-blur-md">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0" onClick={() => !deleting && setDeleteConfirm(null)} />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            className="relative bg-white w-full max-w-md rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden"
+                        >
+                            <div className="bg-rose-600 p-10 text-white text-center">
+                                <div className="h-24 w-24 rounded-[2.2rem] bg-white text-rose-600 flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                                    <AlertCircle size={48} strokeWidth={2.5} />
+                                </div>
+                                <h3 className="text-2xl font-black italic tracking-tight uppercase">ELIMINASI PERIODE</h3>
+                                <p className="text-rose-200 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Peringatan: Data akan hancur permanen</p>
+                            </div>
+                            <div className="p-10 space-y-6">
+                                <p className="text-sm font-bold text-slate-500 text-center leading-relaxed italic">
+                                    Seluruh data penilaian, komentar, dan relasi grup pada <span className="text-slate-900 not-italic font-black">"{deleteConfirm.name}"</span> akan dihapus dari sistem.
+                                </p>
+                                <div className="flex flex-col gap-3 pt-6">
+                                    <button onClick={confirmDelete} className="w-full py-5 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-rose-600 transition-all active:scale-95 flex items-center justify-center gap-2" disabled={deleting}>
+                                        {deleting ? <Loader2 size={18} className="animate-spin" /> : 'YA, HAPUS PERMANEN'}
+                                    </button>
+                                    <button onClick={() => setDeleteConfirm(null)} className="w-full py-2 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors" disabled={deleting}>Gagalkan</button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+
+                {showModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/40 backdrop-blur-md">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0" onClick={() => setShowModal(false)} />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 30 }}
+                            className="relative bg-white w-full max-w-lg rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.3)] overflow-hidden border border-white/40"
+                        >
+                            <div className="bg-slate-900 px-10 py-10 text-white relative border-b border-white/5">
+                                <div className="relative z-10">
+                                    <h3 className="text-3xl font-black italic tracking-tight">INKUBASI PERIODE</h3>
+                                    <p className="text-indigo-400 text-[9px] font-black uppercase tracking-[0.3em] mt-2">Daftarkan Siklus Penilaian Baru</p>
+                                </div>
+                                <button onClick={() => setShowModal(false)} className="absolute top-10 right-10 h-12 w-12 flex items-center justify-center rounded-2xl bg-white/10 hover:bg-rose-500 transition-all group active:scale-90">
+                                    <X size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
+                                </button>
+                            </div>
+                            <form onSubmit={handleCreate} className="p-10 space-y-8">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Nama Sequence Periode</label>
+                                    <input
+                                        type="text"
+                                        value={newPeriod.name}
+                                        onChange={(e) => setNewPeriod({ ...newPeriod, name: e.target.value })}
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        placeholder="Contoh: Triwulan I 2024"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Iterasi Frekuensi</label>
+                                    <select
+                                        value={newPeriod.frequency}
+                                        onChange={(e) => setNewPeriod({ ...newPeriod, frequency: e.target.value })}
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none appearance-none cursor-pointer"
+                                        required
+                                    >
+                                        <option value="monthly">Bulanan (1 bulan)</option>
+                                        <option value="quarterly">Triwulan (3 bulan)</option>
+                                        <option value="semi_annual">Semester (6 bulan)</option>
+                                        <option value="annual">Tahunan (12 bulan)</option>
+                                    </select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Tanggal Rilis</label>
+                                        <input
+                                            type="date"
+                                            value={newPeriod.start_date}
+                                            onChange={(e) => setNewPeriod({ ...newPeriod, start_date: e.target.value })}
+                                            className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Tanggal Teminasi</label>
+                                        <input
+                                            type="date"
+                                            value={newPeriod.end_date}
+                                            onChange={(e) => setNewPeriod({ ...newPeriod, end_date: e.target.value })}
+                                            className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-4 pt-4">
+                                    <button type="submit" className="w-full py-5 rounded-3xl bg-slate-900 text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-indigo-100 hover:bg-indigo-600 transition-all active:scale-95">Inisialisasi Periode</button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </Layout>
     );
 };

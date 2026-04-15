@@ -119,11 +119,16 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
     const isRootPage = navItems.some(item => pathname === item.to);
 
     return (
-        <div className="flex min-h-screen bg-slate-100 font-sans">
+        <div className="flex min-h-screen bg-transparent font-sans relative overflow-hidden">
+            {/* Animated Background Blobs for Glassmorphism Effect */}
+            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob pointer-events-none z-0"></div>
+            <div className="absolute top-[20%] right-[-5%] w-[30rem] h-[30rem] bg-cyan-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob animation-delay-2000 pointer-events-none z-0"></div>
+            <div className="absolute bottom-[-10%] left-[20%] w-[40rem] h-[40rem] bg-blue-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob animation-delay-4000 pointer-events-none z-0"></div>
+
             {/* Sidebar Desktop */}
             <aside className={`
-                fixed inset-y-0 left-0 z-50 w-72 bg-primary-900 border-r border-primary-800 text-white transition-transform duration-300 ease-in-out lg:translate-x-0
-                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} shadow-xl
+                fixed inset-y-0 left-0 z-50 w-72 bg-primary-950/80 backdrop-blur-2xl border-r border-white/10 text-white transition-transform duration-300 ease-in-out lg:translate-x-0
+                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} shadow-[4px_0_24px_rgba(0,0,0,0.15)]
             `}>
                 <div className="flex h-full flex-col w-full">
                     {/* Sidebar Header */}
@@ -226,7 +231,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
             </aside>
 
             {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 w-full bg-white border-b border-slate-200 z-40 px-4 py-3 flex items-center justify-between shadow-sm">
+            <div className="lg:hidden fixed top-0 w-full bg-white/60 backdrop-blur-md border-b border-white/40 z-40 px-4 py-3 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-3">
                     <img src={Logo} alt="Logo" className="h-8 w-8" />
                     <div className="flex flex-col">
@@ -243,15 +248,15 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
             </div>
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col min-h-screen pt-16 lg:pt-0 lg:ml-72 bg-slate-50/80 w-full lg:w-[calc(100%-18rem)]">
+            <main className="flex-1 flex flex-col min-h-screen pt-16 lg:pt-0 lg:ml-72 bg-transparent w-full lg:w-[calc(100%-18rem)] relative z-10">
                 {/* Content Wrapper */}
                 <div className="flex-1 px-4 py-6 md:px-8 md:py-8 lg:px-10 w-full max-w-[1600px] mx-auto">
-                    <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center bg-white/80 backdrop-blur-xl p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/60 sticky top-[72px] lg:top-4 z-30 animate-fade-in">
+                    <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center bg-white/40 backdrop-blur-md p-5 md:p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 sticky top-[72px] lg:top-4 z-30 animate-fade-in">
                         <div className="flex items-center gap-4">
                             {!isRootPage && (
                                 <button
                                     onClick={() => navigate(-1)}
-                                    className="shrink-0 h-10 w-10 md:h-12 md:w-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-primary-600 hover:border-primary-200 hover:shadow-sm transition-all active:scale-95"
+                                    className="shrink-0 h-10 w-10 md:h-12 md:w-12 flex items-center justify-center rounded-2xl bg-white/50 backdrop-blur-sm border border-white/60 text-slate-500 hover:bg-white/80 hover:text-primary-600 hover:shadow-md transition-all active:scale-95"
                                     title="Kembali ke halaman sebelumnya"
                                 >
                                     <ArrowLeft size={20} />

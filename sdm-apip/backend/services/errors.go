@@ -12,7 +12,7 @@ var (
 	ErrGroupNameExists      = errors.New("nama kelompok ini sudah ada")
 	ErrInvalidGroupName     = errors.New("nama kelompok yang dimasukkan tidak valid")
 	ErrRelationNotFound     = errors.New("hubungan (relasi) antar kelompok tidak ditemukan")
-	ErrUserAlreadyInGroup   = errors.New("pengguna tersebut sudah terdaftar di kelompok pembagian lain")
+	ErrUserAlreadyInGroup   = errors.New("pengguna tersebut sudah terdaftar di kelompok lain")
 	ErrAdminCannotBeInGroup = errors.New("administrator tidak diperbolehkan menjadi anggota kelompok evaluasi")
 	ErrGroupLeaderExists    = errors.New("kelompok ini sudah memiliki penilai utama atau atasan")
 
