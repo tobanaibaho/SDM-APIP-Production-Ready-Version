@@ -98,5 +98,7 @@ type UserReportRow struct {
 	UnitKerja           string  `json:"unit_kerja"`
 	AssessmentsReceived int64   `json:"assessments_received"`
 	AssessmentsGiven    int64   `json:"assessments_given"`
+	ReceivedNeeded      int64   `json:"received_needed"`
+	GivenNeeded         int64   `json:"given_needed"`
 	AverageScore        float64 `json:"average_score"`
 }

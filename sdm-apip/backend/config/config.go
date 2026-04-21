@@ -8,6 +8,7 @@ import (
 	"sdm-apip-backend/logger"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -134,7 +135,17 @@ func ConnectDatabase() error {
 		return err
 	}
 
-	log.Println("✅ Database connected successfully!")
+	// === CONNECTION POOLING CONFIGURATION ===
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get sql.DB from gorm: %v", err)
+	}
+
+	sqlDB.SetMaxIdleConns(10)               // Minimum idle connections
+	sqlDB.SetMaxOpenConns(100)              // Maximum concurrent open connections
+	sqlDB.SetConnMaxLifetime(time.Hour)     // Maximum recycle time for a connection
+
+	log.Println("✅ Database connected successfully! (Connection Pool Initialized)")
 	return nil
 }
 

@@ -20,6 +20,7 @@ func RegisterAdminRoutes(api *gin.RouterGroup) {
 	assessmentService := services.NewAssessmentService()
 	reportService := services.NewReportService()
 	auditService := services.NewAuditService()
+	questionService := services.NewQuestionService()
 
 	// =======================
 	// CONTROLLERS
@@ -31,6 +32,7 @@ func RegisterAdminRoutes(api *gin.RouterGroup) {
 	assessmentController := controllers.NewAssessmentController(assessmentService)
 	reportController := controllers.NewReportController(reportService)
 	auditController := controllers.NewAuditController(auditService)
+	questionController := controllers.NewQuestionController(questionService)
 
 	// =======================
 	// ROUTES
@@ -89,6 +91,7 @@ func RegisterAdminRoutes(api *gin.RouterGroup) {
 		// ===== ASSESSMENT PERIODS =====
 		admin.GET("/periods", assessmentController.GetAllPeriods)
 		admin.POST("/periods", assessmentController.CreatePeriod)
+		admin.PUT("/periods/:id", assessmentController.UpdatePeriod)
 		admin.PATCH("/periods/:id/status", assessmentController.UpdatePeriodStatus)
 		admin.DELETE("/periods/:id", assessmentController.DeletePeriod)
 
@@ -100,5 +103,12 @@ func RegisterAdminRoutes(api *gin.RouterGroup) {
 		admin.GET("/groups/:id/relations", assessmentController.GetGroupRelations)
 		admin.GET("/assessments/matrix", assessmentController.GetMatrix)
 		admin.GET("/assessments/detail/:userId", assessmentController.GetDetail)
+		
+		// ===== QUESTIONS =====
+		admin.GET("/questions", questionController.GetQuestions)
+		admin.POST("/questions", questionController.CreateQuestion)
+		admin.PUT("/questions/:id", questionController.UpdateQuestion)
+		admin.DELETE("/questions/:id", questionController.DeleteQuestion)
+		admin.POST("/questions/import", questionController.ImportQuestionsExcel)
 	}
 }

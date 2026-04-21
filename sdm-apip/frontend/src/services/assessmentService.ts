@@ -62,6 +62,10 @@ const assessmentService = {
         return response.data.data;
     },
 
+    updatePeriod: async (id: number, data: { name: string; start_date: string; end_date: string }): Promise<void> => {
+        await api.put(`/admin/periods/${id}`, data);
+    },
+
     updatePeriodStatus: async (id: number, isActive: boolean): Promise<void> => {
         await api.patch(`/admin/periods/${id}/status`, { is_active: isActive });
     },

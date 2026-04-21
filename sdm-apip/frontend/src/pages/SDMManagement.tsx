@@ -217,11 +217,11 @@ const SDMManagement: React.FC = () => {
                             <div className="flex gap-4 shrink-0">
                                 <div className="text-center px-6 py-4 rounded-3xl bg-slate-100 border border-slate-200 shadow-inner">
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Update Status</p>
-                                    <p className="text-xs font-black text-indigo-600">Terverifikasi</p>
+                                    <p className="text-xs font-black text-primary-600">Terverifikasi</p>
                                 </div>
-                                <div className="text-center px-6 py-4 rounded-3xl bg-indigo-50 border border-indigo-100 shadow-inner">
-                                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">Integritas</p>
-                                    <p className="text-xs font-black text-indigo-700">100% Valid</p>
+                                <div className="text-center px-6 py-4 rounded-3xl bg-primary-50 border border-primary-100 shadow-inner">
+                                    <p className="text-[10px] font-black text-primary-500 uppercase tracking-widest mb-1">Integritas</p>
+                                    <p className="text-xs font-black text-primary-700">100% Valid</p>
                                 </div>
                             </div>
                         </div>
@@ -231,11 +231,11 @@ const SDMManagement: React.FC = () => {
                 {/* Toolbar Glass Bento */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center bg-white/70 backdrop-blur-3xl p-5 rounded-[2.2rem] border border-white/60 shadow-[0_10px_40px_rgb(0,0,0,0.05)]">
                     <div className="relative flex-1 group">
-                        <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                        <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
                         <input
                             type="text"
                             placeholder="Cari personil (NIP, Nama, atau Email)..."
-                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-inner"
+                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-primary-500 outline-none transition-all shadow-inner"
                             value={search}
                             onChange={handleSearch}
                         />
@@ -247,12 +247,12 @@ const SDMManagement: React.FC = () => {
                             onClick={() => fileInputRef.current?.click()}
                             className="flex items-center gap-2.5 px-6 py-4 rounded-2xl bg-white border border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
                         >
-                            <Upload size={18} className="text-indigo-500" strokeWidth={2.5} />
+                            <Upload size={18} className="text-primary-500" strokeWidth={2.5} />
                             <span>Import Master</span>
                         </button>
                         <button
                             onClick={openCreateModal}
-                            className="flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-slate-900 border border-slate-900 text-white font-black text-xs uppercase tracking-widest hover:bg-indigo-600 hover:border-indigo-600 transition-all shadow-xl shadow-indigo-100 active:scale-95"
+                            className="flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-slate-900 border border-slate-900 text-white font-black text-xs uppercase tracking-widest hover:bg-primary-600 hover:border-primary-600 transition-all shadow-xl shadow-primary-100 active:scale-95"
                         >
                             <Plus size={18} strokeWidth={3} />
                             <span>Tambah Personil</span>
@@ -266,19 +266,19 @@ const SDMManagement: React.FC = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-white/40">
-                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-indigo-600 transition-colors w-48" onClick={() => handleSort('nip')}>
+                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors w-48" onClick={() => handleSort('nip')}>
                                         <div className="flex items-center justify-between">Identitas Pegawai <ArrowUpDown size={12} className="opacity-50" /></div>
                                     </th>
-                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => handleSort('nama')}>
+                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('nama')}>
                                         <div className="flex items-center justify-between">Nama Lengkap <ArrowUpDown size={12} className="opacity-50" /></div>
                                     </th>
-                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => handleSort('pangkat_golongan')}>
+                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('pangkat_golongan')}>
                                         <div className="flex items-center justify-between">Kepangkatan <ArrowUpDown size={12} className="opacity-50" /></div>
                                     </th>
-                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => handleSort('jabatan')}>
+                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('jabatan')}>
                                         <div className="flex items-center justify-between">Jabatan & Unit <ArrowUpDown size={12} className="opacity-50" /></div>
                                     </th>
-                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => handleSort('nomor_hp')}>
+                                    <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('nomor_hp')}>
                                         <div className="flex items-center justify-between">Akses Kontak <ArrowUpDown size={12} className="opacity-50" /></div>
                                     </th>
                                     <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-right w-24">Aksi</th>
@@ -294,7 +294,7 @@ const SDMManagement: React.FC = () => {
                                 ) : sdmList.map((sdm) => (
                                     <tr key={sdm.id} className="group hover:bg-slate-50/50 transition-all duration-300">
                                         <td className="px-6 py-6">
-                                            <div className="font-mono text-[10px] font-black text-indigo-700 bg-indigo-50 inline-block px-3 py-1.5 rounded-xl tracking-widest border border-indigo-100 shadow-sm">{sdm.nip}</div>
+                                            <div className="font-mono text-[10px] font-black text-primary-700 bg-primary-50 inline-block px-3 py-1.5 rounded-xl tracking-widest border border-primary-100 shadow-sm">{sdm.nip}</div>
                                         </td>
                                         <td className="px-6 py-6">
                                             <div className="font-black text-slate-900 text-[13px] leading-tight tracking-tight">{sdm.nama}</div>
@@ -305,23 +305,23 @@ const SDMManagement: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-6 max-w-[220px]">
                                             <span className="text-[12px] font-black text-slate-800 leading-snug block">{sdm.jabatan || '-'}</span>
-                                            <span className="text-[10px] text-indigo-500 font-black uppercase tracking-widest mt-1 block opacity-80">{sdm.unit_kerja || 'Inspektorat'}</span>
+                                            <span className="text-[10px] text-primary-500 font-black uppercase tracking-widest mt-1 block opacity-80">{sdm.unit_kerja || 'Inspektorat'}</span>
                                         </td>
                                         <td className="px-6 py-6">
                                             <div className="space-y-1.5">
                                                 <div className="flex items-center gap-2.5 text-[11px] font-bold text-slate-600">
-                                                    <Mail size={12} className="text-indigo-400 shrink-0" strokeWidth={3} />
+                                                    <Mail size={12} className="text-primary-400 shrink-0" strokeWidth={3} />
                                                     <span className="truncate max-w-[140px] italic">{sdm.email}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2.5 text-[11px] font-bold text-slate-600">
-                                                    <Phone size={12} className="text-indigo-400 shrink-0" strokeWidth={3} />
+                                                    <Phone size={12} className="text-primary-400 shrink-0" strokeWidth={3} />
                                                     <span>{sdm.nomor_hp || '-'}</span>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-6 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
-                                                <button onClick={() => openEditModal(sdm)} className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-100 shadow-none hover:shadow-lg" title="Edit Data">
+                                                <button onClick={() => openEditModal(sdm)} className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-primary-600 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-100 shadow-none hover:shadow-lg" title="Edit Data">
                                                     <Edit2 size={16} strokeWidth={2.5} />
                                                 </button>
                                                 <button onClick={() => { setDeletingSDM(sdm); setShowDeleteModal(true); }} className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-100 shadow-none hover:shadow-lg" title="Hapus Data">
@@ -353,7 +353,7 @@ const SDMManagement: React.FC = () => {
                                         <React.Fragment key={p}>
                                             {i > 0 && arr[i - 1] !== p - 1 && <span className="text-slate-300 font-black">···</span>}
                                             <button
-                                                className={`h-10 w-10 rounded-2xl text-xs font-black transition-all ${page === p ? 'bg-slate-900 text-white shadow-xl shadow-slate-200' : 'bg-white border border-slate-100 text-slate-500 hover:border-indigo-400 hover:text-indigo-600 shadow-sm'}`}
+                                                className={`h-10 w-10 rounded-2xl text-xs font-black transition-all ${page === p ? 'bg-slate-900 text-white shadow-xl shadow-slate-200' : 'bg-white border border-slate-100 text-slate-500 hover:border-primary-400 hover:text-primary-600 shadow-sm'}`}
                                                 onClick={() => setPage(p)}
                                             >
                                                 {p}
@@ -397,7 +397,7 @@ const SDMManagement: React.FC = () => {
                                 </div>
                                 <div className="relative z-10">
                                     <h3 className="text-3xl font-black italic tracking-tight">{editingSDM ? 'Edit Profil Pegawai' : 'Registrasi Personil'}</h3>
-                                    <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Sinkronisasi Basis Data Master APIP</p>
+                                    <p className="text-primary-400 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Sinkronisasi Basis Data Master APIP</p>
                                 </div>
                                 <button onClick={() => setShowModal(false)} className="relative z-10 h-14 w-14 flex items-center justify-center rounded-[1.5rem] bg-white/10 text-white hover:bg-rose-500 transition-all active:scale-90">
                                     <X size={24} strokeWidth={3} />
@@ -409,7 +409,7 @@ const SDMManagement: React.FC = () => {
                                     <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Identitas NIP (18 DIGIT)</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
                                         placeholder="000000000000000000"
                                         value={formData.nip}
                                         onChange={(e) => setFormData({ ...formData, nip: e.target.value.replace(/\D/g, '').slice(0, 18) })}
@@ -422,7 +422,7 @@ const SDMManagement: React.FC = () => {
                                     <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Nama Lengkap Sesuai SK</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
                                         placeholder="Masukkan Nama Lengkap"
                                         value={formData.nama}
                                         onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
@@ -434,7 +434,7 @@ const SDMManagement: React.FC = () => {
                                     <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Pangkat / Golongan</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
                                         placeholder="Contoh: Penata / III-c"
                                         value={formData.pangkat_golongan}
                                         onChange={(e) => setFormData({ ...formData, pangkat_golongan: e.target.value })}
@@ -445,7 +445,7 @@ const SDMManagement: React.FC = () => {
                                     <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Pendidikan Terakhir</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
                                         placeholder="Contoh: S1 Hukum"
                                         value={formData.pendidikan}
                                         onChange={(e) => setFormData({ ...formData, pendidikan: e.target.value })}
@@ -456,7 +456,7 @@ const SDMManagement: React.FC = () => {
                                     <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Jabatan Struktural/Fungsional</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
                                         placeholder="Contoh: Auditor Pertama"
                                         value={formData.jabatan}
                                         onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
@@ -467,7 +467,7 @@ const SDMManagement: React.FC = () => {
                                     <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Nomor Seluler (WhatsApp)</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
                                         placeholder="08xxxxxxxxxx"
                                         value={formData.nomor_hp}
                                         onChange={(e) => setFormData({ ...formData, nomor_hp: e.target.value })}
@@ -478,7 +478,7 @@ const SDMManagement: React.FC = () => {
                                     <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">E-Mail Resmi Kedinasan</label>
                                     <input
                                         type="email"
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
                                         placeholder="account@domain.com"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -489,7 +489,7 @@ const SDMManagement: React.FC = () => {
 
                             <div className="px-10 py-10 bg-slate-50 flex gap-5 border-t border-slate-100">
                                 <button onClick={() => setShowModal(false)} className="flex-1 py-5 rounded-[1.8rem] bg-white border-2 border-slate-200 text-slate-600 font-black text-sm uppercase tracking-widest hover:bg-slate-100 transition-all" disabled={saving}>Batalkan</button>
-                                <button onClick={handleSubmit} className="flex-[2] py-5 rounded-[1.8rem] bg-slate-900 text-white font-black text-sm uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 active:scale-95" disabled={saving}>
+                                <button onClick={handleSubmit} className="flex-[2] py-5 rounded-[1.8rem] bg-slate-900 text-white font-black text-sm uppercase tracking-widest hover:bg-primary-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 active:scale-95" disabled={saving}>
                                     {saving ? <Loader2 size={24} className="animate-spin" /> : editingSDM ? 'Konfirmasi Perubahan' : 'Daftarkan Personil Baru'}
                                 </button>
                             </div>

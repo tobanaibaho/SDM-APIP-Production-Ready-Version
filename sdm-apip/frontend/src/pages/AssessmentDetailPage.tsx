@@ -233,7 +233,7 @@ const AssessmentDetailPage: React.FC = () => {
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
                         <div className="max-w-md">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-lg">
+                                <div className="p-2 bg-primary-600 rounded-xl text-white shadow-lg">
                                     <Info size={20} />
                                 </div>
                                 <h4 className="text-xl font-black text-slate-900">Panduan Range Predikat</h4>

@@ -75,7 +75,7 @@ const AssessmentListPage: React.FC = () => {
             'from-rose-400 to-rose-600',
             'from-amber-400 to-amber-600',
             'from-teal-400 to-teal-600',
-            'from-indigo-400 to-indigo-600',
+            'from-primary-400 to-primary-600',
         ];
         const i = (name?.charCodeAt(0) ?? 0) % colors.length;
         return colors[i];

@@ -186,7 +186,7 @@ const UserDashboard: React.FC = () => {
                     >
                         {/* Selector */}
                         <div className="lg:col-span-5 flex items-center gap-5">
-                            <div className="h-16 w-16 rounded-3xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0 shadow-sm">
+                            <div className="h-16 w-16 rounded-3xl bg-primary-50 border border-primary-100 flex items-center justify-center text-primary-600 shrink-0 shadow-sm">
                                 <Calendar size={32} strokeWidth={2.5} />
                             </div>
                             <div className="min-w-0">
@@ -203,7 +203,7 @@ const UserDashboard: React.FC = () => {
                                             </option>
                                         ))}
                                     </select>
-                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
+                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-primary-500 transition-colors">
                                         <ChevronRight size={20} className="rotate-90" />
                                     </div>
                                 </div>
@@ -238,14 +238,14 @@ const UserDashboard: React.FC = () => {
                                 <div>
                                     <div className="flex justify-between items-end mb-2">
                                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress Kolektif</span>
-                                        <span className="text-xs font-black text-indigo-600">{pct}%</span>
+                                        <span className="text-xs font-black text-primary-600">{pct}%</span>
                                     </div>
                                     <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${pct}%` }}
                                             transition={{ duration: 1, ease: 'easeOut' }}
-                                            className="h-full bg-indigo-500 rounded-full"
+                                            className="h-full bg-primary-500 rounded-full"
                                         />
                                     </div>
                                     <p className="text-[9px] text-slate-500 mt-2 font-bold tracking-tight">
@@ -262,7 +262,7 @@ const UserDashboard: React.FC = () => {
                                 disabled={isExpired && remaining > 0}
                                 className={`group relative flex items-center justify-center gap-3 w-full px-8 py-4 rounded-2xl font-black text-sm transition-all duration-300 shadow-lg ${isExpired && remaining > 0
                                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                                    : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-[1.03] active:scale-95 shadow-indigo-200'}`}
+                                    : 'bg-primary-600 text-white hover:bg-primary-700 hover:scale-[1.03] active:scale-95 shadow-primary-200'}`}
                             >
                                 {isExpired && remaining > 0 ? <Clock size={18} /> : <Zap size={18} className="fill-white/20" />}
                                 {isExpired && remaining > 0 ? 'Waktu Selesai' : (remaining > 0 ? 'Lanjut Menilai' : 'Penilaian Selesai')}
@@ -280,12 +280,12 @@ const UserDashboard: React.FC = () => {
                     className="relative overflow-hidden rounded-[3rem] bg-white/70 backdrop-blur-3xl border border-white/60 shadow-[0_20px_60px_rgb(0,0,0,0.08)] group"
                 >
                     <div className="absolute inset-0 opacity-20 pointer-events-none">
-                        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-indigo-500 blur-[100px] group-hover:bg-indigo-400 transition-colors duration-2000" />
+                        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-primary-500 blur-[100px] group-hover:bg-primary-400 transition-colors duration-2000" />
                         <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-emerald-500 blur-[100px] group-hover:bg-emerald-400 transition-colors duration-2000" />
                     </div>
                     <div className="relative z-10 flex flex-col items-center gap-10 p-10 md:flex-row md:items-start">
                         {/* Avatar */}
-                        <div className="shrink-0 h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] bg-gradient-to-br from-indigo-500 to-indigo-700 font-black text-white text-5xl shadow-2xl shadow-indigo-200 ring-8 ring-white/50 overflow-hidden flex items-center justify-center transition-transform duration-500 group-hover:rotate-2 group-hover:scale-105">
+                        <div className="shrink-0 h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] bg-gradient-to-br from-primary-500 to-primary-700 font-black text-white text-5xl shadow-2xl shadow-primary-200 ring-8 ring-white/50 overflow-hidden flex items-center justify-center transition-transform duration-500 group-hover:rotate-2 group-hover:scale-105">
                             {sdmData?.foto
                                 ? <img src={sdmData.foto} alt="Profile" className="h-full w-full object-cover" />
                                 : (sdmData?.nama?.charAt(0).toUpperCase() || 'U')}
@@ -298,11 +298,11 @@ const UserDashboard: React.FC = () => {
                                     {sdmData?.nama || 'Pengguna'}
                                 </h2>
                                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                                    <span className="inline-flex items-center gap-2 rounded-2xl bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-700 border border-indigo-100 uppercase tracking-widest shadow-sm">
+                                    <span className="inline-flex items-center gap-2 rounded-2xl bg-primary-50 px-4 py-2 text-xs font-black text-primary-700 border border-primary-100 uppercase tracking-widest shadow-sm">
                                         <Shield size={14} strokeWidth={3} /> Personil APIP
                                     </span>
                                     <div className="flex items-center gap-2 text-slate-600 font-black px-4 py-2 rounded-2xl border border-slate-100 bg-white/50 shadow-sm text-xs tracking-wider">
-                                        <Fingerprint size={14} className="text-indigo-500" strokeWidth={3} />
+                                        <Fingerprint size={14} className="text-primary-500" strokeWidth={3} />
                                         <span className="font-mono">{user?.nip}</span>
                                     </div>
                                 </div>
@@ -310,7 +310,7 @@ const UserDashboard: React.FC = () => {
 
                             <div className="mt-6 flex flex-col gap-2">
                                 <div className="flex items-center justify-center md:justify-start gap-2.5 text-slate-600 font-bold text-lg md:text-xl">
-                                    <Building2 size={24} className="text-indigo-400" />
+                                    <Building2 size={24} className="text-primary-400" />
                                     <span>{sdmData?.jabatan || 'Unit Kerja Belum Terdaftar'}</span>
                                 </div>
                                 <p className="text-sm text-slate-500 font-medium">{sdmData?.unit_kerja || 'Inspektorat Jenderal'}</p>
@@ -383,9 +383,9 @@ const UserDashboard: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="w-full lg:w-3/5 flex flex-col justify-center">
-                                                <div className="p-6 rounded-[2rem] bg-indigo-50/50 border border-indigo-100/50">
-                                                    <h4 className="flex items-center gap-2 text-indigo-900 font-black text-sm mb-3">
-                                                        <Zap size={16} className="text-indigo-500" /> Insight Performa
+                                                <div className="p-6 rounded-[2rem] bg-primary-50/50 border border-primary-100/50">
+                                                    <h4 className="flex items-center gap-2 text-primary-900 font-black text-sm mb-3">
+                                                        <Zap size={16} className="text-primary-500" /> Insight Performa
                                                     </h4>
                                                     <p className="text-slate-600 font-medium text-sm leading-relaxed mb-4">
                                                         Nilai ditarik otomatis dari sistem 360-degree feedback. Ini mencerminkan persepsi terhadap perilaku kerja Anda.
@@ -407,7 +407,7 @@ const UserDashboard: React.FC = () => {
                                                         <motion.div
                                                             whileHover={{ y: -5, scale: 1.02 }}
                                                             key={key}
-                                                            className="bg-white/60 backdrop-blur-sm p-5 rounded-2xl border border-white shadow-sm flex flex-col items-center text-center transition-all hover:bg-white hover:border-indigo-200"
+                                                            className="bg-white/60 backdrop-blur-sm p-5 rounded-2xl border border-white shadow-sm flex flex-col items-center text-center transition-all hover:bg-white hover:border-primary-200"
                                                         >
                                                             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 min-h-[24px] flex items-center justify-center">{key.replace(/_/g, ' ')}</p>
                                                             <p className="text-3xl font-black text-slate-900 mb-3">{Number(value).toFixed(2)}</p>
@@ -438,7 +438,7 @@ const UserDashboard: React.FC = () => {
                                 </div>
                                 <div className="relative group min-w-[240px]">
                                     <select
-                                        className="w-full text-xs font-black border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-4 focus:ring-indigo-500/10 cursor-pointer appearance-none pr-10"
+                                        className="w-full text-xs font-black border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-4 focus:ring-primary-500/10 cursor-pointer appearance-none pr-10"
                                         value={selectedPeriodId || ''}
                                         onChange={e => setSelectedPeriodId(Number(e.target.value))}
                                     >
@@ -463,10 +463,10 @@ const UserDashboard: React.FC = () => {
                                     /* ── Empty state ── */
                                     <div className="py-20 text-center rounded-[3rem] border-2 border-dashed border-slate-100 bg-slate-50/30">
                                         <div className="mb-6 relative inline-block">
-                                            <div className="h-24 w-24 rounded-3xl bg-white shadow-xl flex items-center justify-center mx-auto text-indigo-200 relative z-10">
+                                            <div className="h-24 w-24 rounded-3xl bg-white shadow-xl flex items-center justify-center mx-auto text-primary-200 relative z-10">
                                                 <ClipboardCheck size={48} />
                                             </div>
-                                            <div className="absolute inset-0 bg-indigo-500 rounded-full blur-[40px] opacity-20 scale-150 animate-pulse" />
+                                            <div className="absolute inset-0 bg-primary-500 rounded-full blur-[40px] opacity-20 scale-150 animate-pulse" />
                                         </div>
                                         <h4 className="text-2xl font-black text-slate-900 mb-2">Tugas Bersih!</h4>
                                         <p className="text-slate-500 text-sm max-w-[280px] mx-auto font-medium">
@@ -489,9 +489,9 @@ const UserDashboard: React.FC = () => {
                                                 <p className="text-3xl font-black text-amber-600">{partial}</p>
                                                 <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mt-1">Parsial</p>
                                             </div>
-                                            <div className={`${remaining > 0 ? 'bg-indigo-50/50 border-indigo-100/50' : 'bg-emerald-50/50 border-emerald-100/50'} p-5 rounded-[2rem] border shadow-sm text-center`}>
-                                                <p className={`text-3xl font-black ${remaining > 0 ? 'text-indigo-600' : 'text-emerald-600'}`}>{remaining}</p>
-                                                <p className={`text-[10px] font-black ${remaining > 0 ? 'text-indigo-500' : 'text-emerald-500'} uppercase tracking-widest mt-1`}>Tunggakan</p>
+                                            <div className={`${remaining > 0 ? 'bg-primary-50/50 border-primary-100/50' : 'bg-emerald-50/50 border-emerald-100/50'} p-5 rounded-[2rem] border shadow-sm text-center`}>
+                                                <p className={`text-3xl font-black ${remaining > 0 ? 'text-primary-600' : 'text-emerald-600'}`}>{remaining}</p>
+                                                <p className={`text-[10px] font-black ${remaining > 0 ? 'text-primary-500' : 'text-emerald-500'} uppercase tracking-widest mt-1`}>Tunggakan</p>
                                             </div>
                                         </div>
 
@@ -519,13 +519,13 @@ const UserDashboard: React.FC = () => {
                                                             ? 'bg-emerald-50/40 border-emerald-100/60 shadow-sm'
                                                             : isPartial
                                                                 ? 'bg-amber-50/40 border-amber-200 shadow-sm'
-                                                                : 'bg-white border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:border-indigo-200'
+                                                                : 'bg-white border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:border-primary-200'
                                                             }`}
                                                     >
                                                         {/* Top row: Avatar + Nama + Bulan + Action */}
                                                         <div className="flex flex-col md:flex-row md:items-center gap-6 p-5">
                                                             {/* Avatar */}
-                                                            <div className="shrink-0 h-14 w-14 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 font-black text-xl flex items-center justify-center uppercase shadow-sm">
+                                                            <div className="shrink-0 h-14 w-14 rounded-2xl bg-primary-50 border border-primary-100 text-primary-600 font-black text-xl flex items-center justify-center uppercase shadow-sm">
                                                                 {userName.charAt(0)}
                                                             </div>
 
@@ -546,7 +546,7 @@ const UserDashboard: React.FC = () => {
                                                                             className={`flex flex-col items-center gap-0.5 w-11 py-2 rounded-xl text-[9px] font-black uppercase transition-all shadow-sm border ${months_done.includes(m)
                                                                                 ? 'bg-emerald-500 border-emerald-400 text-white'
                                                                                 : m === nextMonth && !is_done && !isExpired
-                                                                                    ? 'bg-white border-indigo-500 text-indigo-600 ring-4 ring-indigo-500/10'
+                                                                                    ? 'bg-white border-primary-500 text-primary-600 ring-4 ring-primary-500/10'
                                                                                     : 'bg-slate-50 border-slate-100 text-slate-400'
                                                                                 }`}
                                                                         >
@@ -573,7 +573,7 @@ const UserDashboard: React.FC = () => {
                                                                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                                             : isPartial
                                                                                 ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-200'
-                                                                                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'
+                                                                                : 'bg-primary-600 text-white hover:bg-primary-700 shadow-primary-200'
                                                                             }`}
                                                                     >
                                                                         {isExpired ? 'Waktu Habis' : isPartial ? `Lanjut: Bln ${nextMonth}` : 'Isi Survei'}

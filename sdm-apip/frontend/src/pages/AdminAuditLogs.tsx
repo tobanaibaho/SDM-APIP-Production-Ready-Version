@@ -99,12 +99,12 @@ const AdminAuditLogs: React.FC = () => {
                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
                             <Shield size={120} />
                         </div>
-                        <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm mb-6">
+                        <div className="h-12 w-12 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center shadow-sm mb-6">
                             <Shield size={24} strokeWidth={2.5} />
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Security Perimeter</p>
-                            <h3 className="text-4xl font-black text-indigo-600 tracking-tight">ENCRYPTED</h3>
+                            <h3 className="text-4xl font-black text-primary-600 tracking-tight">ENCRYPTED</h3>
                         </div>
                     </motion.div>
 
@@ -127,11 +127,11 @@ const AdminAuditLogs: React.FC = () => {
                 {/* Filters & Actions */}
                 <div className="flex flex-col md:flex-row gap-4 items-center bg-white/70 backdrop-blur-3xl p-5 rounded-[2.2rem] border border-white/60 shadow-[0_10px_40px_rgb(0,0,0,0.05)]">
                     <div className="relative flex-1 group">
-                        <Filter size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                        <Filter size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
                         <select
                             id="action-filter"
                             name="actionFilter"
-                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest appearance-none cursor-pointer focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                             value={actionFilter}
                             onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
                         >
@@ -150,11 +150,11 @@ const AdminAuditLogs: React.FC = () => {
                     </div>
 
                     <div className="relative w-full md:w-64 group">
-                        <Filter size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                        <Filter size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
                         <select
                             id="status-filter"
                             name="statusFilter"
-                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest appearance-none cursor-pointer focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                             value={statusFilter}
                             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                         >
@@ -167,7 +167,7 @@ const AdminAuditLogs: React.FC = () => {
 
                     <button
                         onClick={() => { setActionFilter(''); setStatusFilter(''); setPage(1); }}
-                        className="h-14 w-14 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white transition-all rounded-2xl border border-slate-100 shadow-sm"
+                        className="h-14 w-14 flex items-center justify-center text-slate-400 hover:text-primary-600 hover:bg-white transition-all rounded-2xl border border-slate-100 shadow-sm"
                         title="Reset Filter"
                     >
                         <RotateCcw size={22} strokeWidth={2.5} />
@@ -209,7 +209,7 @@ const AdminAuditLogs: React.FC = () => {
                                         <td className="px-8 py-6">
                                             <div className="flex flex-col">
                                                 <span
-                                                    className="text-[13px] font-black text-indigo-700 cursor-help"
+                                                    className="text-[13px] font-black text-primary-700 cursor-help"
                                                     title={formatAbsoluteTime(log.created_at)}
                                                 >
                                                     {formatRelativeTime(log.created_at)}
@@ -228,7 +228,7 @@ const AdminAuditLogs: React.FC = () => {
                                                     <span className="text-[13px] font-black text-slate-900 truncate max-w-[150px]">
                                                         {log.user?.name || log.user?.email || 'SYSTEM AUTOMATION'}
                                                     </span>
-                                                    <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mt-0.5 opacity-80">
+                                                    <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest mt-0.5 opacity-80">
                                                         {log.user?.nip ? `IP: ${log.user.nip}` : 'KERNEL ACCESS'}
                                                     </span>
                                                 </div>
@@ -245,9 +245,9 @@ const AdminAuditLogs: React.FC = () => {
                                                     {log.details || '-'}
                                                 </p>
                                                 {log.target_user && (
-                                                    <div className="flex items-center gap-2 mt-2 bg-indigo-50/50 w-fit px-2 py-1 rounded-lg border border-indigo-100">
-                                                        <Activity size={10} className="text-indigo-400" />
-                                                        <p className="text-[9px] font-black text-indigo-700 uppercase tracking-tight">
+                                                    <div className="flex items-center gap-2 mt-2 bg-primary-50/50 w-fit px-2 py-1 rounded-lg border border-primary-100">
+                                                        <Activity size={10} className="text-primary-400" />
+                                                        <p className="text-[9px] font-black text-primary-700 uppercase tracking-tight">
                                                             OBJ: {log.target_user.name || log.target_user.email}
                                                         </p>
                                                     </div>
@@ -263,7 +263,7 @@ const AdminAuditLogs: React.FC = () => {
                                         <td className="px-8 py-6">
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-2 text-slate-900">
-                                                    <Monitor size={14} className="text-indigo-500" />
+                                                    <Monitor size={14} className="text-primary-500" />
                                                     <span className="text-[12px] font-black font-mono tracking-tight">{log.ip_address}</span>
                                                 </div>
                                                 <div className="mt-1.5 text-[10px] text-slate-500 font-bold truncate max-w-[150px] italic opacity-60" title={log.user_agent}>

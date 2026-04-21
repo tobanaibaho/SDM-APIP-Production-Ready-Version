@@ -185,7 +185,7 @@ const GroupRelationsTab: React.FC<Props> = ({
                                                 key={t} type="button"
                                                 onClick={() => setNewRelation({ ...newRelation, [field]: t })}
                                                 className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border-2 ${newRelation[field] === t
-                                                    ? (fi === 0 ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-900/40' : 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-900/40')
+                                                    ? (fi === 0 ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-900/40' : 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-900/40')
                                                     : 'bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-300'}`}
                                             >
                                                 {t}

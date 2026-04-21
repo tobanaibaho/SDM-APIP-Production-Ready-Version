@@ -43,7 +43,7 @@ const SparkBar: React.FC<{ value: number; max: number; label: string }> = ({ val
                     className="absolute bottom-0 left-0 right-0 rounded-t-md transition-all duration-700"
                     style={{
                         height: `${Math.max(4, pct)}%`,
-                        background: pct >= 80 ? '#10b981' : pct >= 50 ? '#6366f1' : '#94a3b8',
+                        background: pct >= 80 ? '#10b981' : pct >= 50 ? '#2563eb' : '#94a3b8',
                     }}
                 />
             </div>
@@ -57,7 +57,7 @@ const SparkBar: React.FC<{ value: number; max: number; label: string }> = ({ val
    Circular Progress
 ───────────────────────────────────────────── */
 const CircleProgress: React.FC<{ pct: number; size?: number; strokeWidth?: number; color?: string }> = ({
-    pct, size = 80, strokeWidth = 8, color = '#6366f1'
+    pct, size = 80, strokeWidth = 8, color = '#2563eb'
 }) => {
     const r = (size - strokeWidth) / 2;
     const circ = 2 * Math.PI * r;
@@ -134,7 +134,7 @@ const AdminDashboard: React.FC = () => {
                 {/* ══════════════════════════════════════════
                     BENTO 1: HERO WIDGET (COL-SPAN 8)
                 ══════════════════════════════════════════ */}
-                <div className="lg:col-span-8 bg-gradient-to-br from-slate-900 via-primary-900 to-indigo-900 rounded-[2rem] p-8 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-8 border border-white/10">
+                <div className="lg:col-span-8 bg-gradient-to-br from-slate-900 via-primary-900 to-primary-900 rounded-[2rem] p-8 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-8 border border-white/10">
                     <div className="relative z-10 flex-1 w-full">
                         <div className="flex items-center gap-3 mb-4">
                             <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black tracking-widest uppercase border border-white/20">
@@ -187,7 +187,7 @@ const AdminDashboard: React.FC = () => {
                 ══════════════════════════════════════════ */}
                 <div className="lg:col-span-4 grid grid-cols-2 gap-5">
                     <NavLink to="/super-admin/periods" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
-                        <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-purple-100 to-fuchsia-100 flex items-center justify-center text-purple-600 shadow-inner"><Plus size={28} /></div>
+                        <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-blue-100 to-primary-100 flex items-center justify-center text-primary-600 shadow-inner"><Plus size={28} /></div>
                         <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Buat Periode</h4></div>
                     </NavLink>
                     <NavLink to="/super-admin/users" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
@@ -231,7 +231,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
                     <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2">Grup Terdaftar</p>
                     <h3 className="text-5xl font-black text-slate-900 tracking-tighter">{stats?.total_groups ?? 0}</h3>
-                    <Activity size={80} className="absolute -bottom-6 -right-6 text-purple-500/10 group-hover:scale-110 group-hover:text-purple-500/20 transition-all duration-500" />
+                    <Activity size={80} className="absolute -bottom-6 -right-6 text-primary-500/10 group-hover:scale-110 group-hover:text-primary-500/20 transition-all duration-500" />
                 </div>
 
                 {/* ══════════════════════════════════════════
@@ -250,16 +250,16 @@ const AdminDashboard: React.FC = () => {
                                 <div key={g.group_id}>
                                     <div className="flex items-center justify-between text-sm mb-2.5">
                                         <span className="font-bold text-slate-700 truncate pr-4">{g.group_name}</span>
-                                        <span className={`font-black tracking-widest ${g.pct >= 100 ? 'text-emerald-500' : 'text-primary-600'}`}>
+                                        <span className={`font-black tracking-widest ${g.pct >= 100 ? 'text-blue-600' : 'text-slate-600'}`}>
                                             {g.pct}%
                                         </span>
                                     </div>
-                                    <div className="h-2.5 w-full bg-slate-200/50 rounded-full overflow-hidden shadow-inner">
+                                    <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
                                         <div
                                             className="h-full rounded-full transition-all duration-1000"
                                             style={{
                                                 width: `${g.pct}%`,
-                                                background: g.pct >= 100 ? '#10b981' : g.pct > 0 ? '#6366f1' : '#cbd5e1'
+                                                background: g.pct >= 100 ? '#2563eb' : g.pct > 0 ? '#3b82f6' : '#e2e8f0'
                                             }}
                                         />
                                     </div>

@@ -1,11 +1,11 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, useToasterStore, toast } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Loading Component for Suspense
 const PageLoader = () => (
-    <div className="flex items-center justify-center min-h-screen bg-slate-900">
+    <div className="flex items-center justify-center min-h-screen bg-primary-950">
         <div className="relative w-12 h-12">
             <div className="absolute top-0 left-0 w-full h-full border-4 border-emerald-500/20 rounded-full"></div>
             <div className="absolute top-0 left-0 w-full h-full border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
@@ -37,6 +37,7 @@ const AssessmentFormPage = lazy(() => import('./pages/AssessmentFormPage'));
 const AdminAuditLogs = lazy(() => import('./pages/AdminAuditLogs'));
 const CrossGroupRelationPage = lazy(() => import('./pages/CrossGroupRelationPage'));
 const AdminAssessmentMonitoringPage = lazy(() => import('./pages/AdminAssessmentMonitoringPage'));
+const AdminQuestionManagement = lazy(() => import('./pages/AdminQuestionManagement'));
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({
@@ -191,6 +192,14 @@ const AppRoutes: React.FC = () => {
                 }
             />
             <Route
+                path="/super-admin/questions"
+                element={
+                    <ProtectedRoute adminOnly>
+                        <AdminQuestionManagement />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path="/admin/assessments/detail/:userId"
                 element={
                     <ProtectedRoute adminOnly>
@@ -250,10 +259,22 @@ const AppRoutes: React.FC = () => {
     );
 };
 
+const ToastLimitEnforcer = () => {
+    const { toasts } = useToasterStore();
+    useEffect(() => {
+        toasts
+            .filter((t) => t.visible)
+            .filter((_, i) => i >= 1) // limit to 1
+            .forEach((t) => toast.dismiss(t.id));
+    }, [toasts]);
+    return null;
+};
+
 const App: React.FC = () => {
     return (
         <BrowserRouter>
             <AuthProvider>
+                <ToastLimitEnforcer />
                 <Toaster
                     position="top-right"
                     toastOptions={{
@@ -265,7 +286,7 @@ const App: React.FC = () => {
                         },
                         success: {
                             iconTheme: {
-                                primary: '#10b981',
+                                primary: '#0ea5e9',
                                 secondary: '#fff',
                             },
                         },

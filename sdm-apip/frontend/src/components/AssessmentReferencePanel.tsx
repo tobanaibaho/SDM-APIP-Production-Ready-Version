@@ -56,7 +56,7 @@ const INDICATOR_ORDER = [
 
 /* Warna progress bar berdasarkan nilai */
 const barBg = (v: number) =>
-    v >= 80 ? 'bg-emerald-500' : v >= 65 ? 'bg-amber-400' : 'bg-indigo-400';
+    v >= 80 ? 'bg-emerald-500' : v >= 65 ? 'bg-amber-400' : 'bg-primary-400';
 
 /* Warna teks skor */
 const scoreColor = (v: number) =>
@@ -102,9 +102,9 @@ const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, rel
     /* ── Loading ── */
     if (loading) {
         return (
-            <div className="mt-3 flex items-center gap-3 px-4 py-3 bg-indigo-50 rounded-xl border border-indigo-100">
-                <Loader2 size={16} className="text-indigo-400 animate-spin shrink-0" />
-                <p className="text-xs font-bold text-indigo-500">Memuat data referensi...</p>
+            <div className="mt-3 flex items-center gap-3 px-4 py-3 bg-primary-50 rounded-xl border border-primary-100">
+                <Loader2 size={16} className="text-primary-400 animate-spin shrink-0" />
+                <p className="text-xs font-bold text-primary-500">Memuat data referensi...</p>
             </div>
         );
     }
@@ -139,7 +139,7 @@ const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, rel
         <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 rounded-[2rem] border border-indigo-100 bg-white/60 backdrop-blur-md overflow-hidden shadow-sm"
+            className="mt-6 rounded-[2rem] border border-primary-100 bg-white/60 backdrop-blur-md overflow-hidden shadow-sm"
         >
             {/* ── Header ── */}
             <button
@@ -148,11 +148,11 @@ const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, rel
                 className="w-full flex items-center justify-between px-6 py-5 hover:bg-white/40 transition-all outline-none"
             >
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center h-10 w-10 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200">
+                    <div className="flex items-center justify-center h-10 w-10 rounded-2xl bg-primary-600 text-white shadow-lg shadow-primary-200">
                         <BarChart3 size={20} strokeWidth={2.5} />
                     </div>
                     <div className="text-left">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 leading-none mb-1">Panduan Pengisian</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-500 leading-none mb-1">Panduan Pengisian</p>
                         <p className="text-lg font-black text-slate-900 leading-tight">Referensi Nilai Kolektif</p>
                     </div>
                 </div>
@@ -194,16 +194,16 @@ const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, rel
                             )}
 
                             {/* ── Overall Score Card ── */}
-                            <div className="flex flex-col sm:flex-row items-center gap-6 p-5 bg-indigo-50/30 rounded-[2rem] border border-indigo-100/50 relative overflow-hidden group/card">
+                            <div className="flex flex-col sm:flex-row items-center gap-6 p-5 bg-primary-50/30 rounded-[2rem] border border-primary-100/50 relative overflow-hidden group/card">
                                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none group-hover/card:scale-110 transition-transform duration-1000">
                                     <BarChart3 size={120} strokeWidth={1} />
                                 </div>
                                 {/* Score Circle */}
-                                <div className="relative shrink-0 flex flex-col items-center justify-center w-24 h-24 rounded-[2rem] bg-indigo-600 text-white shadow-xl shadow-indigo-200">
+                                <div className="relative shrink-0 flex flex-col items-center justify-center w-24 h-24 rounded-[2rem] bg-primary-600 text-white shadow-xl shadow-primary-200">
                                     <p className="text-3xl font-black leading-none">
                                         {summary.overall_avg > 0 ? summary.overall_avg.toFixed(1) : '—'}
                                     </p>
-                                    <p className="text-[9px] font-black uppercase tracking-widest mt-1 text-indigo-200">
+                                    <p className="text-[9px] font-black uppercase tracking-widest mt-1 text-primary-200">
                                         {scoreLabel(summary.overall_avg)}
                                     </p>
                                 </div>
@@ -230,10 +230,10 @@ const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, rel
                                     if (!d) return null;
                                     const val = d.overall_avg;
                                     return (
-                                        <div key={ind} className="px-5 py-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col gap-2 group/ind hover:border-indigo-200 transition-all">
+                                        <div key={ind} className="px-5 py-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col gap-2 group/ind hover:border-primary-200 transition-all">
                                             <div className="flex items-center justify-between">
                                                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover/ind:text-slate-900 transition-colors">{ind}</p>
-                                                <span className={`text-xs font-black p-1 px-2 rounded-lg bg-slate-50 border border-slate-100 group-hover/ind:border-indigo-100 transition-all ${scoreColor(val)}`}>
+                                                <span className={`text-xs font-black p-1 px-2 rounded-lg bg-slate-50 border border-slate-100 group-hover/ind:border-primary-100 transition-all ${scoreColor(val)}`}>
                                                     {val > 0 ? val.toFixed(1) : '—'}
                                                 </span>
                                             </div>
@@ -249,7 +249,7 @@ const AssessmentReferencePanel: React.FC<Props> = ({ targetUserId, periodId, rel
                             </div>
 
                             <div className="flex items-start gap-3 p-4 bg-slate-900/[0.02] rounded-2xl border border-slate-100 border-dashed">
-                                <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm shrink-0">
+                                <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-primary-500 shadow-sm shrink-0">
                                     <Info size={16} className="shrink-0" strokeWidth={2.5} />
                                 </div>
                                 <p className="text-[10px] font-bold text-slate-500 leading-relaxed uppercase tracking-tight">

@@ -85,6 +85,8 @@ export interface UserReportRow {
     group_role: string;
     assessments_received: number;
     assessments_given: number;
+    received_needed: number;
+    given_needed: number;
     average_score: number;
 }
 

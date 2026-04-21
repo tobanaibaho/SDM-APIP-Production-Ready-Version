@@ -66,11 +66,11 @@ const MyGroupsPage: React.FC = () => {
                 {/* Search Bar Bento */}
                 <div className="bg-white/70 backdrop-blur-3xl p-6 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                     <div className="relative max-w-xl">
-                        <Search size={22} className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400" strokeWidth={2.5} />
+                        <Search size={22} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-400" strokeWidth={2.5} />
                         <input
                             type="text"
                             placeholder="Cari nama grup atau deskripsi..."
-                            className="w-full pl-14 pr-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-bold text-slate-700 placeholder:text-slate-400"
+                            className="w-full pl-14 pr-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none font-bold text-slate-700 placeholder:text-slate-400"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -87,11 +87,11 @@ const MyGroupsPage: React.FC = () => {
                             className="group card p-8 text-left transition-all border-white/60 shadow-[0_8px_25px_rgb(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] bg-white/70 backdrop-blur-3xl"
                         >
                             <div className="flex items-start justify-between mb-6">
-                                <div className="h-16 w-16 rounded-[1.5rem] bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white group-hover:rotate-3 transition-all duration-500 shadow-sm">
+                                <div className="h-16 w-16 rounded-[1.5rem] bg-primary-50 text-primary-600 flex items-center justify-center group-hover:bg-primary-600 group-hover:text-white group-hover:rotate-3 transition-all duration-500 shadow-sm">
                                     <UsersIcon size={32} strokeWidth={2.5} />
                                 </div>
                                 <div className="flex flex-col items-end gap-3">
-                                    <div className="p-2 rounded-xl bg-slate-50 text-slate-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 transition-all">
+                                    <div className="p-2 rounded-xl bg-slate-50 text-slate-400 group-hover:text-primary-500 group-hover:bg-primary-50 transition-all">
                                         <ArrowUpRight size={22} strokeWidth={2.5} />
                                     </div>
                                     {group.user_role === 'Ketua' && (
@@ -99,17 +99,17 @@ const MyGroupsPage: React.FC = () => {
                                     )}
                                 </div>
                             </div>
-                            <h3 className="text-xl font-black text-slate-900 mb-3 group-hover:text-indigo-700 transition-colors tracking-tight">{group.name}</h3>
+                            <h3 className="text-xl font-black text-slate-900 mb-3 group-hover:text-primary-700 transition-colors tracking-tight">{group.name}</h3>
                             <p className="text-sm text-slate-500 font-medium line-clamp-2 leading-relaxed h-[2.5rem] mb-4">
                                 {group.description || 'Koordinasi strategis personil APIP dalam rangka transparansi penilaian.'}
                             </p>
 
                             <div className="pt-6 border-t border-slate-100/50 flex items-center justify-between mt-auto">
-                                <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors flex items-center gap-2">
+                                <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 group-hover:text-primary-600 transition-colors flex items-center gap-2">
                                     Detail Anggota <ChevronRight size={14} strokeWidth={3} />
                                 </span>
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/80 border border-slate-100 shadow-sm">
-                                    <UserCircle2 size={14} className="text-indigo-400" />
+                                    <UserCircle2 size={14} className="text-primary-400" />
                                     <span className="text-[10px] font-black text-slate-600 uppercase">
                                         {group.user_count || 0} Anggota
                                     </span>
@@ -152,15 +152,15 @@ const MyGroupsPage: React.FC = () => {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
-                            <div className="bg-indigo-50/50 rounded-[2rem] p-6 mb-10 border border-indigo-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="bg-primary-50/50 rounded-[2rem] p-6 mb-10 border border-primary-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Deskripsi Grup</p>
+                                    <p className="text-[10px] font-black text-primary-500 uppercase tracking-widest">Deskripsi Grup</p>
                                     <p className="text-slate-700 font-medium leading-relaxed max-w-2xl">
                                         {selectedGroupDetail.group.description || 'Daftar personil pengawasan APIP untuk penilaian performa kolektif.'}
                                     </p>
                                 </div>
                                 <div className="bg-white/80 px-6 py-4 rounded-3xl border border-white shadow-sm shrink-0 text-center">
-                                    <p className="text-3xl font-black text-indigo-600 leading-none mb-1">{selectedGroupDetail.members?.length || 0}</p>
+                                    <p className="text-3xl font-black text-primary-600 leading-none mb-1">{selectedGroupDetail.members?.length || 0}</p>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight">SDM APIP</p>
                                 </div>
                             </div>
@@ -170,10 +170,10 @@ const MyGroupsPage: React.FC = () => {
                                     <motion.div 
                                         whileHover={{ x: 5 }}
                                         key={member.id} 
-                                        className="flex items-center gap-5 p-5 rounded-3xl bg-white border border-slate-100 shadow-[0_4px_15px_rgb(0,0,0,0.02)] transition-all hover:border-indigo-300 group/item"
+                                        className="flex items-center gap-5 p-5 rounded-3xl bg-white border border-slate-100 shadow-[0_4px_15px_rgb(0,0,0,0.02)] transition-all hover:border-primary-300 group/item"
                                     >
                                         <div className="relative shrink-0">
-                                            <div className="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner flex items-center justify-center font-black text-slate-300 group-hover/item:text-indigo-400 transition-colors overflow-hidden">
+                                            <div className="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner flex items-center justify-center font-black text-slate-300 group-hover/item:text-primary-400 transition-colors overflow-hidden">
                                                 {member.foto ? (
                                                     <img src={member.foto} alt={member.name} className="h-full w-full object-cover" />
                                                 ) : (
@@ -195,15 +195,15 @@ const MyGroupsPage: React.FC = () => {
                                             </div>
                                             <p className="text-xs text-slate-500 font-bold truncate">{member.jabatan || 'Anggota APIP'}</p>
                                             <div className="mt-1.5 flex items-center gap-2">
-                                                <span className="text-[10px] font-black text-slate-300 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 group-hover/item:text-indigo-400 transition-colors">{member.nip}</span>
+                                                <span className="text-[10px] font-black text-slate-300 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 group-hover/item:text-primary-400 transition-colors">{member.nip}</span>
                                             </div>
                                         </div>
                                     </motion.div>
                                 ))}
                             </div>
 
-                            <div className="mt-12 bg-indigo-900/5 rounded-[2.5rem] p-8 border border-indigo-100 flex items-start gap-4">
-                                <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm shrink-0">
+                            <div className="mt-12 bg-primary-900/5 rounded-[2.5rem] p-8 border border-primary-100 flex items-start gap-4">
+                                <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-primary-500 shadow-sm shrink-0">
                                     <Info size={24} strokeWidth={2.5} />
                                 </div>
                                 <div className="text-xs text-slate-600 leading-relaxed font-medium">

@@ -81,19 +81,24 @@ type CreatePeriodRequest struct {
 	Frequency string `json:"frequency" binding:"required,oneof=monthly quarterly semi_annual annual"` // Frequency of assessment
 }
 
+type UpdatePeriodRequest struct {
+	Name      string `json:"name" binding:"required"`
+	StartDate string `json:"start_date" binding:"required"`
+	EndDate   string `json:"end_date" binding:"required"`
+}
+
 type SubmitAssessmentRequest struct {
-	TargetUserID          uint   `json:"target_user_id" binding:"required"`
-	GroupID               *uint  `json:"group_id"`
-	PeriodID              uint   `json:"period_id" binding:"required"`
-	AssessmentMonth       int    `json:"assessment_month" binding:"required,min=1"`
-	BerorientasiPelayanan int    `json:"berorientasi_pelayanan" binding:"required,min=0,max=100"`
-	Akuntabel             int    `json:"akuntabel" binding:"required,min=0,max=100"`
-	Kompeten              int    `json:"kompeten" binding:"required,min=0,max=100"`
-	Harmonis              int    `json:"harmonis" binding:"required,min=0,max=100"`
-	Loyal                 int    `json:"loyal" binding:"required,min=0,max=100"`
-	Adaptif               int    `json:"adaptif" binding:"required,min=0,max=100"`
-	Kolaboratif           int    `json:"kolaboratif" binding:"required,min=0,max=100"`
-	Comment    string `json:"comment" binding:"max=500"`
+	TargetUserID    uint          `json:"target_user_id" binding:"required"`
+	GroupID         *uint         `json:"group_id"`
+	PeriodID        uint          `json:"period_id" binding:"required"`
+	AssessmentMonth int           `json:"assessment_month" binding:"required,min=1"`
+	Answers         []AnswerInput `json:"answers" binding:"required,dive"`
+	Comment         string        `json:"comment" binding:"max=800"`
+}
+
+type AnswerInput struct {
+	QuestionID uint `json:"question_id" binding:"required"`
+	Score      int  `json:"score" binding:"min=0,max=100"`
 }
 
 // --- Response DTOs ---

@@ -17,6 +17,7 @@ type IAssessmentService interface {
 	// Period Management
 	CreatePeriod(req models.CreatePeriodRequest) (*models.AssessmentPeriod, error)
 	GetAllPeriods() ([]models.AssessmentPeriod, error)
+	UpdatePeriod(id uint, req models.UpdatePeriodRequest) error
 	UpdatePeriodStatus(id uint, isActive bool) error
 	DeletePeriod(id uint) error
 	GetActivePeriod() (*models.AssessmentPeriod, error)
@@ -365,30 +366,41 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 		return ErrSelfAssessment
 	}
 
+	tx := s.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	var period models.AssessmentPeriod
-	if err := s.db.First(&period, req.PeriodID).Error; err != nil {
+	if err := tx.First(&period, req.PeriodID).Error; err != nil {
+		tx.Rollback()
 		return ErrPeriodNotFound
 	}
 	if !period.IsActive {
+		tx.Rollback()
 		return ErrPeriodInactive
 	}
 	// Double-guard: tolak submission jika end_date sudah lewat
 	if time.Now().After(period.EndDate) {
 		// Auto-nonaktifkan di DB sekaligus
-		s.db.Model(&period).Update("is_active", false)
+		tx.Model(&period).Update("is_active", false)
 		
 		// Audit Log (System Event)
 		details := fmt.Sprintf("System auto-locked period '%s' (ID %d) during submission attempt because end_date passed", period.Name, period.ID)
-		models.CreateAuditLog(s.db, nil, models.AuditActionPeriodLock, models.AuditStatusSuccess, 
+		models.CreateAuditLog(tx, nil, models.AuditActionPeriodLock, models.AuditStatusSuccess, 
 			"SYSTEM", "SUBMISSION_GUARD", details, nil)
 
+		tx.Rollback()
 		return ErrPeriodInactive
 	}
 
 	var relation models.AssessmentRelation
-	err := s.db.Where("period_id = ? AND evaluator_id = ? AND target_user_id = ?",
+	err := tx.Where("period_id = ? AND evaluator_id = ? AND target_user_id = ?",
 		req.PeriodID, evaluatorID, req.TargetUserID).First(&relation).Error
 	if err != nil {
+		tx.Rollback()
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("you are not assigned to assess this user in this period")
 		}
@@ -396,12 +408,59 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 	}
 
 	var dup int64
-	s.db.Model(&models.PeerAssessment{}).
+	tx.Model(&models.PeerAssessment{}).
 		Where("evaluator_id = ? AND target_user_id = ? AND period_id = ? AND assessment_month = ?",
 			evaluatorID, req.TargetUserID, req.PeriodID, req.AssessmentMonth).
 		Count(&dup)
 	if dup > 0 {
+		tx.Rollback()
 		return errors.New("you have already assessed this user for this month")
+	}
+
+	// --- Dynamic Scoring Logic ---
+	qIDs := make([]uint, len(req.Answers))
+	for i, a := range req.Answers {
+		qIDs[i] = a.QuestionID
+	}
+
+	var questions []models.Question
+	if len(qIDs) > 0 {
+		if err := tx.Where("id IN ?", qIDs).Find(&questions).Error; err != nil {
+			tx.Rollback()
+			return ErrInternalServer
+		}
+	}
+
+	// Map question ID to Indicator
+	qMap := make(map[uint]string)
+	for _, q := range questions {
+		qMap[q.ID] = q.Indicator
+	}
+
+	// Calculate Averages per Indicator
+	indicatorSums := map[string]int{}
+	indicatorCounts := map[string]int{}
+	var validAnswers []models.AssessmentAnswer
+
+	for _, a := range req.Answers {
+		ind, ok := qMap[a.QuestionID]
+		if !ok {
+			tx.Rollback()
+			return fmt.Errorf("invalid question_id %d in answers", a.QuestionID)
+		}
+		indicatorSums[ind] += a.Score
+		indicatorCounts[ind]++
+		validAnswers = append(validAnswers, models.AssessmentAnswer{
+			QuestionID: a.QuestionID,
+			Score:      a.Score,
+		})
+	}
+
+	avg := func(ind string) int {
+		if indicatorCounts[ind] == 0 {
+			return 0
+		}
+		return int(math.Round(float64(indicatorSums[ind]) / float64(indicatorCounts[ind])))
 	}
 
 	assessment := models.PeerAssessment{
@@ -409,16 +468,36 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 		GroupID: relation.GroupID, PeriodID: req.PeriodID,
 		RelationType: relation.RelationType, TargetPosition: relation.TargetPosition,
 		AssessmentMonth:       req.AssessmentMonth,
-		BerorientasiPelayanan: req.BerorientasiPelayanan,
-		Akuntabel:             req.Akuntabel, Kompeten: req.Kompeten,
-		Harmonis: req.Harmonis, Loyal: req.Loyal,
-		Adaptif: req.Adaptif, Kolaboratif: req.Kolaboratif,
-		Comment: req.Comment,
+		BerorientasiPelayanan: avg("Berorientasi Pelayanan"),
+		Akuntabel:             avg("Akuntabel"),
+		Kompeten:              avg("Kompeten"),
+		Harmonis:              avg("Harmonis"),
+		Loyal:                 avg("Loyal"),
+		Adaptif:               avg("Adaptif"),
+		Kolaboratif:           avg("Kolaboratif"),
+		Comment:               req.Comment,
 	}
-	if err := s.db.Create(&assessment).Error; err != nil {
+
+	if err := tx.Create(&assessment).Error; err != nil {
 		logger.Error("Failed to save peer assessment: %v", err)
+		tx.Rollback()
 		return ErrInternalServer
 	}
+
+	// Insert all specific answers
+	for i := range validAnswers {
+		validAnswers[i].PeerAssessmentID = assessment.ID
+	}
+
+	if len(validAnswers) > 0 {
+		if err := tx.Create(&validAnswers).Error; err != nil {
+			logger.Error("Failed to save assessment answers: %v", err)
+			tx.Rollback()
+			return ErrInternalServer
+		}
+	}
+
+	tx.Commit()
 	return nil
 }
 

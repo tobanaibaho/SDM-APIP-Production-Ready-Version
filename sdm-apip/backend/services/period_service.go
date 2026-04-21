@@ -48,6 +48,33 @@ func (s *AssessmentService) GetAllPeriods() ([]models.AssessmentPeriod, error) {
 	return periods, nil
 }
 
+func (s *AssessmentService) UpdatePeriod(id uint, req models.UpdatePeriodRequest) error {
+	var period models.AssessmentPeriod
+	if err := s.db.First(&period, id).Error; err != nil {
+		return ErrPeriodNotFound
+	}
+	start, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		return errors.New("invalid start date format")
+	}
+	end, err := time.Parse("2006-01-02", req.EndDate)
+	if err != nil {
+		return errors.New("invalid end date format")
+	}
+	end = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, end.Location())
+
+	// Re-evaluate if it should be active based on dates (optional logic, but typically if they set future/past it updates active state)
+	// We'll trust the admin override. Let's just update the period.
+	period.Name = req.Name
+	period.StartDate = start
+	period.EndDate = end
+
+	if err := s.db.Save(&period).Error; err != nil {
+		return ErrInternalServer
+	}
+	return nil
+}
+
 func (s *AssessmentService) UpdatePeriodStatus(id uint, isActive bool) error {
 	var period models.AssessmentPeriod
 	if err := s.db.First(&period, id).Error; err != nil {

@@ -172,6 +172,28 @@ CREATE TABLE IF NOT EXISTS assessment_relations (
 );
 CREATE INDEX IF NOT EXISTS idx_assessment_relations_period ON assessment_relations(period_id);
 
+CREATE TABLE IF NOT EXISTS questions (
+    id SERIAL PRIMARY KEY,
+    indicator VARCHAR(100) NOT NULL,
+    text TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_questions_indicator ON questions(indicator);
+CREATE INDEX IF NOT EXISTS idx_questions_deleted_at ON questions(deleted_at);
+
+CREATE TABLE IF NOT EXISTS assessment_answers (
+    id SERIAL PRIMARY KEY,
+    peer_assessment_id INTEGER NOT NULL REFERENCES peer_assessments(id) ON DELETE CASCADE,
+    question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    score INTEGER NOT NULL CHECK (score >= 0 AND score <= 100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_assessment_answers_pa_id ON assessment_answers(peer_assessment_id);
+CREATE INDEX IF NOT EXISTS idx_assessment_answers_q_id ON assessment_answers(question_id);
+
 -- =============================================
 -- 5. LOGGING & AUDIT
 -- =============================================
@@ -230,9 +252,55 @@ ON CONFLICT (username) DO UPDATE SET
 
 
 
+-- Default Questions (7 Pilar BerAKHLAK)
+INSERT INTO questions (indicator, text, is_active) VALUES
+('Berorientasi Pelayanan', 'Apakah ASN komunikatif dalam memberikan layanan yang tepat dan efektif?', true),
+('Berorientasi Pelayanan', 'Seberapa proaktif ASN dalam memberikan solusi dan inisiatif untuk meningkatkan kualitas pelayanan?', true),
+('Berorientasi Pelayanan', 'Apakah ASN menunjukkan sikap ramah, sopan, dan kooperatif dalam berinteraksi dengan Anda dan rekan kerja lainnya?', true),
+('Berorientasi Pelayanan', 'Apakah ASN selalu berusaha memberikan pelayanan yang terbaik kepada Anda dan rekan kerja lainnya?', true),
+('Berorientasi Pelayanan', 'Apakah ASN sudah responsif dalam memberikan dukungan dan bantuan ketika Anda menghadapi kesulitan?', true),
+
+('Akuntabel', 'Apakah ASN bertanggung jawab atas keputusan yang diambil dan konsekuensi yang timbul?', true),
+('Akuntabel', 'Apakah ASN transparan dalam menjalankan tugas dan menyampaikan informasi?', true),
+('Akuntabel', 'Apakah Anda merasa ASN transparan dalam penggunaan sumber daya yang ada?', true),
+('Akuntabel', 'Apakah ASN konsisten dalam memenuhi tenggat waktu yang ditetapkan untuk tugas yang diberikan?', true),
+('Akuntabel', 'Apakah ASN berani mengakui kesalahan dan berusaha memperbaikinya?', true),
+
+('Kompeten', 'Apakah ASN memiliki pengetahuan dan keterampilan yang memadai untuk menjalankan tugasnya?', true),
+('Kompeten', 'Apakah ASN selalu berusaha mengembangkan diri dan meningkatkan kompetensinya?', true),
+('Kompeten', 'Apakah ASN mampu menyelesaikan tugas dengan kualitas yang baik?', true),
+('Kompeten', 'Apakah ASN kreatif dan inovatif dalam mencari solusi atas masalah yang dihadapi?', true),
+('Kompeten', 'Apakah ASN mampu bekerja secara mandiri dan mengambil inisiatif?', true),
+
+('Harmonis', 'Apakah ASN mampu bekerja sama dengan baik dalam tim?', true),
+('Harmonis', 'Apakah ASN menghargai perbedaan pendapat dan mampu membangun hubungan yang baik dengan rekan kerja?', true),
+('Harmonis', 'Apakah ASN mampu menciptakan suasana kerja yang kondusif dan positif?', true),
+('Harmonis', 'Apakah ASN mampu menyelesaikan konflik dengan cara konstruktif?', true),
+('Harmonis', 'Apakah ASN peduli terhadap kesejahteraan rekan kerja dan lingkungan kerja?', true),
+
+('Loyal', 'Apakah ASN setia kepada Pancasila, UUD 1945, NKRI, dan Pemerintah?', true),
+('Loyal', 'Apakah ASN menjunjung tinggi nilai-nilai etika dan moral dalam menjalankan tugas?', true),
+('Loyal', 'Apakah ASN menjaga nama baik instansi dan profesi ASN?', true),
+('Loyal', 'Apakah ASN berani menolak tindakan yang melanggar hukum dan etika?', true),
+('Loyal', 'Apakah ASN dapat menjaga kerahasiaan informasi yang seharusnya tidak diungkapkan?', true),
+
+('Adaptif', 'Apakah ASN mampu menyesuaikan diri dengan perubahan lingkungan kerja dan teknologi?', true),
+('Adaptif', 'Apakah ASN terbuka terhadap ide-ide baru dan mau belajar hal-hal baru?', true),
+('Adaptif', 'Apakah ASN mampu bekerja di bawah tekanan dan menghadapi tantangan dengan baik?', true),
+('Adaptif', 'Apakah ASN mampu mencari solusi kreatif atas masalah yang belum pernah dihadapi sebelumnya?', true),
+('Adaptif', 'Apakah ASN mampu memanfaatkan teknologi untuk meningkatkan kinerja dan efisiensi?', true),
+
+('Kolaboratif', 'Apakah ASN mampu membangun jaringan kerja yang luas dan efektif?', true),
+('Kolaboratif', 'Apakah ASN mampu bekerja sama dengan pihak eksternal untuk mencapai tujuan bersama?', true),
+('Kolaboratif', 'Apakah ASN mampu berbagi pengetahuan dan pengalaman dengan rekan kerja?', true),
+('Kolaboratif', 'Apakah ASN mampu memberikan kontribusi positif dalam kegiatan kelompok atau pekerjaan yang dilakukan secara bersama-sama?', true),
+('Kolaboratif', 'Apakah ASN mampu membangun kepercayaan dan kemitraan dengan pihak lain?', true)
+ON CONFLICT DO NOTHING;
+
 -- =============================================
 -- 8. PERMISSIONS
 -- =============================================
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO sdm_admin;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO sdm_admin;
+

@@ -206,11 +206,11 @@ const UserManagement: React.FC = () => {
                 {/* Toolbar Glass Bento */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center bg-white/70 backdrop-blur-3xl p-5 rounded-[2.2rem] border border-white/60 shadow-[0_10px_40px_rgb(0,0,0,0.05)]">
                     <div className="relative flex-1 group">
-                        <Search size={22} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                        <Search size={22} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
                         <input
                             type="text"
                             placeholder="Cari NIP atau email personil..."
-                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-inner"
+                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-primary-500 outline-none transition-all shadow-inner"
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                         />
@@ -218,9 +218,9 @@ const UserManagement: React.FC = () => {
 
                     <div className="flex items-center gap-3 px-3">
                         <div className="relative group">
-                            <Filter size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
+                            <Filter size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors pointer-events-none" />
                             <select
-                                className="w-full pl-12 pr-10 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer hover:bg-slate-50 shadow-sm"
+                                className="w-full pl-12 pr-10 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary-500 outline-none transition-all appearance-none cursor-pointer hover:bg-slate-50 shadow-sm"
                                 value={statusFilter}
                                 onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                             >
@@ -242,12 +242,12 @@ const UserManagement: React.FC = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-white/40">
-                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => handleSort('nip')}>
+                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('nip')}>
                                         <div className="flex items-center gap-2">Identitas <ArrowUpDown size={12} className="opacity-50" /></div>
                                     </th>
                                     <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Otoritas</th>
                                     <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Keamanan</th>
-                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => handleSort('status')}>
+                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('status')}>
                                         <div className="flex items-center gap-2">Status <ArrowUpDown size={12} className="opacity-50" /></div>
                                     </th>
                                     <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Aktivitas Terakhir</th>
@@ -282,7 +282,7 @@ const UserManagement: React.FC = () => {
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <p className="text-[14px] font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors">
+                                                        <p className="text-[14px] font-black text-slate-900 tracking-tight group-hover:text-primary-600 transition-colors">
                                                             {user.name || 'Tanpa Nama'}
                                                         </p>
                                                         <p className="text-[11px] font-bold text-slate-500 mt-1">
@@ -294,7 +294,7 @@ const UserManagement: React.FC = () => {
                                             <td className="px-8 py-6">
                                                 {user.role === 'super admin' ? (
                                                     <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-[10px] font-black text-white uppercase tracking-widest shadow-sm">
-                                                        <Shield size={12} className="text-indigo-400" /> Admin
+                                                        <Shield size={12} className="text-primary-400" /> Admin
                                                     </span>
                                                 ) : (
                                                     <span className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3 py-1.5 text-[10px] font-black text-slate-600 uppercase tracking-widest border border-slate-200 shadow-sm">
@@ -322,7 +322,7 @@ const UserManagement: React.FC = () => {
                                                 {user.last_activity_at ? (
                                                     <div className="flex flex-col">
                                                         <span
-                                                            className="text-xs font-black text-indigo-600 cursor-help"
+                                                            className="text-xs font-black text-primary-600 cursor-help"
                                                             title={formatAbsoluteTime(user.last_activity_at)}
                                                         >
                                                             {formatRelativeTime(user.last_activity_at)}
@@ -337,7 +337,7 @@ const UserManagement: React.FC = () => {
                                             </td>
                                             <td className="px-8 py-6 text-right">
                                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
-                                                    <button onClick={() => openEditModal(user)} className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all border border-transparent hover:border-indigo-100">
+                                                    <button onClick={() => openEditModal(user)} className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all border border-transparent hover:border-primary-100">
                                                         <Edit2 size={16} strokeWidth={2.5} />
                                                     </button>
                                                     <button onClick={() => { setDeletingUser(user); setShowDeleteModal(true); }} className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100">
@@ -355,17 +355,17 @@ const UserManagement: React.FC = () => {
                     {/* Pagination */}
                     {pagination && pagination.total_pages > 1 && (
                         <div className="px-8 py-6 border-t border-slate-100/50 flex items-center justify-between bg-slate-50/30">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Halaman <span className="text-indigo-600">{page}</span> dari {pagination.total_pages}</span>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Halaman <span className="text-primary-600">{page}</span> dari {pagination.total_pages}</span>
                             <div className="flex items-center gap-2">
                                 <button
-                                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-700 disabled:hover:bg-white transition-all shadow-sm"
+                                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 hover:bg-slate-50 hover:text-primary-600 hover:border-primary-200 disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-700 disabled:hover:bg-white transition-all shadow-sm"
                                     disabled={page === 1}
                                     onClick={() => setPage(page - 1)}
                                 >
                                     <ChevronLeft size={18} strokeWidth={2.5} />
                                 </button>
                                 <button
-                                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-700 disabled:hover:bg-white transition-all shadow-sm"
+                                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 hover:bg-slate-50 hover:text-primary-600 hover:border-primary-200 disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-700 disabled:hover:bg-white transition-all shadow-sm"
                                     disabled={page === pagination.total_pages}
                                     onClick={() => setPage(page + 1)}
                                 >
@@ -393,11 +393,11 @@ const UserManagement: React.FC = () => {
                                     <UserCog size={100} />
                                 </div>
                                 <h3 className="text-3xl font-black italic tracking-tight relative z-10 uppercase">Konfigurasi Akses</h3>
-                                <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em] mt-2 relative z-10 italic">Manajemen Izin Sistem</p>
+                                <p className="text-primary-400 text-[10px] font-black uppercase tracking-[0.3em] mt-2 relative z-10 italic">Manajemen Izin Sistem</p>
                             </div>
                             <div className="p-10 space-y-8">
                                 <div className="flex items-center gap-5 p-5 rounded-[2rem] bg-slate-50 border border-slate-100 shadow-inner">
-                                    <div className="h-14 w-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center font-black text-indigo-600 shadow-sm text-lg">
+                                    <div className="h-14 w-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center font-black text-primary-600 shadow-sm text-lg">
                                         {editingUser.nip ? editingUser.nip.slice(-2) : 'AD'}
                                     </div>
                                     <div className="min-w-0">
@@ -411,7 +411,7 @@ const UserManagement: React.FC = () => {
                                         <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Status Akun</label>
                                         <div className="relative hover:shadow-sm transition-shadow rounded-2xl">
                                             <select
-                                                className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none appearance-none cursor-pointer"
+                                                className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none appearance-none cursor-pointer"
                                                 value={newStatus}
                                                 onChange={(e) => setNewStatus(e.target.value)}
                                                 disabled={saving}
@@ -428,7 +428,7 @@ const UserManagement: React.FC = () => {
                                         <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Level Otoritas</label>
                                         <div className="relative hover:shadow-sm transition-shadow rounded-2xl">
                                             <select
-                                                className="w-full bg-slate-50 border-2 border-slate-50 focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none appearance-none cursor-pointer"
+                                                className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none appearance-none cursor-pointer"
                                                 value={newRole}
                                                 onChange={(e) => setNewRole(parseInt(e.target.value))}
                                                 disabled={saving}
@@ -464,7 +464,7 @@ const UserManagement: React.FC = () => {
 
                                 <div className="flex gap-4 pt-4">
                                     <button onClick={() => setShowEditModal(false)} className="flex-1 py-5 rounded-2xl bg-white border-2 border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all">Batalkan</button>
-                                    <button onClick={handleUpdate} className="flex-[2] py-5 rounded-3xl bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-2xl shadow-indigo-100 flex items-center justify-center gap-3 active:scale-95" disabled={saving}>
+                                    <button onClick={handleUpdate} className="flex-[2] py-5 rounded-3xl bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest hover:bg-primary-600 transition-all shadow-2xl shadow-primary-100 flex items-center justify-center gap-3 active:scale-95" disabled={saving}>
                                         {saving ? <Loader2 size={18} className="animate-spin" /> : 'Simpan Perubahan'}
                                     </button>
                                 </div>

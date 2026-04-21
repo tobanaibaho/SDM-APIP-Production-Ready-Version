@@ -4,49 +4,39 @@
 
 @layer base {
   body {
-    @apply text-slate-900 font-sans antialiased min-h-screen selection:bg-primary-100 selection:text-primary-900;
+    @apply text-slate-800 font-sans antialiased min-h-screen selection:bg-primary-100 selection:text-primary-900;
     background-color: #f8fafc;
-    background-image: radial-gradient(at 80% 0%, hsla(189,100%,56%,0.15) 0px, transparent 50%),
-                      radial-gradient(at 0% 50%, hsla(280,100%,70%,0.12) 0px, transparent 50%),
-                      radial-gradient(at 40% 100%, hsla(228,100%,74%,0.15) 0px, transparent 50%);
-    background-attachment: fixed;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-primary-700 text-white rounded-lg hover:bg-primary-800 transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed font-medium;
+    @apply px-4 py-2 bg-primary-800 text-white rounded-xl hover:bg-primary-900 transition-all duration-200 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-100 disabled:opacity-50 disabled:cursor-not-allowed font-semibold tracking-wide;
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-white/50 backdrop-blur-md text-slate-700 border border-white/60 rounded-xl hover:bg-white/80 transition-all duration-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 disabled:opacity-50 font-medium;
+    @apply px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-xl hover:bg-slate-50 transition-all duration-200 shadow-sm focus:outline-none focus:ring-4 focus:ring-slate-100 disabled:opacity-50 font-semibold tracking-wide;
   }
 
   .btn-danger {
-    @apply px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 font-medium;
+    @apply px-4 py-2 bg-white text-rose-600 border border-rose-200 rounded-xl hover:bg-rose-50 transition-all duration-200 shadow-sm focus:outline-none focus:ring-4 focus:ring-rose-100 font-semibold tracking-wide;
   }
 
   .card {
-    @apply bg-white/70 backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/60 overflow-hidden rounded-[2rem];
+    @apply bg-white shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-200 overflow-hidden rounded-[1.5rem];
   }
 
   .form-input {
-    @apply w-full px-3 py-2.5 bg-white/50 backdrop-blur-sm border border-white/60 rounded-xl focus:bg-white/90 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all outline-none text-slate-900 placeholder:text-slate-400 text-sm;
+    @apply w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl focus:bg-white focus:border-slate-400 focus:ring-4 focus:ring-slate-100 transition-all outline-none text-slate-800 font-medium placeholder:text-slate-400 text-sm;
   }
 
   .form-label {
-    @apply block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-0.5;
+    @apply block text-xs font-bold tracking-wide text-slate-500 mb-2 ml-1;
   }
 
-  /* Blob Animations for aesthetic background */
+  /* Animations simplified for a calmer feel */
   .animate-blob {
-    animation: blob 7s infinite;
-  }
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-  .animation-delay-4000 {
-    animation-delay: 4s;
+    animation: none;
   }
 }
 

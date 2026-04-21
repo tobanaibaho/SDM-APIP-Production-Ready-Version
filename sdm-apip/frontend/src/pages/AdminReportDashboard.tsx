@@ -208,14 +208,14 @@ const AdminReportDashboard: React.FC = () => {
                     <div className="flex bg-slate-100 p-1.5 rounded-2xl w-fit">
                         <button
                             onClick={() => setActiveTab('users')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             <Users size={18} />
                             Monitor Pegawai
                         </button>
                         <button
                             onClick={() => setActiveTab('analytics')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'analytics' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'analytics' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             <TrendingUp size={18} />
                             Analisis Statistik
@@ -226,7 +226,7 @@ const AdminReportDashboard: React.FC = () => {
                         <label className="flex items-center cursor-pointer gap-2 mr-2 group" title="Sertakan data dari Grup/Pegawai yang dihapus (Arsip)">
                             <div className="relative">
                                 <input type="checkbox" id="includeArchived" name="includeArchived" className="sr-only" checked={filter.include_archived || false} onChange={(e) => setFilter({ ...filter, include_archived: e.target.checked })} />
-                                <div className={`block w-10 h-6 rounded-full transition-colors ${filter.include_archived ? 'bg-red-500' : 'bg-slate-200 group-hover:bg-slate-300'}`}></div>
+                                <div className={`block w-10 h-6 rounded-full transition-colors ${filter.include_archived ? 'bg-slate-400' : 'bg-slate-200 group-hover:bg-slate-300'}`}></div>
                                 <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${filter.include_archived ? 'transform translate-x-4' : ''}`}></div>
                             </div>
                             <span className="text-sm font-bold text-slate-500 hidden sm:block">Arsip Data</span>
@@ -238,18 +238,18 @@ const AdminReportDashboard: React.FC = () => {
                             <Filter size={18} />
                             Filter
                         </button>
-                        <div className="flex items-center gap-2 bg-indigo-600 p-1 rounded-xl shadow-lg shadow-indigo-200">
+                        <div className="flex items-center gap-2 bg-primary-600 p-1 rounded-xl shadow-lg shadow-primary-200">
                             <button
                                 onClick={handleExportPDF}
-                                className="flex items-center gap-2 px-4 py-2 text-white hover:bg-indigo-700 rounded-lg transition-all text-sm font-bold"
+                                className="flex items-center gap-2 px-4 py-2 text-white hover:bg-primary-700 rounded-lg transition-all text-sm font-bold"
                             >
                                 <FileText size={18} />
                                 PDF
                             </button>
-                            <div className="w-[1px] h-6 bg-indigo-400 opacity-30"></div>
+                            <div className="w-[1px] h-6 bg-primary-400 opacity-30"></div>
                             <button
                                 onClick={handleExportExcel}
-                                className="flex items-center gap-2 px-4 py-2 text-white hover:bg-indigo-700 rounded-lg transition-all text-sm font-bold"
+                                className="flex items-center gap-2 px-4 py-2 text-white hover:bg-primary-700 rounded-lg transition-all text-sm font-bold"
                             >
                                 <FileSpreadsheet size={18} />
                                 Excel
@@ -277,7 +277,7 @@ const AdminReportDashboard: React.FC = () => {
                                             id="searchReport"
                                             name="searchReport"
                                             placeholder="Nama atau NIP..."
-                                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 transition-all outline-none"
                                             value={filter.search || ''}
                                             onChange={(e) => setFilter({ ...filter, search: e.target.value })}
                                         />
@@ -289,7 +289,7 @@ const AdminReportDashboard: React.FC = () => {
                                     <select
                                         id="assessmentMonth"
                                         name="assessmentMonth"
-                                        className="w-full px-4 py-2 border border-slate-200 text-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        className="w-full px-4 py-2 border border-slate-200 text-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 transition-all outline-none"
                                         value={filter.assessment_month || ''}
                                         onChange={(e) => setFilter({ ...filter, assessment_month: e.target.value ? Number(e.target.value) : undefined })}
                                     >
@@ -315,7 +315,7 @@ const AdminReportDashboard: React.FC = () => {
                                         type="date"
                                         id="startDate"
                                         name="startDate"
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 transition-all outline-none"
                                         value={filter.start_date || ''}
                                         onChange={(e) => setFilter({ ...filter, start_date: e.target.value })}
                                     />
@@ -326,7 +326,7 @@ const AdminReportDashboard: React.FC = () => {
                                         type="date"
                                         id="endDate"
                                         name="endDate"
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 transition-all outline-none"
                                         value={filter.end_date || ''}
                                         onChange={(e) => setFilter({ ...filter, end_date: e.target.value })}
                                     />
@@ -340,10 +340,10 @@ const AdminReportDashboard: React.FC = () => {
                     <div className="space-y-8 animate-fade-in">
                         {/* KPI Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <StatsCard title="Total Penilaian" value={dashboardData?.summary?.total_assessments || 0} icon={FileText} color="bg-indigo-600" />
-                            <StatsCard title="Rata-rata Nilai" value={dashboardData?.summary?.average_score?.toFixed(2) || '0.00'} icon={TrendingUp} color="bg-emerald-600" />
-                            <StatsCard title="Skor Tertinggi" value={dashboardData?.summary?.highest_score?.toFixed(2) || '0.00'} icon={Award} color="bg-amber-600" />
-                            <StatsCard title="User Dinilai" value={dashboardData?.summary?.total_users || 0} icon={Users} color="bg-purple-600" />
+                            <StatsCard title="Total Penilaian" value={dashboardData?.summary?.total_assessments || 0} icon={FileText} color="text-slate-600" />
+                            <StatsCard title="Rata-rata Nilai" value={dashboardData?.summary?.average_score?.toFixed(2) || '0.00'} icon={TrendingUp} color="text-blue-600" />
+                            <StatsCard title="Skor Tertinggi" value={dashboardData?.summary?.highest_score?.toFixed(2) || '0.00'} icon={Award} color="text-blue-700" />
+                            <StatsCard title="User Dinilai" value={dashboardData?.summary?.total_users || 0} icon={Users} color="text-slate-700" />
                         </div>
 
                         {/* Charts Row 1 — Trend + Radar */}
@@ -353,12 +353,12 @@ const AdminReportDashboard: React.FC = () => {
                                 <div className="flex items-center justify-between mb-6">
                                     <div>
                                         <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                                            <TrendingUp className="text-indigo-500" size={18} />
+                                            <TrendingUp className="text-primary-500" size={18} />
                                             Tren Performa
                                         </h3>
                                         <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Rata-rata skor 6 bulan terakhir</p>
                                     </div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100">Live Data</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-primary-50 text-primary-600 px-3 py-1.5 rounded-full border border-primary-100">Live Data</span>
                                 </div>
                                 <ResponsiveContainer width="100%" height={260}>
                                     <AreaChart data={dashboardData?.performance_trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -376,7 +376,7 @@ const AdminReportDashboard: React.FC = () => {
                                             labelStyle={{ color: '#94a3b8', fontWeight: 600, marginBottom: 4 }}
                                             formatter={(v: any) => [`${Number(v).toFixed(2)}`, 'Skor Rata-rata']}
                                         />
-                                        <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fill="url(#trendGrad)" dot={{ r: 5, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 8, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }} />
+                                        <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} fill="url(#trendGrad)" dot={{ r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 8, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }} />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
@@ -577,7 +577,7 @@ const AdminReportDashboard: React.FC = () => {
                                             <td className="px-8 py-5">
                                                 <button
                                                     onClick={() => handleUserClick(user)}
-                                                    className="text-left font-bold text-slate-900 hover:text-indigo-600 transition-colors"
+                                                    className="text-left font-bold text-slate-900 hover:text-primary-600 transition-colors"
                                                 >
                                                     {user.name}
                                                     <p className="text-[10px] text-slate-500 font-mono mt-0.5">{user.nip}</p>
@@ -602,19 +602,45 @@ const AdminReportDashboard: React.FC = () => {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-5 text-center">
-                                                <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black ${user.assessments_received > 0 ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200' : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200'}`}>
-                                                    <ClipboardCheck size={14} /> {user.assessments_received} Kali
-                                                </span>
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold ${user.assessments_received >= user.received_needed && user.received_needed > 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-50 text-slate-500'}`}>
+                                                        <ClipboardCheck size={14} /> {user.assessments_received}/{user.received_needed}
+                                                    </span>
+                                                    {user.received_needed > 0 && (
+                                                        <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden mt-1">
+                                                            <div 
+                                                                className="h-full bg-blue-500 transition-all" 
+                                                                style={{ width: `${Math.min(100, (user.assessments_received / user.received_needed) * 100)}%` }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <span className="text-[9px] font-black text-slate-400">
+                                                        {user.received_needed > 0 ? Math.round((user.assessments_received / user.received_needed) * 100) : 0}%
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-8 py-5 text-center">
-                                                <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black ${user.assessments_given > 0 ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200'}`}>
-                                                    <UserCheck size={14} /> {user.assessments_given} Kali
-                                                </span>
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold ${user.assessments_given >= user.given_needed && user.given_needed > 0 ? 'bg-primary-50 text-primary-700' : 'bg-slate-50 text-slate-500'}`}>
+                                                        <UserCheck size={14} /> {user.assessments_given}/{user.given_needed}
+                                                    </span>
+                                                    {user.given_needed > 0 && (
+                                                        <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden mt-1">
+                                                            <div 
+                                                                className="h-full bg-primary-500 transition-all" 
+                                                                style={{ width: `${Math.min(100, (user.assessments_given / user.given_needed) * 100)}%` }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <span className="text-[9px] font-black text-slate-400">
+                                                        {user.given_needed > 0 ? Math.round((user.assessments_given / user.given_needed) * 100) : 0}%
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-8 py-5 text-right">
                                                     <button
                                                         onClick={() => handleUserClick(user)}
-                                                        className="p-2 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm"
+                                                        className="p-2 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-primary-600 group-hover:text-white transition-all shadow-sm"
                                                     >
                                                     <Eye size={18} />
                                                 </button>
@@ -644,7 +670,7 @@ const AdminReportDashboard: React.FC = () => {
                             </button>
                             <div className="flex items-center gap-3">
                                 <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Halaman</span>
-                                <span className="h-8 w-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg font-black shadow-lg shadow-indigo-100">{page}</span>
+                                <span className="h-8 w-8 flex items-center justify-center bg-primary-600 text-white rounded-lg font-black shadow-lg shadow-primary-100">{page}</span>
                                 <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Dari {Math.ceil(total / (filter.page_size || 10)) || 1}</span>
                             </div>
                             <button
@@ -676,7 +702,7 @@ const AdminReportDashboard: React.FC = () => {
                                 >
                                     <div className="px-10 py-8 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
                                         <div className="flex items-center gap-6">
-                                            <div className="h-16 w-16 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                                            <div className="h-16 w-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg">
                                                 {selectedUser.name.charAt(0)}
                                             </div>
                                             <div>
@@ -702,16 +728,16 @@ const AdminReportDashboard: React.FC = () => {
                                     <div className="flex-1 overflow-y-auto p-10 space-y-8">
                                         {detailLoading ? (
                                             <div className="flex flex-col items-center justify-center h-64">
-                                                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-indigo-600 mb-4"></div>
+                                                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary-600 mb-4"></div>
                                                 <p className="text-slate-400 font-bold">Memuat detail penilaian...</p>
                                             </div>
                                         ) : (
                                             <>
                                                 {/* Summary for Modal */}
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                    <div className="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100 flex flex-col items-center text-center">
-                                                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Skor Rerata Keseluruhan</p>
-                                                        <div className="text-4xl font-black text-indigo-900 leading-none">{selectedUser.average_score.toFixed(2)}</div>
+                                                    <div className="bg-primary-50/50 p-6 rounded-3xl border border-primary-100 flex flex-col items-center text-center">
+                                                        <p className="text-[10px] font-black text-primary-600 uppercase tracking-widest mb-2">Skor Rerata Keseluruhan</p>
+                                                        <div className="text-4xl font-black text-primary-900 leading-none">{selectedUser.average_score.toFixed(2)}</div>
                                                         {selectedUser.average_score > 0 ? (
                                                             <div className={`mt-3 inline-flex px-4 py-1.5 rounded-xl text-xs font-black border tracking-wider shadow-sm ${getPredikat(selectedUser.average_score).bg} ${getPredikat(selectedUser.average_score).color}`}>
                                                                 {getPredikat(selectedUser.average_score).label}
@@ -735,7 +761,7 @@ const AdminReportDashboard: React.FC = () => {
                                                 {/* Detailed History Table in Modal */}
                                                 <div className="space-y-6">
                                                     <h4 className="flex items-center gap-2 text-xl font-black text-slate-900">
-                                                        <History size={22} className="text-indigo-600" />
+                                                        <History size={22} className="text-primary-600" />
                                                         Rincian Penilaian BerAKHLAK
                                                     </h4>
 
@@ -752,13 +778,13 @@ const AdminReportDashboard: React.FC = () => {
                                                                 >
                                                                     <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                                                                         <div className="flex items-center gap-3">
-                                                                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                                                            <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
                                                                                 <UserCheck size={20} />
                                                                             </div>
                                                                             <div>
                                                                                 <p className="text-sm font-bold text-slate-900">Penilai: {row.evaluator_name}</p>
                                                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                                                    <span className="text-[9px] font-black uppercase text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                                                                    <span className="text-[9px] font-black uppercase text-primary-500 bg-primary-50 px-2 py-0.5 rounded border border-primary-100">
                                                                                         {(() => {
                                                                                             // Resolve real calendar month using period_id from assessment row
                                                                                             const period = periods.find(p => p.id === row.period_id);
@@ -775,7 +801,7 @@ const AdminReportDashboard: React.FC = () => {
                                                                         </div>
                                                                         <div className="text-right">
                                                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Rerata Skor</span>
-                                                                            <span className="text-lg font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-xl">{row.average_score.toFixed(2)}</span>
+                                                                            <span className="text-lg font-black text-primary-600 bg-primary-50 px-3 py-1 rounded-xl">{row.average_score.toFixed(2)}</span>
                                                                         </div>
                                                                     </div>
                                                                     <div className="p-6">
@@ -810,8 +836,8 @@ const AdminReportDashboard: React.FC = () => {
                                                                             ))}
                                                                         </div>
 
-                                                                        <div className="p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100/50">
-                                                                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                                                        <div className="p-4 rounded-2xl bg-primary-50/30 border border-primary-100/50">
+                                                                            <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                                                                 <ClipboardCheck size={12} /> Komentar & Feedback
                                                                             </p>
                                                                             <p className="text-sm text-slate-600 italic leading-relaxed">

@@ -27,6 +27,7 @@ import {
     ChevronUp,
     ChevronDown,
     ArrowLeft,
+    List,
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -108,6 +109,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
         { to: '/super-admin/cross-group-relations', label: 'Relasi Lintas Grup', icon: Link2 },
         { to: '/super-admin/users', label: 'Kelola Pengguna', icon: UserCog },
         { to: '/super-admin/periods', label: 'Periode Penilaian', icon: CalendarDays },
+        { to: '/super-admin/questions', label: 'Kuesioner Dinamis', icon: List },
         { to: '/super-admin/audit-logs', label: 'Log Audit', icon: ShieldCheck },
     ] : [
         { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -121,14 +123,14 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
     return (
         <div className="flex min-h-screen bg-transparent font-sans relative overflow-hidden">
             {/* Animated Background Blobs for Glassmorphism Effect */}
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob pointer-events-none z-0"></div>
-            <div className="absolute top-[20%] right-[-5%] w-[30rem] h-[30rem] bg-cyan-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob animation-delay-2000 pointer-events-none z-0"></div>
-            <div className="absolute bottom-[-10%] left-[20%] w-[40rem] h-[40rem] bg-blue-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob animation-delay-4000 pointer-events-none z-0"></div>
+            {/* Highly Subdued Background for elegance */}
+            <div className="absolute top-[-5%] left-[-5%] w-72 h-72 bg-slate-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-20 pointer-events-none z-0"></div>
+            <div className="absolute bottom-[-5%] right-[-5%] w-72 h-72 bg-slate-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-20 pointer-events-none z-0"></div>
 
             {/* Sidebar Desktop */}
             <aside className={`
-                fixed inset-y-0 left-0 z-50 w-72 bg-primary-950/80 backdrop-blur-2xl border-r border-white/10 text-white transition-transform duration-300 ease-in-out lg:translate-x-0
-                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} shadow-[4px_0_24px_rgba(0,0,0,0.15)]
+                fixed inset-y-0 left-0 z-50 w-72 bg-primary-950 border-r border-primary-800 text-white transition-transform duration-300 ease-in-out lg:translate-x-0
+                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} shadow-[4px_0_24px_rgba(0,0,0,0.3)]
             `}>
                 <div className="flex h-full flex-col w-full">
                     {/* Sidebar Header */}
@@ -137,14 +139,14 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                             <img src={Logo} alt="Logo Kemenko" className="h-full w-full object-contain" />
                         </div>
                         <div className="space-y-0.5">
-                            <h2 className="text-sm font-bold tracking-wide text-white leading-tight uppercase">INSPEKTORAT</h2>
-                            <p className="text-[10px] uppercase tracking-wider text-primary-200 font-medium opacity-80">KEMENKO INFRA</p>
+                            <h2 className="text-sm font-black tracking-widest text-white leading-tight uppercase">INSPEKTORAT</h2>
+                            <p className="text-xs uppercase tracking-widest text-primary-200 font-bold opacity-90">KEMENKO INFRA</p>
                         </div>
                     </div>
 
                     {/* Navigation */}
                     <nav className="flex-1 space-y-1.5 px-4 py-6 overflow-y-auto">
-                        <div className="mb-4 px-2 text-[10px] font-black uppercase tracking-widest text-primary-400/80">
+                        <div className="mb-4 px-2 text-xs font-black uppercase tracking-widest text-primary-300/90 shadow-sm-text">
                             Menu Utama
                         </div>
                         {navItems.map((item) => (
@@ -153,21 +155,21 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 to={item.to}
                                 end={item.end}
                                 className={({ isActive }: { isActive: boolean }) => `
-                                    flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-all duration-300 relative group
+                                    flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold transition-all duration-300 relative group
                                     ${isActive
-                                        ? 'bg-accent-500/10 text-accent-400'
-                                        : 'text-slate-300 hover:bg-primary-800/50 hover:text-white'} 
+                                        ? 'bg-primary-600 text-white shadow-lg'
+                                        : 'text-primary-100 hover:bg-primary-800 hover:text-white'} 
                                 `}
                             >
                                 {({ isActive }: { isActive: boolean }) => (
                                     <>
                                         {isActive && (
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-accent-400 rounded-r-full shadow-[0_0_10px_rgba(251,191,36,0.5)]"></div>
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1.5 bg-sky-400 rounded-r-full shadow-[0_0_15px_rgba(56,189,248,0.6)]"></div>
                                         )}
-                                        <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-accent-500/20 text-accent-400' : 'bg-transparent text-primary-300 group-hover:bg-primary-700 group-hover:text-white'}`}>
-                                            <item.icon size={18} />
+                                        <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-primary-500 text-white' : 'bg-transparent text-primary-300 group-hover:bg-primary-700 group-hover:text-white'}`}>
+                                            <item.icon size={20} strokeWidth={2.5} />
                                         </div>
-                                        <span className={isActive ? "font-bold tracking-wide" : "tracking-wide"}>{item.label}</span>
+                                        <span className={isActive ? "font-black tracking-wide" : "font-bold tracking-wide"}>{item.label}</span>
                                     </>
                                 )}
                             </NavLink>
@@ -186,10 +188,10 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                     )}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-bold text-white">
+                                    <p className="truncate text-sm font-black text-white tracking-wide">
                                         {isAdmin ? 'ADMINISTRATOR' : (user?.name || user?.nip)}
                                     </p>
-                                    <p className="text-[10px] text-primary-300 uppercase tracking-wide font-medium">{isAdmin ? 'Pengelola Sistem' : (user?.role || 'Pegawai ASN')}</p>
+                                    <p className="text-xs text-primary-200 uppercase tracking-widest font-bold mt-0.5">{isAdmin ? 'Pengelola Sistem' : (user?.role || 'Pegawai ASN')}</p>
                                 </div>
                             </div>
                             <button
@@ -263,13 +265,13 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 </button>
                             )}
                             <div>
-                                <h1 className="text-2xl font-bold tracking-tight text-primary-900 md:text-3xl">{title}</h1>
+                                <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{title}</h1>
                                 {subtitle && <p className="mt-1 text-slate-500 text-sm font-medium">{subtitle}</p>}
                             </div>
                         </div>
                         <div className="hidden md:flex items-center gap-3 shrink-0">
                             <div className="flex flex-col items-end">
-                                <span className="text-xs font-black text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full border border-primary-100 uppercase tracking-wider whitespace-nowrap">
+                                <span className="text-xs font-black text-slate-600 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100 uppercase tracking-wider whitespace-nowrap">
                                     {clock.date}
                                 </span>
                                 <span className="text-[11px] font-mono font-bold text-slate-400 mt-1 pr-1 tracking-widest">

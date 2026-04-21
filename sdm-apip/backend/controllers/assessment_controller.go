@@ -50,6 +50,24 @@ func (ac *AssessmentController) GetAllPeriods(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Periods retrieved", periods)
 }
 
+func (ac *AssessmentController) UpdatePeriod(c *gin.Context) {
+	idStr := c.Param("id")
+	id, _ := strconv.ParseUint(idStr, 10, 32)
+	var req models.UpdatePeriodRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		return
+	}
+
+	err := ac.assessmentService.UpdatePeriod(uint(id), req)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to update period", err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, http.StatusOK, "Assessment period updated", nil)
+}
+
 func (ac *AssessmentController) UpdatePeriodStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	id, _ := strconv.ParseUint(idStr, 10, 32)

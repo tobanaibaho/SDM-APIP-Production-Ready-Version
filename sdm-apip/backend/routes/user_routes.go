@@ -13,11 +13,13 @@ func RegisterUserRoutes(api *gin.RouterGroup) {
 	groupService := services.NewGroupService()
 	authService := services.NewAuthService()
 	assessmentService := services.NewAssessmentService()
+	questionService := services.NewQuestionService()
 
 	// ===== Controllers =====
 	groupController := controllers.NewGroupController(groupService)
 	authController := controllers.NewAuthController(authService)
 	assessmentController := controllers.NewAssessmentController(assessmentService)
+	questionController := controllers.NewQuestionController(questionService)
 
 	user := api.Group("/user")
 	user.Use(middleware.JWTAuthMiddleware())
@@ -38,5 +40,6 @@ func RegisterUserRoutes(api *gin.RouterGroup) {
 		user.GET("/periods", assessmentController.GetAllPeriods)
 		// Inspektur Reference Panel — aggregated Peer+Bawahan scores for a target user
 		user.GET("/assessments/reference/:targetUserID", assessmentController.GetAssessmentReference)
+		user.GET("/questions", questionController.GetQuestions)
 	}
 }

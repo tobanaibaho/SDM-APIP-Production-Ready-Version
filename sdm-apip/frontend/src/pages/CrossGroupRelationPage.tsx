@@ -245,13 +245,13 @@ const CrossGroupRelationPage: React.FC = () => {
                 ══════════════════════════════════════════ */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                     {/* Info Card */}
-                    <div className="md:col-span-7 flex items-start gap-4 bg-indigo-50 border border-indigo-100 rounded-[2rem] p-6">
-                        <div className="h-10 w-10 bg-indigo-100 rounded-2xl flex items-center justify-center shrink-0">
-                            <Info size={20} className="text-indigo-600" />
+                    <div className="md:col-span-7 flex items-start gap-4 bg-primary-50 border border-primary-100 rounded-[2rem] p-6">
+                        <div className="h-10 w-10 bg-primary-100 rounded-2xl flex items-center justify-center shrink-0">
+                            <Info size={20} className="text-primary-600" />
                         </div>
                         <div>
-                            <p className="font-black text-indigo-900 mb-2">Panduan Relasi Lintas Grup</p>
-                            <ul className="space-y-1.5 list-disc list-inside text-xs leading-relaxed text-indigo-700/80 font-medium">
+                            <p className="font-black text-primary-900 mb-2">Panduan Relasi Lintas Grup</p>
+                            <ul className="space-y-1.5 list-disc list-inside text-xs leading-relaxed text-primary-700/80 font-medium">
                                 <li>Gunakan halaman ini untuk menghubungkan pegawai dari <strong className="font-black">Grup yang berbeda</strong>.</li>
                                 <li>Rekomendasi: Sesama Dalnis, KT, atau AT dikategorikan sebagai <strong className="font-black">Peer</strong>.</li>
                                 <li>Aktifkan <strong className="font-black">"Buat Relasi Timbal-Balik"</strong> agar sistem otomatis membuat relasi kebalikannya.</li>
@@ -268,7 +268,7 @@ const CrossGroupRelationPage: React.FC = () => {
                         </div>
                         <div className="relative group">
                             <select
-                                className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-black text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer hover:bg-white pr-10"
+                                className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-black text-slate-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all cursor-pointer hover:bg-white pr-10"
                                 value={selectedPeriodId}
                                 onChange={e => setSelectedPeriodId(Number(e.target.value) || '')}
                             >
@@ -289,7 +289,7 @@ const CrossGroupRelationPage: React.FC = () => {
                     ══════════════════════════════════════════ */}
                     <div className="xl:col-span-2 bg-white/70 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_10px_40px_rgb(0,0,0,0.04)] h-fit">
                         <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
-                            <div className="h-14 w-14 rounded-[1.25rem] bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <div className="h-14 w-14 rounded-[1.25rem] bg-primary-50 text-primary-600 flex items-center justify-center">
                                 <Link2 size={24} strokeWidth={2.5} />
                             </div>
                             <div>
@@ -306,7 +306,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                     <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="text"
-                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
                                         placeholder="Cari nama / NIP..."
                                         value={selectedEvaluator ? `${selectedEvaluator.name} (${selectedEvaluator.nip})` : evaluatorSearch}
                                         onChange={e => {
@@ -326,7 +326,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                                 <button
                                                     key={u.id}
                                                     type="button"
-                                                    className="w-full text-left px-5 py-3 hover:bg-indigo-50/50 transition-colors"
+                                                    className="w-full text-left px-5 py-3 hover:bg-primary-50/50 transition-colors"
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
                                                         setSelectedEvaluator(u);
@@ -350,7 +350,7 @@ const CrossGroupRelationPage: React.FC = () => {
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipe Relasi Penilai</label>
                                 <select
-                                    className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-black text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all cursor-pointer"
+                                    className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-black text-slate-800 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all cursor-pointer"
                                     value={form.relation_type}
                                     onChange={e => setForm(f => ({ ...f, relation_type: e.target.value }))}
                                 >
@@ -367,7 +367,7 @@ const CrossGroupRelationPage: React.FC = () => {
                             <div className="flex items-center justify-center gap-4 py-2 opacity-60">
                                 <div className="h-px flex-1 bg-slate-200"></div>
                                 <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100">
-                                    <span className="text-indigo-600">{form.relation_type || '?'}</span>
+                                    <span className="text-primary-600">{form.relation_type || '?'}</span>
                                     <ArrowRight size={14} className="text-slate-300 mx-1" />
                                     <span className="text-slate-500">{reciprocalLabel}</span>
                                 </div>
@@ -379,7 +379,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-between">
                                     <span>Target yang Dinilai</span>
                                     {selectedTargets.length > 0 && (
-                                        <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg text-[9px]">{selectedTargets.length} Orang</span>
+                                        <span className="bg-primary-100 text-primary-700 px-2 py-0.5 rounded-lg text-[9px]">{selectedTargets.length} Orang</span>
                                     )}
                                 </label>
 
@@ -407,7 +407,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                     <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="text"
-                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
                                         placeholder="Ketik untuk menambah target..."
                                         value={targetSearch}
                                         onChange={e => {
@@ -425,7 +425,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                                 <button
                                                     key={u.id}
                                                     type="button"
-                                                    className="w-full text-left px-5 py-3 hover:bg-indigo-50/50 transition-colors"
+                                                    className="w-full text-left px-5 py-3 hover:bg-primary-50/50 transition-colors"
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
                                                         if (!form.target_user_ids.includes(u.id)) {
@@ -450,14 +450,14 @@ const CrossGroupRelationPage: React.FC = () => {
                                 <input
                                     type="checkbox"
                                     id="reciprocal"
-                                    className="w-5 h-5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-600/20 mt-0.5 cursor-pointer"
+                                    className="w-5 h-5 rounded-md border-slate-300 text-primary-600 focus:ring-primary-600/20 mt-0.5 cursor-pointer"
                                     checked={form.createReciprocal}
                                     onChange={e => setForm(f => ({ ...f, createReciprocal: e.target.checked }))}
                                 />
                                 <label htmlFor="reciprocal" className="cursor-pointer flex-1">
                                     <p className="text-xs font-black text-slate-900">Buat Relasi Timbal-Balik Otomatis</p>
                                     <p className="text-[10px] font-bold text-slate-500 mt-1 leading-relaxed">
-                                        Akan membuat 2 relasi: A sebagai <span className="text-indigo-600 px-1">{form.relation_type}</span> B, dan B sebagai <span className="text-indigo-600 px-1">{reciprocalLabel}</span> A.
+                                        Akan membuat 2 relasi: A sebagai <span className="text-primary-600 px-1">{form.relation_type}</span> B, dan B sebagai <span className="text-primary-600 px-1">{reciprocalLabel}</span> A.
                                     </p>
                                 </label>
                             </div>
@@ -472,7 +472,7 @@ const CrossGroupRelationPage: React.FC = () => {
                             <button
                                 type="submit"
                                 disabled={saving || !selectedPeriodId || !form.evaluator_id || form.target_user_ids.length === 0}
-                                className="w-full bg-slate-900 text-white rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:bg-slate-900"
+                                className="w-full bg-slate-900 text-white rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest hover:bg-primary-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:bg-slate-900"
                             >
                                 {saving ? <RefreshCw size={18} className="animate-spin" /> : <Plus size={18} />}
                                 {saving ? 'Memproses...' : 'Tambah Relasi Baru'}
@@ -486,15 +486,15 @@ const CrossGroupRelationPage: React.FC = () => {
                     <div className="xl:col-span-3 bg-white/70 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 shadow-[0_20px_50px_rgb(0,0,0,0.05)] overflow-hidden flex flex-col">
                         <div className="px-8 py-6 border-b border-slate-100/50 flex items-center justify-between bg-slate-50/30">
                             <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-[1rem] bg-indigo-50 flex items-center justify-center">
-                                    <ArrowLeftRight size={20} className="text-indigo-600" />
+                                <div className="h-12 w-12 rounded-[1rem] bg-primary-50 flex items-center justify-center">
+                                    <ArrowLeftRight size={20} className="text-primary-600" />
                                 </div>
                                 <div>
                                     <h3 className="font-black text-slate-900 text-sm">Daftar Relasi Lintas Grup</h3>
                                     <p className="text-[10px] font-bold text-slate-400 mt-0.5">{crossRelations.length} relasi terdaftar</p>
                                 </div>
                             </div>
-                            <button onClick={loadCrossRelations} className="p-3 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-[1rem] shadow-sm border border-transparent hover:border-slate-100 transition-all" title="Segarkan Data">
+                            <button onClick={loadCrossRelations} className="p-3 text-slate-400 hover:text-primary-600 hover:bg-white rounded-[1rem] shadow-sm border border-transparent hover:border-slate-100 transition-all" title="Segarkan Data">
                                 <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                             </button>
                         </div>
@@ -539,7 +539,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                                 <tr key={rel.id} className="hover:bg-slate-50/50 transition-colors group">
                                                     <td className="px-8 py-5">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="h-10 w-10 rounded-[0.8rem] bg-indigo-50 text-indigo-700 flex items-center justify-center text-sm font-black group-hover:scale-110 transition-transform">
+                                                            <div className="h-10 w-10 rounded-[0.8rem] bg-primary-50 text-primary-700 flex items-center justify-center text-sm font-black group-hover:scale-110 transition-transform">
                                                                 {(rel.evaluator?.name || rel.evaluator?.email || 'U')[0].toUpperCase()}
                                                             </div>
                                                             <div>
@@ -622,7 +622,7 @@ const CrossGroupRelationPage: React.FC = () => {
                                     <div className={`text-[10px] font-black rounded-lg px-2 py-1 ${stat.a ? 'bg-amber-100/50 text-amber-700' : 'bg-slate-100/50 text-slate-300 line-through'}`}>
                                         Atasan: {stat.wA}
                                     </div>
-                                    <div className={`text-[10px] font-black rounded-lg px-2 py-1 ${stat.p ? 'bg-indigo-100/50 text-indigo-700' : 'bg-slate-100/50 text-slate-300 line-through'}`}>
+                                    <div className={`text-[10px] font-black rounded-lg px-2 py-1 ${stat.p ? 'bg-primary-100/50 text-primary-700' : 'bg-slate-100/50 text-slate-300 line-through'}`}>
                                         Peer: {stat.wP}
                                     </div>
                                     <div className={`text-[10px] font-black rounded-lg px-2 py-1 ${stat.b ? 'bg-violet-100/50 text-violet-700' : 'bg-slate-100/50 text-slate-300 line-through'}`}>

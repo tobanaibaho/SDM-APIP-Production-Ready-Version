@@ -347,6 +347,13 @@ func (s *ReportService) ExportToExcel(filter models.ReportFilter, adminID uint, 
 }
 
 func (s *ReportService) ExportToPDF(filter models.ReportFilter, adminID uint, ip, ua string) ([]byte, error) {
+	if filter.UserID != nil {
+		return s.generateUserDetailPDF(filter, adminID, ip, ua)
+	}
+	return s.generateGlobalPDF(filter, adminID, ip, ua)
+}
+
+func (s *ReportService) generateGlobalPDF(filter models.ReportFilter, adminID uint, ip, ua string) ([]byte, error) {
 	dashData, err := s.GetDashboardData(filter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get dashboard data: %v", err)
@@ -421,8 +428,122 @@ func (s *ReportService) ExportToPDF(filter models.ReportFilter, adminID uint, ip
 	}
 
 	// Audit Log
-	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, "Export PDF Report", nil)
+	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, "Export Global PDF Report", nil)
 
+	return buf.Bytes(), nil
+}
+
+func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminID uint, ip, ua string) ([]byte, error) {
+	details, _, err := s.GetDetailedReports(filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get detailed reports: %v", err)
+	}
+
+	if len(details) == 0 {
+		return nil, fmt.Errorf("no report data found for this user")
+	}
+
+	targetName := details[0].TargetUserName
+	targetNIP := details[0].TargetNIP
+	unitKerja := details[0].UnitKerja
+
+	// Fetch Answers
+	var detailIDs []uint
+	for _, raw := range details {
+		detailIDs = append(detailIDs, raw.ID)
+	}
+	var answers []models.AssessmentAnswer
+	if len(detailIDs) > 0 {
+		if err := s.db.Preload("Question").Where("peer_assessment_id IN ?", detailIDs).Find(&answers).Error; err != nil {
+			return nil, fmt.Errorf("failed to load answers: %v", err)
+		}
+	}
+
+	answerMap := make(map[uint]map[uint]models.AssessmentAnswer) // peer_assessment_id -> question_id -> Answer
+	for _, a := range answers {
+		if answerMap[a.PeerAssessmentID] == nil {
+			answerMap[a.PeerAssessmentID] = make(map[uint]models.AssessmentAnswer)
+		}
+		answerMap[a.PeerAssessmentID][a.QuestionID] = a
+	}
+
+	pdf := gofpdf.New("P", "mm", "A4", "")
+
+	for _, p := range details {
+		pdf.AddPage()
+		
+		pdf.SetFont("Arial", "B", 16)
+		pdf.CellFormat(0, 10, "RAPOR EVALUASI KINERJA BERAKHLAK", "", 1, "C", false, 0, "")
+		pdf.Ln(4)
+
+		// Target Details
+		pdf.SetFont("Arial", "B", 10)
+		pdf.CellFormat(40, 6, "Nama Pegawai:", "", 0, "L", false, 0, "")
+		pdf.SetFont("Arial", "", 10)
+		pdf.CellFormat(0, 6, targetName, "", 1, "L", false, 0, "")
+		
+		pdf.SetFont("Arial", "B", 10)
+		pdf.CellFormat(40, 6, "NIP:", "", 0, "L", false, 0, "")
+		pdf.SetFont("Arial", "", 10)
+		pdf.CellFormat(0, 6, targetNIP, "", 1, "L", false, 0, "")
+
+		pdf.SetFont("Arial", "B", 10)
+		pdf.CellFormat(40, 6, "Unit Kerja:", "", 0, "L", false, 0, "")
+		pdf.SetFont("Arial", "", 10)
+		pdf.CellFormat(0, 6, unitKerja, "", 1, "L", false, 0, "")
+
+		// Evaluator Details
+		pdf.Ln(1)
+		pdf.SetLineWidth(0.5)
+		pdf.Line(10, pdf.GetY(), 200, pdf.GetY())
+		pdf.Ln(4)
+
+		pdf.SetFont("Arial", "I", 9)
+		pdf.CellFormat(0, 5, fmt.Sprintf("Evaluasi oleh %s (Peran: %s) - Grup: %s", p.EvaluatorName, p.GroupRole, p.GroupName), "", 1, "L", false, 0, "")
+		pdf.CellFormat(0, 5, fmt.Sprintf("Tanggal Penilaian: %s | Skor Rata-rata: %.2f", p.Date.Format("02 Jan 2006"), p.AverageScore), "", 1, "L", false, 0, "")
+		
+		if p.Comment != "" {
+			pdf.Ln(2)
+			pdf.SetFont("Arial", "B", 9)
+			pdf.CellFormat(20, 5, "Komentar: ", "", 0, "L", false, 0, "")
+			pdf.SetFont("Arial", "", 9)
+			pdf.MultiCell(0, 5, p.Comment, "", "L", false)
+		}
+		pdf.Ln(3)
+
+		// Answers Table Header
+		pdf.SetFont("Arial", "B", 9)
+		pdf.SetFillColor(230, 230, 240)
+		pdf.CellFormat(45, 8, "Indikator", "1", 0, "C", true, 0, "")
+		pdf.CellFormat(125, 8, "Kriteria / Pertanyaan", "1", 0, "C", true, 0, "")
+		pdf.CellFormat(20, 8, "Nilai", "1", 1, "C", true, 0, "")
+
+		pdf.SetFont("Arial", "", 8)
+		pdf.SetFillColor(255, 255, 255)
+		pAnswers := answerMap[p.ID]
+		for _, a := range pAnswers {
+			// Save curr Y
+			curY := pdf.GetY()
+			pdf.MultiCell(125, 6, a.Question.Text, "1", "L", false)
+			// Draw Indicator and Score
+			newY := pdf.GetY()
+			height := newY - curY
+			
+			pdf.SetXY(10, curY)
+			pdf.CellFormat(45, height, a.Question.Indicator, "1", 0, "C", false, 0, "")
+			
+			pdf.SetXY(180, curY)
+			pdf.CellFormat(20, height, fmt.Sprintf("%d", a.Score), "1", 1, "C", false, 0, "")
+		}
+	}
+
+	var buf bytes.Buffer
+	err = pdf.Output(&buf)
+	if err != nil {
+		return nil, err
+	}
+
+	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, fmt.Sprintf("Export Personalized PDF Report User %v", *filter.UserID), nil)
 	return buf.Bytes(), nil
 }
 
@@ -509,6 +630,8 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 		sdm.unit_kerja,
 		(SELECT COUNT(*) FROM peer_assessments WHERE target_user_id = users.id %[1]s) as assessments_received,
 		(SELECT COUNT(*) FROM peer_assessments WHERE evaluator_id = users.id %[1]s) as assessments_given,
+		(SELECT COUNT(*) FROM assessment_relations WHERE target_user_id = users.id AND deleted_at IS NULL) as received_needed,
+		(SELECT COUNT(*) FROM assessment_relations WHERE evaluator_id = users.id AND deleted_at IS NULL) as given_needed,
 		(SELECT COALESCE(AVG((berorientasi_pelayanan + akuntabel + kompeten + harmonis + loyal + adaptif + kolaboratif) / 7.0), 0) 
 		 FROM peer_assessments WHERE target_user_id = users.id %[1]s) as average_score
 	`, subqueryFilter)).
