@@ -6,13 +6,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// AssessmentPeriod represents a timeframe for peer evaluations
+// AssessmentPeriod merepresentasikan jangka waktu untuk evaluasi sejawat
 type AssessmentPeriod struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	Name      string         `gorm:"size:100;not null" json:"name"`
 	StartDate time.Time      `gorm:"not null" json:"start_date"`
 	EndDate   time.Time      `gorm:"not null" json:"end_date"`
-	Frequency string         `gorm:"type:varchar(20);default:'monthly'" json:"frequency"` // monthly, quarterly, semi_annual, annual
+	Frequency string         `gorm:"type:varchar(20);default:'monthly'" json:"frequency"` // bulanan, kuartalan, semesteran, tahunan
 	IsActive  bool           `gorm:"default:true" json:"is_active"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
@@ -23,7 +23,7 @@ func (AssessmentPeriod) TableName() string {
 	return "assessment_periods"
 }
 
-// PeerAssessment represents a 360-degree evaluation between group members
+// PeerAssessment merepresentasikan evaluasi 360 derajat antar anggota tim
 type PeerAssessment struct {
 	ID              uint             `gorm:"primaryKey" json:"id"`
 	EvaluatorID     uint             `gorm:"not null;index" json:"evaluator_id"`
@@ -36,7 +36,7 @@ type PeerAssessment struct {
 	Period          AssessmentPeriod `gorm:"foreignKey:PeriodID" json:"period,omitempty"`
 	RelationType    string           `gorm:"type:varchar(20);not null" json:"relation_type"`   // Perspektif Penilai: Atasan, Peer, Bawahan
 	TargetPosition  string           `gorm:"type:varchar(20);not null" json:"target_position"` // Posisi Target dalam Tim: Atasan, Peer, Bawahan
-	AssessmentMonth int              `gorm:"not null;default:1" json:"assessment_month"`       // Month number within period (1, 2, 3, etc.)
+	AssessmentMonth int              `gorm:"not null;default:1" json:"assessment_month"`       // Nomor bulan di dalam periode (1, 2, 3, dst.)
 
 	// ASN BerAKHLAK Indicators (0-100 scale)
 	BerorientasiPelayanan int `gorm:"not null;check:berorientasi_pelayanan >= 0 AND berorientasi_pelayanan <= 100" json:"berorientasi_pelayanan"`
@@ -78,7 +78,7 @@ type CreatePeriodRequest struct {
 	Name      string `json:"name" binding:"required"`
 	StartDate string `json:"start_date" binding:"required"`                                           // Format: YYYY-MM-DD
 	EndDate   string `json:"end_date" binding:"required"`                                             // Format: YYYY-MM-DD
-	Frequency string `json:"frequency" binding:"required,oneof=monthly quarterly semi_annual annual"` // Frequency of assessment
+	Frequency string `json:"frequency" binding:"required,oneof=monthly quarterly semi_annual annual"` // Frekuensi penilaian
 }
 
 type UpdatePeriodRequest struct {
@@ -107,19 +107,19 @@ type AssessmentSummary struct {
 	PeriodID     uint               `json:"period_id"`
 	PeriodName   string             `json:"period_name"`
 	AverageScore float64            `json:"average_score"`
-	Status       int                `json:"status"` // 1-7, 0 if not rated
+	Status       int                `json:"status"` // 1-7, 0 jika belum dinilai
 	Details      map[string]float64 `json:"details"`
 }
 
-// IndicatorReference holds aggregated scores for one BerAKHLAK indicator.
+// IndicatorReference menyimpan skor agregat (keseluruhan) untuk satu indikator BerAKHLAK.
 type IndicatorReference struct {
 	PeerAvg    float64 `json:"peer_avg"`
 	BawahanAvg float64 `json:"bawahan_avg"`
 	OverallAvg float64 `json:"overall_avg"`
 }
 
-// AssessmentReference is returned to an Atasan (e.g. Inspektur) before they
-// fill their assessment so they can see contextual Peer+Bawahan scores.
+// AssessmentReference dikembalikan ke Atasan (mis. Inspektur) sebelum mereka
+// mengisi penilaian agar mereka bisa melihat konteks skor dari Peer+Bawahan.
 type AssessmentReference struct {
 	Target struct {
 		Name    string `json:"name"`
@@ -139,7 +139,7 @@ type AssessmentReference struct {
 	Warning    string                        `json:"warning"`
 }
 
-// AssessmentRelation defines who evaluates whom and in what capacity
+// AssessmentRelation mendefinisikan siapa menilai siapa dan dalam kapasitas apa
 type AssessmentRelation struct {
 	ID             uint             `gorm:"primaryKey" json:"id"`
 	PeriodID       uint             `gorm:"not null;index" json:"period_id"`
@@ -181,12 +181,12 @@ type GroupRelationItem struct {
 	TargetPosition string `json:"target_position" binding:"required,oneof=Atasan Peer Bawahan"`
 }
 
-// AssessmentTarget is returned to an evaluator showing who they need to assess.
-// For multi-month periods (quarterly/semi-annual/annual), each month is tracked
-// independently — an evaluator must submit once per month per target.
+// AssessmentTarget dikembalikan ke penilai untuk menunjukkan siapa yang perlu mereka nilai.
+// Untuk periode multi-bulan (kuartal/semester/tahunan), setiap bulan dilacak
+// secara independen — seorang penilai harus mengumpulkan satu kali per bulan per target.
 type AssessmentTarget struct {
 	Relation       AssessmentRelation `json:"relation"`
-	IsDone         bool               `json:"is_done"`         // true ONLY when ALL months are submitted
-	MonthsDone     []int              `json:"months_done"`     // e.g. [1, 2] = Bulan 1 & 2 done, Bulan 3 pending
-	MonthsRequired int                `json:"months_required"` // total months in the period (1, 3, 6, or 12)
+	IsDone         bool               `json:"is_done"`         // true HANYA jika SEMUA bulan sudah dikumpulkan
+	MonthsDone     []int              `json:"months_done"`     // misal: [1, 2] = Bulan 1 & 2 selesai, Bulan 3 tertunda
+	MonthsRequired int                `json:"months_required"` // total bulan dalam periode (1, 3, 6, atau 12)
 }

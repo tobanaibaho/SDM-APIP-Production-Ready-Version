@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-/** Converts an ISO/date string into a human-readable relative time in Indonesian */
+/** Mengubah string ISO/tanggal menjadi waktu relatif yang mudah dibaca dalam bahasa Indonesia */
 export function formatRelativeTime(dateStr: string | null | undefined): string {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
@@ -26,7 +26,7 @@ export function formatRelativeTime(dateStr: string | null | undefined): string {
     return `${diffYear} tahun yang lalu`;
 }
 
-/** Returns a formatted absolute date+time string in Indonesian locale */
+/** Mengembalikan string tanggal+waktu absolut yang diformat dalam lokal bahasa Indonesia */
 export function formatAbsoluteTime(dateStr: string | null | undefined): string {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
@@ -38,8 +38,8 @@ export function formatAbsoluteTime(dateStr: string | null | undefined): string {
 }
 
 /**
- * Hook that returns a live relative-time string for a given date,
- * automatically updating every 30 seconds.
+ * Hook yang mengembalikan string waktu-relatif waktu-nyata untuk tanggal tertentu,
+ * diperbarui otomatis setiap 30 detik.
  */
 export function useRelativeTime(dateStr: string | null | undefined): string {
     const [label, setLabel] = useState(() => formatRelativeTime(dateStr));
@@ -48,7 +48,7 @@ export function useRelativeTime(dateStr: string | null | undefined): string {
         setLabel(formatRelativeTime(dateStr));
         const interval = setInterval(() => {
             setLabel(formatRelativeTime(dateStr));
-        }, 30_000); // refresh every 30s
+        }, 30_000); // perbarui setiap 30 detik
         return () => clearInterval(interval);
     }, [dateStr]);
 
@@ -56,7 +56,7 @@ export function useRelativeTime(dateStr: string | null | undefined): string {
 }
 
 /**
- * Hook that returns the current date+time, updating every second.
+ * Hook yang mengembalikan tanggal+waktu saat ini, diperbarui setiap detik.
  */
 export function useLiveClock(): { date: string; time: string; full: string } {
     const [now, setNow] = useState(new Date());

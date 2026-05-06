@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// ReportFilter represents the query parameters for filtering assessments
+// ReportFilter merepresentasikan parameter query untuk menyaring penilaian
 type ReportFilter struct {
 	StartDate       *time.Time `json:"start_date"`
 	EndDate         *time.Time `json:"end_date"`
@@ -19,7 +19,7 @@ type ReportFilter struct {
 	IncludeArchived bool       `json:"include_archived"`
 }
 
-// ReportSummary represents high-level KPI cards
+// ReportSummary merepresentasikan kartu KPI tingkat tinggi (ringkasan)
 type ReportSummary struct {
 	TotalAssessments int64   `json:"total_assessments"`
 	AverageScore     float64 `json:"average_score"`
@@ -28,25 +28,25 @@ type ReportSummary struct {
 	TotalUsers       int64   `json:"total_users"`
 }
 
-// ScoreDistribution represents data for a pie/bar chart
+// ScoreDistribution merepresentasikan data untuk diagram lingkaran/batang (distribusi skor)
 type ScoreDistribution struct {
 	Range string `json:"range"` // e.g., "1-2", "2-3", etc.
 	Count int64  `json:"count"`
 }
 
-// TrendData represents data for a line/bar chart
+// TrendData merepresentasikan data tren untuk diagram garis/batang
 type TrendData struct {
 	Label string  `json:"label"` // e.g., "Jan", "Feb", or "2024-Q1"
 	Value float64 `json:"value"`
 }
 
-// CategoryBreakdown represents data for a radar/bar chart
+// CategoryBreakdown merepresentasikan data rincian kategori untuk diagram radar/batang
 type CategoryBreakdown struct {
 	Category string  `json:"category"`
 	Average  float64 `json:"average"`
 }
 
-// PerformerInfo represents top/low performers
+// PerformerInfo merepresentasikan kinerja terbaik/terendah
 type PerformerInfo struct {
 	UserID    uint    `json:"user_id"`
 	Name      string  `json:"name"`
@@ -55,7 +55,7 @@ type PerformerInfo struct {
 	Score     float64 `json:"score"`
 }
 
-// DashboardData is the comprehensive object for the admin dashboard
+// DashboardData adalah objek komprehensif untuk dasbor admin
 type DashboardData struct {
 	Summary           ReportSummary       `json:"summary"`
 	ScoreDistribution []ScoreDistribution `json:"score_distribution"`
@@ -65,7 +65,7 @@ type DashboardData struct {
 	LowPerformers     []PerformerInfo     `json:"low_performers"`
 }
 
-// AssessmentDetailRow represents a single row in the detailed report table
+// AssessmentDetailRow merepresentasikan satu baris dalam tabel laporan terperinci
 type AssessmentDetailRow struct {
 	ID                    uint      `json:"id"`
 	PeriodID              uint      `json:"period_id"`
@@ -88,7 +88,7 @@ type AssessmentDetailRow struct {
 	Comment               string    `json:"comment"`
 }
 
-// UserReportRow represents a summary of performance for a specific user
+// UserReportRow merepresentasikan ringkasan kinerja untuk pengguna tertentu
 type UserReportRow struct {
 	UserID              uint    `json:"user_id"`
 	Name                string  `json:"name"`

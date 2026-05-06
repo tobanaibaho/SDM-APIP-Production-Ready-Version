@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SecurityHeaders applies security-related HTTP headers
+// SecurityHeaders menerapkan header HTTP yang berkaitan dengan keamanan
 func SecurityHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("X-Content-Type-Options", "nosniff")

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthContextType, AssessmentPeriod } from '../types';
-import { login as authLogin, superAdminLogin as authSuperAdminLogin } from '../services/authService';
+import { login as authLogin, superAdminLogin as authSuperAdminLogin, ssoLogin as authSsoLogin } from '../services/authService';
 import assessmentService from '../services/assessmentService';
 import toast from 'react-hot-toast';
 
@@ -25,15 +25,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check for existing token on mount
+        // Periksa token yang ada saat dimuat
         const storedToken = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
+
+        // Tangani pengalihan SSO dari penyedia OIDC asli (Mode Produksi)
+        const urlParams = new URLSearchParams(window.location.search);
+        const ssoToken = urlParams.get('sso_token');
+        if (ssoToken) {
+            localStorage.setItem('token', ssoToken);
+            setToken(ssoToken);
+            // Bersihkan token dari URL tanpa memuat ulang
+            window.history.replaceState({}, document.title, window.location.pathname);
+            import('../services/authService').then(({ getProfile }) => {
+                getProfile().then(data => {
+                    if (data.user) {
+                        setUser(data.user);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        toast.success('Login SSO berhasil!', { id: 'auth-toast' });
+                    }
+                }).catch(() => {});
+            });
+            setLoading(false);
+            return;
+        }
 
         if (storedToken && storedUser) {
             setToken(storedToken);
             setUser(JSON.parse(storedUser));
 
-            // Refresh profile silently to ensure data (like name) is updated
+            // Segarkan profil secara diam-diam untuk memastikan data (seperti nama) diperbarui
             import('../services/authService').then(({ getProfile }) => {
                 getProfile().then(data => {
                     if (data.user) {
@@ -72,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return response;
             }
 
-            // Store token dan user (Refresh token sekarang diamankan via Cookie HttpOnly)
+            // Simpan token dan pengguna (Refresh token sekarang diamankan via Cookie HttpOnly)
             if (response.token && response.user) {
                 localStorage.setItem('token', response.token);
                 localStorage.setItem('user', JSON.stringify(response.user));
@@ -98,7 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return response;
             }
 
-            // Store token dan user
+            // Simpan token dan pengguna
             if (response.token && response.user) {
                 localStorage.setItem('token', response.token);
                 localStorage.setItem('user', JSON.stringify(response.user));
@@ -134,6 +155,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(updatedUser));
     };
 
+    const ssoLogin = async (nip: string) => {
+        try {
+            const response = await authSsoLogin(nip);
+
+            if (response.token && response.user) {
+                localStorage.setItem('token', response.token);
+                localStorage.setItem('user', JSON.stringify(response.user));
+
+                setToken(response.token);
+                setUser(response.user);
+                toast.success('Login SSO berhasil!', { id: 'auth-toast' });
+            }
+
+            return response;
+        } catch (error: any) {
+            const message = error.response?.data?.error || 'Login SSO gagal. Pastikan NIP terdaftar.';
+            toast.error(message, { id: 'auth-toast' });
+            throw error;
+        }
+    };
+
     const value: AuthContextType = {
         user,
         token,
@@ -141,6 +183,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAdmin: user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'superadmin' || user?.role?.toLowerCase() === 'super admin',
         isSuperAdmin: user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'superadmin' || user?.role?.toLowerCase() === 'super admin',
         login,
+        ssoLogin,
         superAdminLogin,
         logout,
         updateUser,

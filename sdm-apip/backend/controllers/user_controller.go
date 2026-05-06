@@ -14,19 +14,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// UserController handles user management operations
+// UserController menangani operasi manajemen pengguna
 type UserController struct {
 	userService services.IUserService
 }
 
-// NewUserController creates a new user controller
+// NewUserController membuat controller pengguna baru
 func NewUserController(us services.IUserService) *UserController {
 	return &UserController{
 		userService: us,
 	}
 }
 
-// GetAll returns all users with pagination
+// GetAll mengembalikan semua pengguna dengan paginasi
 // GET /api/admin/users
 func (uc *UserController) GetAll(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -43,14 +43,14 @@ func (uc *UserController) GetAll(c *gin.Context) {
 	sortBy := c.DefaultQuery("sort_by", "created_at")
 	order := strings.ToLower(c.DefaultQuery("order", "desc"))
 
-	// CALL THE SERVICE (Which contains the name-joining fix)
+	// PANGGIL SERVICE (Yang sudah berisi perbaikan penggabungan nama)
 	users, total, err := uc.userService.GetAll(page, perPage, search, status, sortBy, order)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to get users", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil pengguna", err.Error())
 		return
 	}
 
-	// Convert to response
+	// Konversi ke respons
 	responseList := []models.UserResponse{}
 	for _, u := range users {
 		responseList = append(responseList, u.ToResponse())
@@ -72,23 +72,23 @@ func (uc *UserController) GetAll(c *gin.Context) {
 	})
 }
 
-// GetByID returns a single user by ID
+// GetByID mengembalikan satu pengguna berdasarkan ID
 // GET /api/admin/users/:id
 func (uc *UserController) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid ID", "Invalid user ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID tidak valid", "ID pengguna tidak valid")
 		return
 	}
 
 	var user models.User
 	if err := config.DB.Preload("Role").First(&user, uint(id)).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "User not found", "No user found with the given ID")
+		utils.ErrorResponse(c, http.StatusNotFound, "Pengguna tidak ditemukan", "Tidak ada pengguna yang ditemukan dengan ID tersebut")
 		return
 	}
 
-	// Get SDM data
+	// Ambil data SDM
 	var sdm models.SDM
 	if user.NIP != nil {
 		if err := config.DB.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm).Error; err == nil {
@@ -105,19 +105,19 @@ func (uc *UserController) GetByID(c *gin.Context) {
 	})
 }
 
-// UpdateStatus updates user status
+// UpdateStatus memperbarui status pengguna
 // PATCH /api/admin/users/:id/status
 func (uc *UserController) UpdateStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid ID", "Invalid user ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID tidak valid", "ID pengguna tidak valid")
 		return
 	}
 
 	var user models.User
 	if err := config.DB.First(&user, uint(id)).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "User not found", "No user found with the given ID")
+		utils.ErrorResponse(c, http.StatusNotFound, "Pengguna tidak ditemukan", "Tidak ada pengguna yang ditemukan dengan ID tersebut")
 		return
 	}
 
@@ -126,18 +126,18 @@ func (uc *UserController) UpdateStatus(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
-	// Validate status using constants
+	// Validasi status menggunakan konstanta
 	if req.Status != models.StatusPendingVerification && req.Status != models.StatusEmailVerified && req.Status != models.StatusActive && req.Status != models.StatusInactive {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid status", "Status must be pending_verification, email_verified, active, or inactive")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Status tidak valid", "Status harus pending_verification, email_verified, active, atau inactive")
 		return
 	}
 
 	if err := config.DB.Model(&user).Update("status", req.Status).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to update status", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui status", err.Error())
 		return
 	}
 
@@ -154,19 +154,19 @@ func (uc *UserController) UpdateStatus(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "User status updated successfully", user.ToResponse())
 }
 
-// UpdateRole updates user role
+// UpdateRole memperbarui peran pengguna
 // PATCH /api/super-admin/users/:id/role
 func (uc *UserController) UpdateRole(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid ID", "Invalid user ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID tidak valid", "ID pengguna tidak valid")
 		return
 	}
 
 	var user models.User
 	if err := config.DB.First(&user, uint(id)).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "User not found", "No user found with the given ID")
+		utils.ErrorResponse(c, http.StatusNotFound, "Pengguna tidak ditemukan", "Tidak ada pengguna yang ditemukan dengan ID tersebut")
 		return
 	}
 
@@ -175,26 +175,26 @@ func (uc *UserController) UpdateRole(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
-	// CRITICAL: Prevent creating additional Super Admins
-	// Super Admin role (role_id = 1) should only exist for the system owner
+	// KRITIS: Cegah pembuatan Super Admin tambahan
+	// Peran Super Admin (role_id = 1) hanya boleh ada untuk pemilik sistem
 	if req.RoleID == models.RoleSuperAdmin {
-		utils.ErrorResponse(c, http.StatusForbidden, "Forbidden", "Cannot assign Admin role through API. Admin is reserved for the system owner.")
+		utils.ErrorResponse(c, http.StatusForbidden, "Dilarang", "Tidak dapat menetapkan peran admin melalui API. Admin dipesan untuk pemilik sistem.")
 		return
 	}
 
-	// Validate role exists
+	// Validasi peran ada
 	var role models.Role
 	if err := config.DB.First(&role, req.RoleID).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid role", "Role not found")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Peran tidak valid", "Peran tidak ditemukan")
 		return
 	}
 
 	if err := config.DB.Model(&user).Update("role_id", req.RoleID).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to update role", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui peran", err.Error())
 		return
 	}
 
@@ -211,66 +211,66 @@ func (uc *UserController) UpdateRole(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "User role updated successfully", user.ToResponse())
 }
 
-// Delete deletes a user
+// Delete menghapus pengguna
 // DELETE /api/admin/users/:id
 func (uc *UserController) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid ID", "Invalid user ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID tidak valid", "ID pengguna tidak valid")
 		return
 	}
 
 	var user models.User
 	if err := config.DB.First(&user, uint(id)).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "User not found", "No user found with the given ID")
+		utils.ErrorResponse(c, http.StatusNotFound, "Pengguna tidak ditemukan", "Tidak ada pengguna yang ditemukan dengan ID tersebut")
 		return
 	}
 
-	// Prevent deleting admin users
+	// Cegah penghapusan pengguna admin
 	if user.RoleID == models.RoleSuperAdmin {
-		// Check if this is the last admin
+		// Cek apakah ini admin terakhir
 		var adminCount int64
 		config.DB.Model(&models.User{}).Where("role_id = ?", models.RoleSuperAdmin).Count(&adminCount)
 		if adminCount <= 1 {
-			utils.ErrorResponse(c, http.StatusForbidden, "Cannot delete user", "Cannot delete the last admin user")
+			utils.ErrorResponse(c, http.StatusForbidden, "Tidak dapat menghapus pengguna", "Tidak dapat menghapus pengguna admin terakhir")
 			return
 		}
 	}
 
-	// Start transaction
+	// Mulai transaksi
 	tx := config.DB.Begin()
-	defer tx.Rollback() // Safe rollback on any failure
+	defer tx.Rollback() // Rollback aman jika ada kegagalan
 
-	// Log for debugging using centralized logger
+	// Log untuk debugging menggunakan logger terpusat
 	nipStr := "N/A"
 	if user.NIP != nil {
 		nipStr = *user.NIP
 	}
 	logger.Info("🗑️ Deleting user ID: %d, NIP: '%s'", id, nipStr)
 
-	// 1. Clear email in SDM master table (if NIP exists)
+	// 1. Hapus email di tabel master SDM (jika NIP ada)
 	if user.NIP != nil && *user.NIP != "" {
 		if err := tx.Exec("UPDATE sdm_apip SET email = '-' WHERE nip = ?", *user.NIP).Error; err != nil {
-			utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to clear SDM email", err.Error())
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus email SDM", err.Error())
 			return
 		}
 	}
 
-	// 2. Delete verification tokens
+	// 2. Hapus token verifikasi
 	if err := tx.Where("user_id = ?", user.ID).Delete(&models.VerificationToken{}).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete tokens", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus token", err.Error())
 		return
 	}
 
-	// 3. Delete user
+	// 3. Hapus pengguna
 	if err := tx.Delete(&user).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete user", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus pengguna", err.Error())
 		return
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to commit transaction", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal melakukan commit transaksi", err.Error())
 		return
 	}
 	logger.Info("✅ User %s deleted", nipStr)

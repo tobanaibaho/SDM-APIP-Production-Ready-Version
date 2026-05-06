@@ -7,14 +7,14 @@ import (
 	"sdm-apip-backend/models"
 )
 
-// SeedUsersFromSDM creates verified user accounts from existing SDM data
+// SeedUsersFromSDM membuat akun pengguna yang terverifikasi dari data SDM yang sudah ada
 func SeedUsersFromSDM() error {
 	db := config.DB
 
-	// Get all SDM records
+	// Ambil semua data SDM
 	var sdmList []models.SDM
 	if err := db.Find(&sdmList).Error; err != nil {
-		return fmt.Errorf("failed to fetch SDM data: %w", err)
+		return fmt.Errorf("Gagal mengambil data SDM: %w", err)
 	}
 
 	if len(sdmList) == 0 {
@@ -28,10 +28,10 @@ func SeedUsersFromSDM() error {
 	logger.Info("🌱 Starting user account seeding from SDM data...")
 
 	for _, sdm := range sdmList {
-		// Check if user already exists
+		// Cek apakah pengguna sudah ada
 		var existingUser models.User
 		if err := db.Where("nip = ?", sdm.NIP).First(&existingUser).Error; err == nil {
-			// User already exists, skip
+			// Pengguna sudah ada, lewati
 			skipCount++
 			continue
 		}
@@ -41,8 +41,8 @@ func SeedUsersFromSDM() error {
 		user := models.User{
 			NIP:    &nip,
 			Email:  sdm.Email,
-			RoleID: models.RoleUser,     // Default role: user (not admin)
-			Status: models.StatusActive, // Set as active (verified)
+			RoleID: models.RoleUser,     // Peran bawaan: pengguna (bukan admin)
+			Status: models.StatusActive, // Aktifkan (terverifikasi)
 		}
 
 		if err := db.Create(&user).Error; err != nil {
@@ -59,28 +59,28 @@ func SeedUsersFromSDM() error {
 	logger.Info("   - Total SDM records: %d", len(sdmList))
 	logger.Info("")
 	logger.Info("📋 User Account Summary:")
-	logger.Info("   - All accounts are set to 'active' status (verified)")
-	logger.Info("   - All accounts have role 'user' (not admin)")
-	logger.Info("   - Users created without password (must set via Forgot Password)")
+	logger.Info("   - Semua akun diatur ke status 'aktif' (terverifikasi)")
+	logger.Info("   - Semua akun memiliki peran 'user' (bukan admin)")
+	logger.Info("   - Pengguna dibuat tanpa kata sandi (harus diatur via Lupa Password)")
 
 	return nil
 }
 
-// ClearAllUsers removes all non-admin users (for testing purposes)
+// ClearAllUsers menghapus semua pengguna non-admin (untuk keperluan pengujian)
 func ClearAllUsers() error {
 	db := config.DB
 
-	// Delete only users with role_id = 2 (regular users, not admins)
+	// Hapus hanya pengguna dengan role_id = 2 (pengguna biasa, bukan admin)
 	result := db.Where("role_id = ?", models.RoleUser).Delete(&models.User{})
 	if result.Error != nil {
-		return fmt.Errorf("failed to clear users: %w", result.Error)
+		return fmt.Errorf("Gagal menghapus pengguna: %w", result.Error)
 	}
 
 	logger.Info("🗑️  Cleared %d user accounts (admins preserved)", result.RowsAffected)
 	return nil
 }
 
-// GetUserAccountStats returns statistics about user accounts
+// GetUserAccountStats mengembalikan statistik tentang akun pengguna
 func GetUserAccountStats() {
 	db := config.DB
 

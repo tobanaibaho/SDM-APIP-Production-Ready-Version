@@ -88,14 +88,14 @@ const AssessmentListPage: React.FC = () => {
                 {/* ── Header row ── */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Antrian Penilaian</h2>
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight">Antrian Penilaian</h2>
                         <p className="text-slate-500 mt-1 text-sm font-medium">
                             Pengisian kuesioner BerAKHLAK secara real-time.
                         </p>
                     </div>
                     <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm w-fit">
                         <Calendar size={15} className="text-primary-500 shrink-0" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Periode</span>
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Periode</span>
                         <select
                             className="text-sm font-bold text-slate-700 bg-transparent border-none focus:ring-0 cursor-pointer"
                             value={selectedPeriod || ''}
@@ -109,7 +109,7 @@ const AssessmentListPage: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div className="py-24 flex flex-col items-center gap-3">
+                    <div className="py-6 flex flex-col items-center gap-3">
                         <div className="loading-spinner" />
                         <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Sinkronisasi data...</p>
                     </div>
@@ -130,8 +130,8 @@ const AssessmentListPage: React.FC = () => {
                             </div>
 
                             {targets.length === 0 ? (
-                                <div className="py-20 text-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center gap-3">
-                                    <div className="h-16 w-16 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-300">
+                                <div className="py-8 text-center bg-slate-100/50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center gap-3">
+                                    <div className="h-16 w-16 bg-slate-200 rounded-2xl flex items-center justify-center text-slate-300">
                                         <ClipboardCheck size={32} />
                                     </div>
                                     <div>
@@ -179,19 +179,19 @@ const AssessmentListPage: React.FC = () => {
                                                                 </div>
                                                                 <div className="min-w-0 flex-1">
                                                                     <h4 className="font-black text-slate-900 text-sm leading-tight line-clamp-2">{name}</h4>
-                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1 truncate">{jabatan}</p>
+                                                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1 truncate">{jabatan}</p>
                                                                     {/* Status badge */}
                                                                     <div className="mt-2">
                                                                         {isFullyDone ? (
-                                                                            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
+                                                                            <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
                                                                                 <CheckCircle2 size={10} /> Selesai
                                                                             </span>
                                                                         ) : isPartiallyDone ? (
-                                                                            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                                                                            <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-amber-600 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
                                                                                 ⏳ Bln {nextMonth} menunggu
                                                                             </span>
                                                                         ) : (
-                                                                            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-slate-500 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full">
+                                                                            <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-slate-500 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full">
                                                                                 📋 Belum diisi
                                                                             </span>
                                                                         )}
@@ -210,11 +210,11 @@ const AssessmentListPage: React.FC = () => {
                                                                                 ? 'bg-emerald-500 text-white'
                                                                                 : month === nextMonth && !isFullyDone
                                                                                     ? 'bg-amber-400 text-white ring-2 ring-amber-300 ring-offset-1 animate-pulse'
-                                                                                    : 'bg-slate-100 text-slate-400'
+                                                                                    : 'bg-slate-200 text-slate-500'
                                                                                 }`}
                                                                         >
                                                                             <span className="uppercase leading-none">Bln</span>
-                                                                            <span className="text-[10px] font-black">{month}</span>
+                                                                            <span className="text-xs font-black">{month}</span>
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -223,7 +223,7 @@ const AssessmentListPage: React.FC = () => {
                                                             {/* Action button */}
                                                             <div className="mt-4">
                                                                 {isFullyDone ? (
-                                                                    <div className="flex items-center gap-1.5 text-emerald-600 font-black text-[10px] uppercase tracking-wider bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-100 w-full justify-center">
+                                                                    <div className="flex items-center gap-1.5 text-emerald-600 font-black text-xs uppercase tracking-wider bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-100 w-full justify-center">
                                                                         <CheckCircle2 size={14} /> Semua Bulan Selesai
                                                                     </div>
                                                                 ) : (
@@ -262,7 +262,7 @@ const AssessmentListPage: React.FC = () => {
                                                                     </div>
                                                                     <div>
                                                                         <p className="text-xs font-black text-slate-500 uppercase tracking-wide">Penilaian Kolega</p>
-                                                                        <p className="text-[11px] text-slate-400 mt-0.5">Panel referensi hanya tersedia untuk relasi Atasan</p>
+                                                                        <p className="text-xs text-slate-400 mt-0.5">Panel referensi hanya tersedia untuk relasi Atasan</p>
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -286,7 +286,7 @@ const AssessmentListPage: React.FC = () => {
 
                                             return (
                                                 <div key={t.relation?.id || Math.random()}
-                                                    className={`group p-6 rounded-[2rem] border-2 transition-all duration-300 ${isFullyDone
+                                                    className={`group p-4 rounded-lg border-2 transition-all duration-300 ${isFullyDone
                                                         ? 'bg-emerald-50/50 border-emerald-100'
                                                         : isPartiallyDone
                                                             ? 'bg-amber-50/30 border-amber-200 shadow-lg hover:-translate-y-1'
@@ -295,28 +295,28 @@ const AssessmentListPage: React.FC = () => {
                                                         {name.charAt(0)}
                                                     </div>
                                                     <h4 className="font-black text-slate-900 text-base truncate">{name}</h4>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 mb-4 truncate">
+                                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5 mb-4 truncate">
                                                         {t.relation?.target_user?.jabatan || 'Personil APIP'}
                                                     </p>
                                                     {monthsRequired > 1 && (
                                                         <div className="flex items-center gap-1.5 mb-4">
                                                             {Array.from({ length: monthsRequired }, (_, i) => i + 1).map(month => (
                                                                 <div key={month}
-                                                                    className={`flex flex-col items-center w-9 h-9 rounded-xl text-[8px] font-black justify-center ${monthsDone.includes(month) ? 'bg-emerald-500 text-white' : month === nextMonth && !isFullyDone ? 'bg-amber-400 text-white animate-pulse' : 'bg-slate-100 text-slate-400'}`}>
+                                                                    className={`flex flex-col items-center w-9 h-9 rounded-xl text-[8px] font-black justify-center ${monthsDone.includes(month) ? 'bg-emerald-500 text-white' : month === nextMonth && !isFullyDone ? 'bg-amber-400 text-white animate-pulse' : 'bg-slate-200 text-slate-500'}`}>
                                                                     <span>Bln</span><span>{month}</span>
                                                                 </div>
                                                             ))}
-                                                            <span className="text-[10px] font-bold text-slate-400">{monthsDone.length}/{monthsRequired}</span>
+                                                            <span className="text-xs font-bold text-slate-400">{monthsDone.length}/{monthsRequired}</span>
                                                         </div>
                                                     )}
                                                     {isFullyDone ? (
-                                                        <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase bg-emerald-50 px-4 py-2.5 rounded-2xl border border-emerald-100">
+                                                        <div className="flex items-center gap-2 text-emerald-600 font-black text-xs uppercase bg-emerald-50 px-4 py-2.5 rounded-2xl border border-emerald-100">
                                                             <CheckCircle2 size={14} /> Selesai
                                                         </div>
                                                     ) : (
                                                         <button
                                                             onClick={() => navigate(`/user/assessments/new?target_id=${t.relation?.target_user_id}&period_id=${selectedPeriod}&relation=${t.relation?.relation_type}`)}
-                                                            className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-sm font-black transition-all shadow-xl ${isPartiallyDone ? 'bg-amber-500 hover:bg-amber-400 text-white' : 'bg-slate-900 text-white hover:bg-primary-600'} hover:scale-[1.02] active:scale-95`}
+                                                            className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-black transition-all shadow-xl ${isPartiallyDone ? 'bg-amber-500 hover:bg-amber-400 text-white' : 'bg-slate-900 text-white hover:bg-primary-600'} hover:scale-[1.02] active:scale-95`}
                                                         >
                                                             {isPartiallyDone ? `Lanjut Bln ${nextMonth}` : 'Isi Sekarang'} <ArrowUpRight size={18} />
                                                         </button>

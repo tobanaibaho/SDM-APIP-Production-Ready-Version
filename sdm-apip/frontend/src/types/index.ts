@@ -1,4 +1,4 @@
-// API Response types
+// Tipe Respons API
 export interface ApiResponse<T> {
     success: boolean;
     message: string;
@@ -20,7 +20,7 @@ export interface Pagination {
     total_pages: number;
 }
 
-// User types
+// Tipe Pengguna
 export interface User {
     id: number;
     nip: string;
@@ -47,8 +47,8 @@ export interface LoginRequest {
 
 export interface LoginResponse {
     token?: string;
-    refresh_token?: string;   // snake_case dari backend JSON response
-    refreshToken?: string;    // camelCase legacy (untuk kompatibilitas)
+    refresh_token?: string;   // snake_case dari respons JSON backend
+    refreshToken?: string;    // legacy camelCase (untuk kompatibilitas)
     user?: User;
     requires_mfa?: boolean;
 }
@@ -89,7 +89,7 @@ export interface VerifyOTPRequest {
     otp: string;
 }
 
-// SDM types
+// Tipe SDM
 export interface SDM {
     id: number;
     nip: string;
@@ -126,7 +126,7 @@ export interface SDMUpdateRequest {
     unit_kerja?: string;
 }
 
-// Group types
+// Tipe Grup
 export interface Group {
     id: number;
     name: string;
@@ -155,7 +155,7 @@ export interface GroupDetail {
     global_evaluators?: any[];
 }
 
-// Stats types
+// Tipe Statistik
 export interface DashboardStats {
     total_sdm: number;
     total_users: number;
@@ -213,7 +213,7 @@ export interface AssessmentPeriod {
     is_active: boolean;
 }
 
-// Auth context types
+// Tipe Konteks Autentikasi
 export interface AuthContextType {
     user: User | null;
     token: string | null;
@@ -221,6 +221,7 @@ export interface AuthContextType {
     isAdmin: boolean;
     isSuperAdmin: boolean;
     login: (nip: string, password: string, totp?: string) => Promise<LoginResponse>;
+    ssoLogin: (nip: string) => Promise<LoginResponse>;
     superAdminLogin: (username: string, password: string, totp?: string) => Promise<LoginResponse>;
     logout: () => void;
     updateUser: (user: User) => void;
@@ -229,7 +230,7 @@ export interface AuthContextType {
     refreshActivePeriod: () => Promise<void>;
 }
 
-// Assessment Relation types (Hybrid Approach)
+// Tipe Relasi Penilaian (Pendekatan Hibrida)
 export interface AssessmentRelation {
     id: number;
     period_id: number;
@@ -265,7 +266,7 @@ export interface BulkCreateRelationsRequest {
     relations: GroupRelationItem[];
 }
 
-// Peer Assessment types
+// Tipe Penilaian Rekan Sejawat (Peer Assessment)
 export interface PeerAssessment {
     id: number;
     evaluator_id: number;

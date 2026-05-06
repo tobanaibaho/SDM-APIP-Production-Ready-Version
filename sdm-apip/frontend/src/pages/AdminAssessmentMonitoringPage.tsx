@@ -40,10 +40,10 @@ interface PeriodOption {
    Status Badge Helper
 ───────────────────────────────────────────────── */
 const getStatusBadge = (status: number) => {
-    if (status === 0) return <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest">Belum Ada</span>;
+    if (status === 0) return <span className="text-slate-400 text-xs font-black uppercase tracking-widest">Belum Ada</span>;
     const results = [];
 
-    // Backend scenario code mapping (1-7):
+    // Pemetaan kode skenario backend (1-7):
     const hasA = [1, 3, 4, 7].includes(status);
     const hasP = [1, 2, 4, 6].includes(status);
     const hasB = [1, 2, 3, 5].includes(status);
@@ -118,7 +118,7 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
             <div className="space-y-6 animate-fade-in">
 
                 {/* ── Admin Observer Banner ── */}
-                <div className="relative overflow-hidden bg-white/50 backdrop-blur-xl border border-white/50 shadow-sm rounded-3xl p-6">
+                <div className="relative overflow-hidden bg-white/50 backdrop-blur-xl border border-white/50 shadow-sm rounded-3xl p-4">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
                     <div className="relative flex items-start gap-4">
                         <div className="p-3 bg-blue-500/10 rounded-2xl shrink-0">
@@ -137,7 +137,7 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                 {/* ── Period Selector ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm p-2 pl-4 rounded-2xl shadow-sm border border-slate-200 w-fit">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Periode</span>
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Periode</span>
                         <div className="relative">
                             <select
                                 id="periodFilter"
@@ -157,7 +157,7 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                     </div>
 
                     {selectedPeriodObj?.is_active && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-black uppercase tracking-wider border border-emerald-100">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-black uppercase tracking-wider border border-emerald-100">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             Periode Aktif
                         </span>
@@ -173,15 +173,15 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                         { label: 'Belum Dinilai', val: none, color: 'text-rose-500', icon: AlertTriangle },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white/80 backdrop-blur-sm p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{stat.label}</p>
-                            <h3 className={`text-3xl font-black ${stat.color}`}>{stat.val}</h3>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{stat.label}</p>
+                            <h3 className={`text-xl font-black ${stat.color}`}>{stat.val}</h3>
                         </div>
                     ))}
                 </div>
 
                 {/* ── Matrix Table ── */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                    <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="px-4 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
                             <div className="p-2 bg-primary-50 rounded-xl">
                                 <ClipboardCheck size={16} className="text-primary-600" />
@@ -195,51 +195,51 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                                 placeholder="Cari nama atau NIP..."
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-slate-50/50"
+                                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-slate-100/50"
                             />
                         </div>
                     </div>
 
                     {loading ? (
-                        <div className="py-20 flex flex-col items-center gap-3">
+                        <div className="py-8 flex flex-col items-center gap-3">
                             <div className="loading-spinner" />
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Memuat data...</p>
                         </div>
                     ) : filtered.length === 0 ? (
-                        <div className="py-20 text-center">
+                        <div className="py-8 text-center">
                             <Users size={40} className="mx-auto text-slate-200 mb-3" />
                             <p className="text-sm font-bold text-slate-400">Data tidak ditemukan</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-slate-50/50 text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                <thead className="bg-slate-100/50 text-xs font-black uppercase tracking-[0.1em] text-slate-400">
                                     <tr>
-                                        <th className="px-6 py-4">Pegawai</th>
-                                        <th className="px-6 py-4">Status Penilai</th>
-                                        <th className="px-6 py-4">Progress</th>
-                                        <th className="px-6 py-4 text-right">Aksi</th>
+                                        <th className="px-4 py-4">Pegawai</th>
+                                        <th className="px-4 py-4">Status Penilai</th>
+                                        <th className="px-4 py-4">Progress</th>
+                                        <th className="px-4 py-4 text-right">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
                                     {filtered.map(row => {
                                         const pct = row.completion_pct ?? 0;
                                         return (
-                                            <tr key={row.user_id} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-6 py-4">
+                                            <tr key={row.user_id} className="hover:bg-slate-100/50 transition-colors">
+                                                <td className="px-4 py-4">
                                                     <p className="font-black text-slate-900 text-sm">{row.name}</p>
-                                                    <p className="text-[11px] font-mono text-slate-400">{row.nip}</p>
+                                                    <p className="text-xs font-mono text-slate-400">{row.nip}</p>
                                                 </td>
-                                                <td className="px-6 py-4">{getStatusBadge(row.status)}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                <td className="px-4 py-4">{getStatusBadge(row.status)}</td>
+                                                <td className="px-4 py-4">
+                                                    <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">
                                                         <div className="h-full bg-primary-500 rounded-full" style={{ width: `${pct}%` }} />
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
+                                                <td className="px-4 py-4 text-right">
                                                     <button
                                                         onClick={() => navigate(`/admin/assessments/detail/${row.user_id}?period_id=${selectedPeriod}`)}
-                                                        className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase hover:bg-slate-800 transition-all"
+                                                        className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-black uppercase hover:bg-slate-800 transition-all"
                                                     >
                                                         Detail
                                                     </button>
@@ -253,8 +253,8 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                     )}
 
                     {!loading && filtered.length > 0 && (
-                        <div className="px-8 py-5 border-t border-slate-100/50 flex items-center gap-8 bg-slate-50/30">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Keterangan:</span>
+                        <div className="px-5 py-5 border-t border-slate-100/50 flex items-center gap-5 bg-slate-50/30">
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Keterangan:</span>
                             {[
                                 { color: 'bg-emerald-500', label: 'Selesai (100%)' },
                                 { color: 'bg-amber-400',   label: 'Sebagian (>0%)' },
@@ -262,7 +262,7 @@ const AdminAssessmentMonitoringPage: React.FC = () => {
                             ].map(({ color, label }) => (
                                 <div key={label} className="flex items-center gap-2">
                                     <div className={`h-3 w-3 rounded-full ${color} shadow-sm`} />
-                                    <span className="text-[10px] font-black text-slate-500">{label}</span>
+                                    <span className="text-xs font-black text-slate-500">{label}</span>
                                 </div>
                             ))}
                         </div>

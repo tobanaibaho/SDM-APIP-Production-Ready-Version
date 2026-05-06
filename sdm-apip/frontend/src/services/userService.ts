@@ -1,7 +1,7 @@
 import api from './api';
 import { ApiResponse, PaginatedResponse, User } from '../types';
 
-// Get all users with pagination
+// Dapatkan semua pengguna dengan paginasi
 export const getAllUsers = async (
     page: number = 1,
     perPage: number = 10,
@@ -16,35 +16,35 @@ export const getAllUsers = async (
     return response.data;
 };
 
-// Get user by ID
+// Dapatkan pengguna berdasarkan ID
 export const getUserById = async (id: number): Promise<User> => {
     const response = await api.get<ApiResponse<{ user: User }>>(`/admin/users/${id}`);
     return response.data.data!.user;
 };
 
-// Update user status
+// Perbarui status pengguna
 export const updateUserStatus = async (id: number, status: string): Promise<User> => {
     const response = await api.patch<ApiResponse<User>>(`/admin/users/${id}/status`, { status });
     return response.data.data!;
 };
 
-// Update user role
+// Perbarui peran pengguna
 export const updateUserRole = async (id: number, role_id: number): Promise<User> => {
     const response = await api.patch<ApiResponse<User>>(`/admin/users/${id}/role`, { role_id });
     return response.data.data!;
 };
 
-// Delete user
+// Hapus pengguna
 export const deleteUser = async (id: number): Promise<void> => {
     await api.delete(`/admin/users/${id}`);
 };
 
-// Admin disable user MFA
+// Admin nonaktifkan MFA pengguna
 export const adminDisableMFA = async (id: number): Promise<void> => {
     await api.post(`/admin/users/${id}/mfa/disable`);
 };
 
-// Export as default object for compatibility
+// Ekspor sebagai objek bawaan untuk kompatibilitas
 export const userService = {
     getAllUsers,
     getUserById,

@@ -18,10 +18,10 @@ func HealthCheck(c *gin.Context) {
 func TestEmailConnection(c *gin.Context) {
 	emailService := services.NewEmailService()
 
-	// Test dialing the SMTP server
+	// Tes melakukan panggilan ke server SMTP
 	dialer, err := emailService.GetDialer().Dial()
 
-	// Prepare masked password for debugging
+	// Siapkan kata sandi bertopeng (masked password) untuk keperluan debug
 	pass := config.AppConfig.SMTPPassword
 	maskedPass := ""
 	if len(pass) > 2 {

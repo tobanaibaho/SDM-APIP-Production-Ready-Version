@@ -6,12 +6,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// Group represents a user group
+// Group merepresentasikan sebuah tim pengguna
 type Group struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
 	Name        string         `gorm:"size:100;unique;not null" json:"name"`
 	Description string         `gorm:"type:text" json:"description"`
-	UserCount   int            `gorm:"-" json:"user_count,omitempty"` // Strictly ignored by GORM persistence/migration
+	UserCount   int            `gorm:"-" json:"user_count,omitempty"` // Secara ketat diabaikan oleh penyimpanan/migrasi GORM
 	Users       []User         `gorm:"many2many:user_groups;" json:"users,omitempty"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
@@ -22,7 +22,7 @@ func (Group) TableName() string {
 	return "groups"
 }
 
-// GroupResponse for API response
+// GroupResponse digunakan untuk respon API
 type GroupResponse struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`
@@ -59,11 +59,11 @@ type UpdateGroupRequest struct {
 
 // AssignUserRequest
 // Valid group_roles:
-//   - AT      : Anggota Tim (default, many per group)
-//   - KT      : Ketua Tim (max 1 per group)
-//   - Dalnis  : Pengendali Teknis (max 1 per group)
+//   - AT      : Anggota Tim (bawaan, bisa banyak per tim)
+//   - KT      : Ketua Tim (maksimal 1 per tim)
+//   - Dalnis  : Pengendali Teknis (maksimal 1 per tim)
 //
-// NOTE: Inspektur is a GLOBAL role from sdm_apip.jabatan — never assigned here.
+// CATATAN: Inspektur adalah peran GLOBAL dari sdm_apip.jabatan — tidak pernah ditetapkan di sini.
 type AssignUserRequest struct {
 	UserID uint   `json:"user_id" binding:"required"`
 	Role   string `json:"role" binding:"omitempty,oneof=Dalnis KT AT"`
@@ -72,6 +72,6 @@ type AssignUserRequest struct {
 // MoveUserRequest
 type MoveUserRequest struct {
 	UserID      uint `json:"user_id" binding:"required"`
-	FromGroupID uint `json:"from_group_id"` // Optional: if provided, validates user is in this group
+	FromGroupID uint `json:"from_group_id"` // Opsional: jika diisi, akan memvalidasi apakah pengguna ada di tim ini
 	ToGroupID   uint `json:"to_group_id" binding:"required"`
 }

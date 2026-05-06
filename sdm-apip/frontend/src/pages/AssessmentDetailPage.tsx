@@ -43,7 +43,7 @@ const AssessmentDetailPage: React.FC = () => {
             const response = await api.get(`/admin/assessments/detail/${userId}?period_id=${periodId}`);
             setDetail(response.data.data);
         } catch (error) {
-            console.error("Failed to fetch detail", error);
+            console.error("Gagal mengambil detail", error);
             toast.error("Gagal memuat detail laporan");
             navigate('/admin/assessments');
         } finally {
@@ -53,7 +53,7 @@ const AssessmentDetailPage: React.FC = () => {
 
     if (loading) return (
         <Layout title="Laporan Hasil 360°">
-            <div className="py-20 flex flex-col items-center">
+            <div className="py-8 flex flex-col items-center">
                 <div className="loading-spinner mb-4" />
                 <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Menganalisis Laporan...</p>
             </div>
@@ -62,7 +62,7 @@ const AssessmentDetailPage: React.FC = () => {
 
     if (!detail) return (
         <Layout title="Laporan Hasil 360°">
-            <div className="py-20 text-center text-slate-400">Data tidak ditemukan.</div>
+            <div className="py-8 text-center text-slate-400">Data tidak ditemukan.</div>
         </Layout>
     );
 
@@ -71,21 +71,21 @@ const AssessmentDetailPage: React.FC = () => {
             <div className="space-y-8 animate-fade-in pb-20">
 
                 {/* Header Profile Section */}
-                <div className="relative overflow-hidden bg-slate-950 rounded-[3rem] p-10 text-white shadow-2xl">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 -rotate-12 scale-150">
+                <div className="relative overflow-hidden bg-slate-950 rounded-2xl p-4 text-white shadow-2xl">
+                    <div className="absolute top-0 right-0 p-5 opacity-10 -rotate-12 scale-150">
                         <Award size={150} />
                     </div>
 
                     <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-12">
-                        <div className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-                            <div className="h-24 w-24 rounded-[2rem] bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-slate-950 font-black text-4xl shadow-2xl shadow-primary-500/20">
+                        <div className="flex flex-col md:flex-row items-center gap-5 text-center md:text-left">
+                            <div className="h-16 w-16 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-slate-950 font-black text-2xl shadow-2xl shadow-primary-500/20">
                                 {detail.user.name.charAt(0)}
                             </div>
                             <div className="space-y-2">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest text-primary-400 border border-white/5">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-lg text-xs font-black uppercase tracking-widest text-primary-400 border border-white/5">
                                     Profil Pegawai Terdaftar
                                 </div>
-                                <h2 className="text-4xl font-black tracking-tight">{detail.user.name}</h2>
+                                <h2 className="text-2xl font-black tracking-tight">{detail.user.name}</h2>
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-slate-400">
                                     <span className="text-sm font-mono font-bold bg-white/5 px-3 py-1 rounded-lg">NIP: {detail.user.nip}</span>
                                     <span className="h-1.5 w-1.5 rounded-full bg-slate-700"></span>
@@ -94,12 +94,12 @@ const AssessmentDetailPage: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-center gap-4 px-10 py-8 bg-white/5 backdrop-blur-xl rounded-[3rem] border border-white/10 shadow-2xl relative group hover:bg-white/10 transition-all duration-500">
-                            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-500">Nilai Akhir Perilaku</span>
+                        <div className="flex flex-col items-center gap-4 px-4 py-8 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl relative group hover:bg-white/10 transition-all duration-500">
+                            <span className="text-xs font-black uppercase tracking-[0.4em] text-slate-500">Nilai Akhir Perilaku</span>
                             <div className="text-7xl font-black bg-gradient-to-r from-primary-400 via-emerald-400 to-primary-500 bg-clip-text text-transparent drop-shadow-sm">
                                 {detail.final_score.toFixed(2)}
                             </div>
-                            <div className={`flex items-center gap-3 px-6 py-2.5 ${getPredikat(detail.final_score).bg} ${getPredikat(detail.final_score).color} ${getPredikat(detail.final_score).border} border rounded-[1.25rem] text-[13px] font-black uppercase tracking-[0.2em] shadow-lg animate-pulse-slow`}>
+                            <div className={`flex items-center gap-3 px-4 py-2.5 ${getPredikat(detail.final_score).bg} ${getPredikat(detail.final_score).color} ${getPredikat(detail.final_score).border} border rounded-[1.25rem] text-[13px] font-black uppercase tracking-[0.2em] shadow-lg animate-pulse-slow`}>
                                 <TrendingUp size={18} /> {getPredikat(detail.final_score).label}
                             </div>
                         </div>
@@ -108,31 +108,31 @@ const AssessmentDetailPage: React.FC = () => {
 
                 {/* Primary Stats Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-white p-8 rounded-[2rem] border-2 border-slate-50 shadow-sm">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Bobot Atasan (60%)</p>
+                    <div className="bg-white p-5 rounded-lg border-2 border-slate-50 shadow-sm">
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Bobot Atasan (60%)</p>
                         <div className="flex items-end justify-between">
-                            <span className="text-3xl font-black text-slate-900">{detail.weights["Atasan"]}%</span>
+                            <span className="text-xl font-black text-slate-900">{detail.weights["Atasan"]}%</span>
                             <PieChart className="text-emerald-500 opacity-20" size={40} />
                         </div>
                     </div>
-                    <div className="bg-white p-8 rounded-[2rem] border-2 border-slate-50 shadow-sm">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Bobot Rekan (20%)</p>
+                    <div className="bg-white p-5 rounded-lg border-2 border-slate-50 shadow-sm">
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Bobot Rekan (20%)</p>
                         <div className="flex items-end justify-between">
-                            <span className="text-3xl font-black text-slate-900">{detail.weights["Peer"]}%</span>
+                            <span className="text-xl font-black text-slate-900">{detail.weights["Peer"]}%</span>
                             <PieChart className="text-blue-500 opacity-20" size={40} />
                         </div>
                     </div>
-                    <div className="bg-white p-8 rounded-[2rem] border-2 border-slate-50 shadow-sm">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Bobot Bawahan (20%)</p>
+                    <div className="bg-white p-5 rounded-lg border-2 border-slate-50 shadow-sm">
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Bobot Bawahan (20%)</p>
                         <div className="flex items-end justify-between">
-                            <span className="text-3xl font-black text-slate-900">{detail.weights["Bawahan"]}%</span>
+                            <span className="text-xl font-black text-slate-900">{detail.weights["Bawahan"]}%</span>
                             <PieChart className="text-purple-500 opacity-20" size={40} />
                         </div>
                     </div>
-                    <div className="bg-white p-8 rounded-[2rem] border-2 border-slate-50 shadow-sm">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Status Penilai</p>
+                    <div className="bg-white p-5 rounded-lg border-2 border-slate-50 shadow-sm">
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Status Penilai</p>
                         <div className="flex items-end justify-between">
-                            <span className="text-3xl font-black text-slate-900">{detail.status} / 7</span>
+                            <span className="text-xl font-black text-slate-900">{detail.status} / 7</span>
                             <Users className="text-primary-500 opacity-20" size={40} />
                         </div>
                     </div>
@@ -149,14 +149,14 @@ const AssessmentDetailPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
                         {Object.entries(detail.total_per_indicator).map(([ind, score]: any) => (
-                            <div key={ind} className="bg-white p-6 rounded-[2rem] border-2 border-slate-50 shadow-sm flex flex-col items-center text-center group hover:border-primary-500 transition-all">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter h-8 flex items-center">
+                            <div key={ind} className="bg-white p-4 rounded-lg border-2 border-slate-50 shadow-sm flex flex-col items-center text-center group hover:border-primary-500 transition-all">
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-tighter h-8 flex items-center">
                                     {ind}
                                 </p>
                                 <div className="text-2xl font-black text-slate-900 my-2">
                                     {score > 0 ? score.toFixed(1) : '-'}
                                 </div>
-                                <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-primary-500 rounded-full transition-all duration-1000"
                                         style={{ width: `${score}%` }}
@@ -177,47 +177,47 @@ const AssessmentDetailPage: React.FC = () => {
                     </h3>
 
                     {['Atasan', 'Peer', 'Bawahan'].map((role) => (
-                        <div key={role} className="card overflow-hidden !rounded-[2.5rem] border-none shadow-xl">
-                            <div className={`px-10 py-5 flex items-center justify-between ${role === 'Atasan' ? 'bg-emerald-600 text-white' :
+                        <div key={role} className="card overflow-hidden !rounded-xl border-none shadow-xl">
+                            <div className={`px-4 py-5 flex items-center justify-between ${role === 'Atasan' ? 'bg-emerald-600 text-white' :
                                 role === 'Peer' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
                                 }`}>
                                 <h4 className="font-black text-sm uppercase tracking-[0.2em]">{role}</h4>
-                                <span className="text-[10px] font-bold opacity-80 uppercase tracking-widest">Kontribusi Bobot: {detail.weights[role]}%</span>
+                                <span className="text-xs font-bold opacity-80 uppercase tracking-widest">Kontribusi Bobot: {detail.weights[role]}%</span>
                             </div>
 
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                                    <thead className="bg-slate-50 text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
                                         <tr>
-                                            <th className="px-10 py-4">Indikator Perilaku</th>
+                                            <th className="px-4 py-4">Indikator Perilaku</th>
                                             {detail.scores_by_role[role]?.map((r: any, i: number) => (
-                                                <th key={i} className="px-6 py-4 text-center">
+                                                <th key={i} className="px-4 py-4 text-center">
                                                     <div className="flex flex-col items-center">
                                                         <span className="text-slate-900">{r.name}</span>
-                                                        <span className="text-[9px] lowercase font-normal opacity-50">{new Date().toLocaleDateString()}</span>
+                                                        <span className="text-xs lowercase font-normal opacity-50">{new Date().toLocaleDateString()}</span>
                                                     </div>
                                                 </th>
                                             ))}
                                             {(!detail.scores_by_role[role] || detail.scores_by_role[role].length === 0) && (
-                                                <th className="px-10 py-4 text-center text-slate-300 italic">Belum Ada Pengisian</th>
+                                                <th className="px-4 py-4 text-center text-slate-300 italic">Belum Ada Pengisian</th>
                                             )}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
                                         {Object.keys(detail.total_per_indicator).map((ind) => (
                                             <tr key={ind} className="hover:bg-slate-50 transition-colors">
-                                                <td className="px-10 py-4 text-xs font-black text-slate-700 uppercase tracking-tight">{ind}</td>
+                                                <td className="px-4 py-4 text-xs font-black text-slate-700 uppercase tracking-tight">{ind}</td>
                                                 {detail.scores_by_role[role]?.map((r: any, i: number) => (
-                                                    <td key={i} className="px-6 py-4 text-center">
+                                                    <td key={i} className="px-4 py-4 text-center">
                                                         <span className={`inline-flex items-center justify-center h-10 w-10 rounded-xl font-black text-sm ${r.scores[ind] >= 80 ? 'bg-emerald-50 text-emerald-600' :
-                                                            r.scores[ind] >= 60 ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'
+                                                            r.scores[ind] >= 60 ? 'bg-blue-50 text-blue-600' : 'bg-slate-200 text-slate-500'
                                                             }`}>
                                                             {r.scores[ind]}
                                                         </span>
                                                     </td>
                                                 ))}
                                                 {(!detail.scores_by_role[role] || detail.scores_by_role[role].length === 0) && (
-                                                    <td className="px-10 py-4 text-center text-slate-200">-</td>
+                                                    <td className="px-4 py-4 text-center text-slate-200">-</td>
                                                 )}
                                             </tr>
                                         ))}
@@ -229,8 +229,8 @@ const AssessmentDetailPage: React.FC = () => {
                 </div>
 
                 {/* Predicate Range Guide */}
-                <div className="p-10 bg-slate-50/50 rounded-[3rem] border border-slate-100 mt-12">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+                <div className="p-4 bg-slate-100/50 rounded-2xl border border-slate-100 mt-12">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div className="max-w-md">
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="p-2 bg-primary-600 rounded-xl text-white shadow-lg">
@@ -276,9 +276,9 @@ const AssessmentDetailPage: React.FC = () => {
                         <ArrowLeft size={18} /> Kembali ke Monitoring
                     </button>
 
-                    <div className="flex items-center gap-2 px-6 py-3 bg-slate-100 rounded-full text-slate-400">
+                    <div className="flex items-center gap-2 px-4 py-3 bg-slate-200 rounded-full text-slate-400">
                         <Shield size={18} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Laporan Terverifikasi Sistem</span>
+                        <span className="text-xs font-black uppercase tracking-widest">Laporan Terverifikasi Sistem</span>
                     </div>
                 </div>
             </div>

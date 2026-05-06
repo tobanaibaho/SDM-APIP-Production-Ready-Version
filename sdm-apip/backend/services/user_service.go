@@ -14,19 +14,19 @@ import (
 
 /*
 ====================================================
-Errors (Service-level)
+Errors (Tingkat Layanan)
 ====================================================
 */
 var (
-	ErrInvalidStatus       = errors.New("invalid status")
-	ErrInvalidRole         = errors.New("invalid role")
-	ErrLastAdminProtection = errors.New("cannot delete the last super admin")
-	ErrInternal            = errors.New("internal server error")
+	ErrInvalidStatus       = errors.New("Status tidak valid")
+	ErrInvalidRole         = errors.New("Peran tidak valid")
+	ErrLastAdminProtection = errors.New("Tidak dapat menghapus super admin terakhir")
+	ErrInternal            = errors.New("Kesalahan server internal")
 )
 
 /*
 ====================================================
-Interface
+Antarmuka (Interface)
 ====================================================
 */
 type IUserService interface {
@@ -39,7 +39,7 @@ type IUserService interface {
 
 /*
 ====================================================
-Service Implementation
+Implementasi Layanan
 ====================================================
 */
 type UserService struct {
@@ -54,7 +54,7 @@ func NewUserService() IUserService {
 
 /*
 ====================================================
-Get All Users
+Ambil Semua Pengguna
 ====================================================
 */
 func (s *UserService) GetAll(page, limit int, search, status, sortBy, order string) ([]*models.User, int64, error) {
@@ -63,16 +63,16 @@ func (s *UserService) GetAll(page, limit int, search, status, sortBy, order stri
 
 	offset := (page - 1) * limit
 
-	// 1. Create base query for standard user fields
+	// 1. Buat kueri dasar untuk field pengguna standar
 	query := s.db.Model(&models.User{})
 
-	// Apply search filter (Searching by NIP or Email)
+	// Terapkan filter pencarian (Mencari berdasarkan NIP atau Email)
 	if search != "" {
 		like := "%" + search + "%"
 		query = query.Where("(users.nip LIKE ? OR users.email LIKE ?)", like, like)
 	}
 
-	// Apply status filter
+	// Terapkan filter status
 	if status != "" {
 		st := models.UserStatus(status)
 		if st == models.StatusActive || st == models.StatusPendingVerification || st == models.StatusEmailVerified || st == models.StatusInactive {
@@ -80,13 +80,13 @@ func (s *UserService) GetAll(page, limit int, search, status, sortBy, order stri
 		}
 	}
 
-	// Count total records
+	// Hitung total data
 	if err := query.Count(&total).Error; err != nil {
 		logger.Error("Database error in UserService.GetAll (Count): %v", err)
 		return nil, 0, ErrInternal
 	}
 
-	// Handle sorting (Only columns in users table)
+	// Tangani pengurutan (Hanya kolom di tabel pengguna)
 	allowedSort := map[string]string{
 		"nip":        "users.nip",
 		"email":      "users.email",
@@ -103,7 +103,7 @@ func (s *UserService) GetAll(page, limit int, search, status, sortBy, order stri
 		order = "desc"
 	}
 
-	// 2. Fetch paginated records
+	// 2. Ambil data dengan paginasi
 	if err := query.
 		Preload("Role").
 		Order(sortColumn + " " + order).
@@ -114,7 +114,7 @@ func (s *UserService) GetAll(page, limit int, search, status, sortBy, order stri
 		return nil, 0, ErrInternal
 	}
 
-	// 3. Batch Fetch Names from SDM APIP table to ensure 100% success
+	// 3. Ambil Nama secara massal dari tabel SDM APIP untuk memastikan keberhasilan 100%
 	var nips []string
 	userMap := make(map[string]*models.User)
 	for _, u := range users {
@@ -129,7 +129,7 @@ func (s *UserService) GetAll(page, limit int, search, status, sortBy, order stri
 
 	if len(nips) > 0 {
 		var sdmList []models.SDM
-		// Trim spaces in query too
+		// Hapus spasi pada kueri juga
 		if err := s.db.Where("TRIM(nip) IN ?", nips).Find(&sdmList).Error; err == nil {
 			for _, sdm := range sdmList {
 				trimmedSDMNIP := strings.TrimSpace(sdm.NIP)
@@ -147,7 +147,7 @@ func (s *UserService) GetAll(page, limit int, search, status, sortBy, order stri
 
 /*
 ====================================================
-Get User By ID
+Ambil Pengguna Berdasarkan ID
 ====================================================
 */
 func (s *UserService) GetByID(id uint) (*models.User, *models.SDM, error) {
@@ -166,7 +166,7 @@ func (s *UserService) GetByID(id uint) (*models.User, *models.SDM, error) {
 
 /*
 ====================================================
-Update Status
+Perbarui Status
 ====================================================
 */
 func (s *UserService) UpdateStatus(id uint, status models.UserStatus) (*models.User, error) {
@@ -186,7 +186,7 @@ func (s *UserService) UpdateStatus(id uint, status models.UserStatus) (*models.U
 		return nil, ErrInternal
 	}
 
-	// Session Revocation: If inactive, revoke all sessions
+	// Pencabutan Sesi: Jika tidak aktif, cabut semua sesi
 	if status == models.StatusInactive {
 		if err := tx.Model(&models.RefreshToken{}).Where("user_id = ?", user.ID).Update("revoked_at", time.Now()).Error; err != nil {
 			tx.Rollback()
@@ -204,7 +204,7 @@ func (s *UserService) UpdateStatus(id uint, status models.UserStatus) (*models.U
 
 /*
 ====================================================
-Update Role
+Perbarui Peran
 ====================================================
 */
 func (s *UserService) UpdateRole(id uint, roleID models.RoleID) (*models.User, error) {
@@ -224,7 +224,7 @@ func (s *UserService) UpdateRole(id uint, roleID models.RoleID) (*models.User, e
 		return nil, ErrInternal
 	}
 
-	// Session Revocation: Force re-login with new authority level
+	// Pencabutan Sesi: Paksa login ulang dengan tingkat otoritas baru
 	if err := tx.Model(&models.RefreshToken{}).Where("user_id = ?", user.ID).Update("revoked_at", time.Now()).Error; err != nil {
 		tx.Rollback()
 		return nil, ErrInternal
@@ -240,7 +240,7 @@ func (s *UserService) UpdateRole(id uint, roleID models.RoleID) (*models.User, e
 
 /*
 ====================================================
-Delete User
+Hapus Pengguna
 ====================================================
 */
 func (s *UserService) Delete(id uint) error {
@@ -249,7 +249,7 @@ func (s *UserService) Delete(id uint) error {
 		return ErrUserNotFound
 	}
 
-	// Protect last Super Admin
+	// Lindungi Super Admin terakhir
 	if user.RoleID == models.RoleSuperAdmin {
 		var count int64
 		s.db.Model(&models.User{}).

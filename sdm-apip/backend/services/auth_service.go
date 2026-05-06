@@ -14,18 +14,18 @@ import (
 )
 
 // =======================
-// AUTH SERVICE INTERFACE
+// ANTARMUKA LAYANAN AUTENTIKASI (AUTH SERVICE INTERFACE)
 // =======================
 
 type IAuthService interface {
 	Login(nip, password, totp, ip, ua string) (*models.LoginResponse, error)
 	SuperAdminLogin(username, password, totp, ip, ua string) (*models.LoginResponse, error)
 
-	// User Registration Flow (4 Steps)
-	Register(nip, email, ip, ua string) (*models.User, string, string, string, error)      // Step 1 (returns user, token, otp, name, err)
-	VerifyEmail(token, otp, ip, ua string) error                                           // Step 3
-	SetPassword(token, otp, password, ip, ua string) error                                 // Step 4
-	ResendVerification(email, ip, ua string) (*models.User, string, string, string, error) // New Method (returns user, token, otp, name, err)
+	// Alur Pendaftaran Pengguna (4 Langkah)
+	Register(nip, email, ip, ua string) (*models.User, string, string, string, error)      // Langkah 1 (mengembalikan user, token, otp, name, err)
+	VerifyEmail(token, otp, ip, ua string) error                                           // Langkah 3
+	SetPassword(token, otp, password, ip, ua string) error                                 // Langkah 4
+	ResendVerification(email, ip, ua string) (*models.User, string, string, string, error) // Metode Baru (mengembalikan user, token, otp, name, err)
 
 	SecureAdminResetRequest(
 		currentAdminID uint,
@@ -39,21 +39,21 @@ type IAuthService interface {
 		ip, ua string,
 	) error
 
-	// MFA Methods
-	GenerateMFASecret(userID uint) (string, string, error) // Returns Secret and QR URL
+	// Metode MFA
+	GenerateMFASecret(userID uint) (string, string, error) // Mengembalikan Secret dan URL QR
 	EnableMFA(userID uint, otp string) error
 	DisableMFA(userID uint) error
 }
 
 // =======================
-// AUTH SERVICE IMPLEMENTATION
+// IMPLEMENTASI LAYANAN AUTENTIKASI
 // =======================
 
 type AuthService struct {
 	db *gorm.DB
 }
 
-// CONSTRUCTOR
+// KONSTRUKTOR
 func NewAuthService() IAuthService {
 	return &AuthService{
 		db: config.DB,
@@ -61,26 +61,26 @@ func NewAuthService() IAuthService {
 }
 
 // =======================
-// IMPLEMENTATION
+// IMPLEMENTASI
 // =======================
 
 func (s *AuthService) Login(
 	nip, password, totpCode, ip, ua string,
 ) (*models.LoginResponse, error) {
-	// 1. Find user by NIP
+	// 1. Cari pengguna berdasarkan NIP
 	var user models.User
 	if err := s.db.Preload("Role").Where("nip = ?", nip).First(&user).Error; err != nil {
 		models.CreateAuditLog(s.db, nil, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, fmt.Sprintf("Login failed: NIP not found %s", nip), nil)
 		return nil, ErrInvalidCredentials
 	}
 
-	// 2. Role Check (Must be User)
+	// 2. Cek Peran (Harus Pengguna/User)
 	if user.RoleID != models.RoleUser {
 		models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Login failed: Unauthorized role (Admin using User form)", &user.ID)
 		return nil, ErrUnauthorizedRole
 	}
 
-	// 3. Status Check
+	// 3. Cek Status
 	if user.Status == models.StatusPendingVerification {
 		models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Login failed: Email unverified", &user.ID)
 		return nil, ErrUnverifiedEmail
@@ -88,7 +88,7 @@ func (s *AuthService) Login(
 
 	if user.Status == models.StatusEmailVerified {
 		models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Login failed: Password not set", &user.ID)
-		return nil, errors.New("silakan atur kata sandi Anda sebelum masuk")
+		return nil, errors.New("Silakan atur kata sandi Anda sebelum masuk")
 	}
 
 	if user.Status != models.StatusActive {
@@ -96,38 +96,38 @@ func (s *AuthService) Login(
 		return nil, ErrAccountDisabled
 	}
 
-	// 4. Lockout Check
+	// 4. Cek Penguncian (Lockout)
 	if user.LockoutUntil != nil {
 		if user.LockoutUntil.After(time.Now()) {
-			return nil, fmt.Errorf("akun terkunci. silakan coba lagi setelah %s", user.LockoutUntil.Format("15:04:05"))
+			return nil, fmt.Errorf("Akun terkunci. Silakan coba lagi setelah %s", user.LockoutUntil.Local().Format("15:04:05"))
 		}
-		// Reset login attempts if the lockout period has finished
+		// Reset jumlah percobaan masuk jika masa penguncian sudah selesai
 		s.db.Model(&user).Updates(map[string]interface{}{
 			"login_attempts": 0,
 			"lockout_until":  gorm.Expr("NULL"),
 		})
 	}
 
-	// 5. Password Check
+	// 5. Cek Kata Sandi
 	if user.Password == "" || !utils.CheckPasswordHash(password, user.Password) {
-		// Increment attempts
+		// Tambah jumlah percobaan
 		s.db.Model(&user).UpdateColumn("login_attempts", gorm.Expr("login_attempts + ?", 1))
 
 		var updatedUser models.User
 		s.db.First(&updatedUser, user.ID)
 
 		if updatedUser.LoginAttempts >= 5 {
-			lockout := time.Now().Add(3 * time.Minute)
+			lockout := time.Now().UTC().Add(3 * time.Minute)
 			s.db.Model(&updatedUser).Update("lockout_until", lockout)
 			models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Account locked due to multiple failed attempts", &user.ID)
-			return nil, fmt.Errorf("akun terkunci karena terlalu banyak percobaan. silakan coba lagi dalam 3 menit")
+			return nil, fmt.Errorf("Akun terkunci karena terlalu banyak percobaan. Silakan coba lagi dalam 3 menit")
 		}
 
 		models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Login failed: Invalid password", &user.ID)
 		return nil, ErrInvalidCredentials
 	}
 
-	// 6. Reset attempts on success
+	// 6. Reset jumlah percobaan jika berhasil
 	if user.LoginAttempts > 0 || user.LockoutUntil != nil {
 		s.db.Model(&user).Updates(map[string]interface{}{
 			"login_attempts": 0,
@@ -135,18 +135,18 @@ func (s *AuthService) Login(
 		})
 	}
 
-	// 7. MFA Check
+	// 7. Cek MFA
 	if user.MFAEnabled && user.MFASecret != nil {
 		if totpCode == "" {
 			return nil, errors.New("mfa_required")
 		}
 		if !totp.Validate(totpCode, *user.MFASecret) {
 			models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Login failed: Invalid MFA code", &user.ID)
-			return nil, errors.New("kode mfa tidak valid")
+			return nil, errors.New("Kode MFA tidak valid")
 		}
 	}
 
-	// 8. Generate Tokens
+	// 8. Buat Token
 	token, err := utils.GenerateJWT(&user)
 	if err != nil {
 		return nil, ErrInternalServer
@@ -157,17 +157,17 @@ func (s *AuthService) Login(
 		return nil, ErrInternalServer
 	}
 
-	// 9. Save Refresh Token
+	// 9. Simpan Refresh Token
 	rt := models.RefreshToken{
 		UserID:    user.ID,
 		TokenHash: utils.HashToken(refreshToken),
-		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		ExpiresAt: time.Now().UTC().Add(7 * 24 * time.Hour),
 	}
 	if err := s.db.Create(&rt).Error; err != nil {
 		return nil, ErrInternalServer
 	}
 
-	// 10. Update Activity
+	// 10. Perbarui Aktivitas
 	now := time.Now()
 	s.db.Model(&user).Updates(map[string]interface{}{
 		"last_login_at":    &now,
@@ -175,10 +175,10 @@ func (s *AuthService) Login(
 		"last_ip":          ip,
 	})
 
-	// 11. Audit Log Success
+	// 11. Catat Log Audit Berhasil
 	models.CreateAuditLog(s.db, &user.ID, models.AuditActionLogin, models.AuditStatusSuccess, ip, ua, "User login successful", &user.ID)
 
-	// 11. Fetch SDM Data for Name, Foto, and Jabatan
+	// 12. Ambil data SDM untuk Nama, Foto, dan Jabatan
 	userResp := user.ToResponse()
 	if user.NIP != nil {
 		var sdm models.SDM
@@ -200,7 +200,7 @@ func (s *AuthService) Login(
 func (s *AuthService) SuperAdminLogin(
 	username, password, totpCode, ip, ua string,
 ) (*models.LoginResponse, error) {
-	// 1. Find user by Username (Case Insensitive)
+	// 1. Cari pengguna berdasarkan Username (Tidak peka huruf besar/kecil)
 	var user models.User
 
 	if err := s.db.Preload("Role").Where("LOWER(username) = LOWER(?)", username).First(&user).Error; err != nil {
@@ -208,50 +208,50 @@ func (s *AuthService) SuperAdminLogin(
 		return nil, ErrInvalidCredentials
 	}
 
-	// 2. Role Check (Must be Super Admin)
+	// 2. Cek Peran (Harus Super Admin)
 	if user.RoleID != models.RoleSuperAdmin {
 		models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Admin login failed: Unauthorized role", &user.ID)
 		return nil, ErrUnauthorizedRole
 	}
 
-	// 3. Status Check
+	// 3. Cek Status
 	if user.Status != models.StatusActive {
 		models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, fmt.Sprintf("Admin login failed: Account status %s", user.Status), &user.ID)
 		return nil, ErrAccountDisabled
 	}
 
-	// 4. Lockout Check
+	// 4. Cek Penguncian (Lockout)
 	if user.LockoutUntil != nil {
 		if user.LockoutUntil.After(time.Now()) {
-			return nil, fmt.Errorf("akun terkunci. silakan coba lagi setelah %s", user.LockoutUntil.Format("15:04:05"))
+			return nil, fmt.Errorf("Akun terkunci. Silakan coba lagi setelah %s", user.LockoutUntil.Local().Format("15:04:05"))
 		}
-		// Reset login attempts if the lockout period has finished
+		// Reset jumlah percobaan masuk jika masa penguncian sudah selesai
 		s.db.Model(&user).Updates(map[string]interface{}{
 			"login_attempts": 0,
 			"lockout_until":  gorm.Expr("NULL"),
 		})
 	}
 
-	// 5. Password Check
+	// 5. Cek Kata Sandi
 	if user.Password == "" || !utils.CheckPasswordHash(password, user.Password) {
-		// Increment attempts
+		// Tambah jumlah percobaan
 		s.db.Model(&user).UpdateColumn("login_attempts", gorm.Expr("login_attempts + ?", 1))
 
 		var updatedUser models.User
 		s.db.First(&updatedUser, user.ID)
 
 		if updatedUser.LoginAttempts >= 5 {
-			lockout := time.Now().Add(3 * time.Minute)
+			lockout := time.Now().UTC().Add(3 * time.Minute)
 			s.db.Model(&updatedUser).Update("lockout_until", lockout)
 			models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Admin account locked due to multiple failed attempts", &user.ID)
-			return nil, fmt.Errorf("akun terkunci karena terlalu banyak percobaan. silakan coba lagi dalam 3 menit")
+			return nil, fmt.Errorf("Akun terkunci karena terlalu banyak percobaan. Silakan coba lagi dalam 3 menit")
 		}
 
 		models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Admin login failed: Invalid password", &user.ID)
 		return nil, ErrInvalidCredentials
 	}
 
-	// 6. Reset attempts on success
+	// 6. Reset jumlah percobaan jika berhasil
 	if user.LoginAttempts > 0 || user.LockoutUntil != nil {
 		s.db.Model(&user).Updates(map[string]interface{}{
 			"login_attempts": 0,
@@ -259,18 +259,18 @@ func (s *AuthService) SuperAdminLogin(
 		})
 	}
 
-	// 7. MFA Check
+	// 7. Cek MFA
 	if user.MFAEnabled && user.MFASecret != nil {
 		if totpCode == "" {
 			return nil, errors.New("mfa_required")
 		}
 		if !totp.Validate(totpCode, *user.MFASecret) {
 			models.CreateAuditLog(s.db, &user.ID, models.AuditActionLoginFailed, models.AuditStatusFailed, ip, ua, "Admin login failed: Invalid MFA code", &user.ID)
-			return nil, errors.New("kode mfa tidak valid")
+			return nil, errors.New("Kode MFA tidak valid")
 		}
 	}
 
-	// 8. Generate Tokens
+	// 8. Buat Token
 	token, err := utils.GenerateJWT(&user)
 	if err != nil {
 		return nil, ErrInternalServer
@@ -281,17 +281,17 @@ func (s *AuthService) SuperAdminLogin(
 		return nil, ErrInternalServer
 	}
 
-	// 9. Save Refresh Token
+	// 9. Simpan Refresh Token
 	rt := models.RefreshToken{
 		UserID:    user.ID,
 		TokenHash: utils.HashToken(refreshToken),
-		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		ExpiresAt: time.Now().UTC().Add(7 * 24 * time.Hour),
 	}
 	if err := s.db.Create(&rt).Error; err != nil {
 		return nil, ErrInternalServer
 	}
 
-	// 11. Update Activity
+	// 10. Perbarui Aktivitas
 	now := time.Now()
 	s.db.Model(&user).Updates(map[string]interface{}{
 		"last_login_at":    &now,
@@ -299,10 +299,10 @@ func (s *AuthService) SuperAdminLogin(
 		"last_ip":          ip,
 	})
 
-	// 12. Audit Log Success
+	// 11. Catat Log Audit Berhasil
 	models.CreateAuditLog(s.db, &user.ID, models.AuditActionLogin, models.AuditStatusSuccess, ip, ua, "Super Admin login successful", &user.ID)
 
-	// 11. Fetch SDM Data for Name and Foto
+	// 12. Ambil data SDM untuk Nama dan Foto
 	userResp := user.ToResponse()
 	if user.NIP != nil {
 		var sdm models.SDM
@@ -321,13 +321,13 @@ func (s *AuthService) SuperAdminLogin(
 }
 
 func (s *AuthService) Register(nip, email, ip, ua string) (*models.User, string, string, string, error) {
-	// 1. Validate NIP in Master Data
+	// 1. Validasi NIP di Master Data
 	var sdm models.SDM
 	if err := s.db.Where("nip = ?", nip).First(&sdm).Error; err != nil {
 		return nil, "", "", "", ErrNIPNotFound
 	}
 
-	// 2. Check if user already exists (including soft-deleted)
+	// 2. Cek apakah pengguna sudah ada (termasuk yang dihapus sementara/soft-deleted)
 	var existingUser models.User
 	err := s.db.Unscoped().Where("nip = ?", nip).First(&existingUser).Error
 
@@ -336,9 +336,9 @@ func (s *AuthService) Register(nip, email, ip, ua string) (*models.User, string,
 
 	switch err {
 	case nil:
-		// User found (active or soft-deleted)
+		// Pengguna ditemukan (aktif atau dihapus sementara)
 		if existingUser.DeletedAt.Valid {
-			// User was soft-deleted, restore it
+			// Pengguna dihapus sementara, pulihkan (restore)
 			existingUser.DeletedAt = gorm.DeletedAt{}
 			existingUser.Email = email
 			existingUser.Status = models.StatusPendingVerification
@@ -350,12 +350,12 @@ func (s *AuthService) Register(nip, email, ip, ua string) (*models.User, string,
 			}
 			user = existingUser
 		} else {
-			// User exists and is not deleted
+			// Pengguna ada dan tidak dihapus
 			if existingUser.Status == models.StatusActive {
 				tx.Rollback()
 				return nil, "", "", "", ErrUserAlreadyExists
 			}
-			// If not active, allow email update (e.g. fixed typo)
+			// Jika tidak aktif, izinkan pembaruan email (mis. perbaikan salah ketik)
 			if existingUser.Email != email {
 				existingUser.Email = email
 				existingUser.Status = models.StatusPendingVerification
@@ -367,7 +367,7 @@ func (s *AuthService) Register(nip, email, ip, ua string) (*models.User, string,
 			user = existingUser
 		}
 	case gorm.ErrRecordNotFound:
-		// No user found, create new
+		// Pengguna tidak ditemukan, buat baru
 		user = models.User{
 			NIP:    &nip,
 			Email:  email,
@@ -383,20 +383,20 @@ func (s *AuthService) Register(nip, email, ip, ua string) (*models.User, string,
 		return nil, "", "", "", ErrInternalServer
 	}
 
-	// 3. Generate Token and 6-digit OTP
+	// 3. Buat Token dan OTP 6 digit
 	tokenString, _ := utils.GenerateRandomToken(32)
 	otp, _ := utils.GenerateOTP(6)
 
-	// Clean old tokens
+	// Bersihkan token lama
 	tx.Where("user_id = ? AND token_type = ?", user.ID, models.TokenTypeEmailVerification).Delete(&models.VerificationToken{})
 
-	// Save token (3 minutes expiry as requested)
+	// Simpan token (kedaluwarsa 3 menit seperti yang diminta)
 	verificationToken := models.VerificationToken{
 		UserID:    user.ID,
 		TokenHash: utils.HashToken(tokenString),
 		TokenType: models.TokenTypeEmailVerification,
 		OTP:       otp,
-		ExpiresAt: time.Now().Add(3 * time.Minute),
+		ExpiresAt: time.Now().UTC().Add(3 * time.Minute),
 	}
 
 	if err := tx.Create(&verificationToken).Error; err != nil {
@@ -414,36 +414,36 @@ func (s *AuthService) Register(nip, email, ip, ua string) (*models.User, string,
 }
 
 func (s *AuthService) ResendVerification(email, ip, ua string) (*models.User, string, string, string, error) {
-	// 1. Find User
+	// 1. Cari Pengguna
 	var user models.User
 	if err := s.db.Where("email = ? AND role_id = ?", email, models.RoleUser).First(&user).Error; err != nil {
-		return nil, "", "", "", ErrInvalidCredentials // Generic error to prevent enumeration? Or specific?
+		return nil, "", "", "", ErrInvalidCredentials // Error generik untuk mencegah pencacahan (enumeration)? Atau spesifik?
 	}
 
-	// 2. Check Status
+	// 2. Cek Status
 	if user.Status == models.StatusActive || user.Status == models.StatusEmailVerified {
-		return nil, "", "", "", errors.New("Account already verified. Please login.")
+		return nil, "", "", "", errors.New("Akun sudah terverifikasi. Silakan Login.")
 	}
 
-	// 3. Generate New Token & OTP
+	// 3. Buat Token & OTP Baru
 	tokenString, _ := utils.GenerateRandomToken(32)
 	otp, _ := utils.GenerateOTP(6)
 
 	tx := s.db.Begin()
 
-	// 4. Invalidate old tokens
+	// 4. Batalkan token lama
 	if err := tx.Where("user_id = ? AND token_type = ?", user.ID, models.TokenTypeEmailVerification).Delete(&models.VerificationToken{}).Error; err != nil {
 		tx.Rollback()
 		return nil, "", "", "", ErrInternalServer
 	}
 
-	// 5. Create New Token
+	// 5. Buat Token Baru
 	verificationToken := models.VerificationToken{
 		UserID:    user.ID,
 		TokenHash: utils.HashToken(tokenString),
 		TokenType: models.TokenTypeEmailVerification,
 		OTP:       otp,
-		ExpiresAt: time.Now().Add(3 * time.Minute),
+		ExpiresAt: time.Now().UTC().Add(3 * time.Minute),
 	}
 
 	if err := tx.Create(&verificationToken).Error; err != nil {
@@ -455,10 +455,10 @@ func (s *AuthService) ResendVerification(email, ip, ua string) (*models.User, st
 		return nil, "", "", "", ErrInternalServer
 	}
 
-	// Log
+	// Catat Log
 	models.CreateAuditLog(s.db, &user.ID, models.AuditActionUserUpdate, models.AuditStatusSuccess, ip, ua, "Verification email resent", &user.ID)
 
-	// Get Name from SDM
+	// Ambil Nama dari SDM
 	nama := "User"
 	if user.NIP != nil {
 		var sdm models.SDM
@@ -485,7 +485,7 @@ func (s *AuthService) VerifyEmail(token, otp, ip, ua string) error {
 		return ErrInvalidOTP
 	}
 
-	// Change status to EMAIL_VERIFIED
+	// Ubah status menjadi EMAIL_VERIFIED
 	if err := s.db.Model(&models.User{}).Where("id = ?", vt.UserID).Update("status", models.StatusEmailVerified).Error; err != nil {
 		return ErrInternalServer
 	}
@@ -511,12 +511,12 @@ func (s *AuthService) SetPassword(token, otp, password, ip, ua string) error {
 		return ErrInvalidOTP
 	}
 
-	// Hash password
+	// Hash kata sandi
 	hashedPassword, _ := utils.HashPassword(password)
 
 	tx := s.db.Begin()
 
-	// Update user status and password
+	// Perbarui status dan kata sandi pengguna
 	if err := tx.Model(&models.User{}).Where("id = ?", vt.UserID).Updates(map[string]interface{}{
 		"password": hashedPassword,
 		"status":   models.StatusActive,
@@ -525,7 +525,7 @@ func (s *AuthService) SetPassword(token, otp, password, ip, ua string) error {
 		return ErrInternalServer
 	}
 
-	// Mark token used
+	// Tandai token sebagai telah digunakan
 	if err := vt.MarkUsed(tx); err != nil {
 		tx.Rollback()
 		return ErrInternalServer
@@ -556,7 +556,7 @@ func (s *AuthService) SecureAdminResetConfirm(
 	return nil
 }
 
-// MFA Methods Implementation
+// Implementasi Metode MFA
 
 func (s *AuthService) GenerateMFASecret(userID uint) (string, string, error) {
 	var user models.User
@@ -582,7 +582,7 @@ func (s *AuthService) GenerateMFASecret(userID uint) (string, string, error) {
 	secret := key.Secret()
 	qrURL := key.URL()
 
-	// Store secret temporarily but don't enable yet
+	// Simpan secret sementara tapi jangan diaktifkan dulu
 	if err := s.db.Model(&user).Update("mfa_secret", secret).Error; err != nil {
 		return "", "", err
 	}
@@ -597,11 +597,11 @@ func (s *AuthService) EnableMFA(userID uint, otp string) error {
 	}
 
 	if user.MFASecret == nil {
-		return errors.New("mfa secret not generated")
+		return errors.New("MFA secret belum dibuat")
 	}
 
 	if !totp.Validate(otp, *user.MFASecret) {
-		return errors.New("kode mfa tidak valid")
+		return errors.New("Kode MFA tidak valid")
 	}
 
 	return s.db.Model(&user).Updates(map[string]interface{}{

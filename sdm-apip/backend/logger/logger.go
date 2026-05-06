@@ -17,8 +17,8 @@ var (
 	once     sync.Once
 )
 
-// logFlags returns log flags based on GIN_MODE
-// In release mode, excludes Lshortfile to reduce overhead and prevent file structure leakage
+// logFlags mengembalikan penanda (flags) log berdasarkan GIN_MODE
+// Dalam mode rilis, Lshortfile dihilangkan untuk mengurangi beban kerja dan mencegah kebocoran struktur file
 func logFlags() int {
 	if os.Getenv("GIN_MODE") == "release" {
 		return log.Ldate | log.Ltime
@@ -27,14 +27,14 @@ func logFlags() int {
 }
 
 func init() {
-	// Simple initialization to console by default
+	// Inisialisasi sederhana ke konsol secara default
 	flags := logFlags()
 	infoLog = log.New(os.Stdout, "INFO: ", flags)
 	warnLog = log.New(os.Stdout, "WARN: ", flags)
 	errorLog = log.New(os.Stderr, "ERROR: ", flags)
 }
 
-// SetupLogger initializes logging to a file (thread-safe, runs once)
+// SetupLogger menginisialisasi pencatatan log ke dalam file (thread-safe, hanya dijalankan sekali)
 func SetupLogger(filePath string) error {
 	var setupErr error
 	once.Do(func() {
@@ -43,13 +43,13 @@ func SetupLogger(filePath string) error {
 	return setupErr
 }
 
-// setupLoggerInternal performs the actual logger setup
+// setupLoggerInternal melakukan konfigurasi logger yang sebenarnya
 func setupLoggerInternal(filePath string) error {
 	if filePath == "" {
 		return nil
 	}
 
-	// Ensure directory exists
+	// Pastikan direktori sudah ada
 	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
@@ -94,51 +94,51 @@ func Fatal(format string, v ...interface{}) {
 }
 
 // ========================================
-// STRUCTURED LOGGING FOUNDATION (Future)
+// FONDASI LOGGING TERSTRUKTUR (Untuk Masa Depan)
 // ========================================
 
-// Fields represents structured log fields
+// Fields merepresentasikan kolom-kolom log terstruktur
 type Fields map[string]interface{}
 
-// LogEntry represents a structured log entry
+// LogEntry merepresentasikan satu entri log terstruktur
 type LogEntry struct {
 	level  string
 	fields Fields
 }
 
-// WithFields creates a new log entry with structured fields
+// WithFields membuat entri log baru dengan kolom terstruktur
 func WithFields(fields Fields) *LogEntry {
 	return &LogEntry{
 		fields: fields,
 	}
 }
 
-// Info logs an info message with structured fields
+// Info mencatat pesan informasi (info) dengan kolom terstruktur
 func (e *LogEntry) Info(message string) {
 	e.level = "INFO"
 	e.log(infoLog, message)
 }
 
-// Warn logs a warning message with structured fields
+// Warn mencatat pesan peringatan (warning) dengan kolom terstruktur
 func (e *LogEntry) Warn(message string) {
 	e.level = "WARN"
 	e.log(warnLog, message)
 }
 
-// Error logs an error message with structured fields
+// Error mencatat pesan kesalahan (error) dengan kolom terstruktur
 func (e *LogEntry) Error(message string) {
 	e.level = "ERROR"
 	e.log(errorLog, message)
 }
 
-// log formats and writes the log entry
+// log memformat dan menulis entri log
 func (e *LogEntry) log(logger *log.Logger, message string) {
 	if len(e.fields) == 0 {
 		logger.Println(message)
 		return
 	}
 
-	// Format: message field1=value1 field2=value2
+	// Format: pesan kolom1=nilai1 kolom2=nilai2
 	fieldsStr := ""
 	for k, v := range e.fields {
 		fieldsStr += fmt.Sprintf(" %s=%v", k, v)

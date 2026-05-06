@@ -72,7 +72,7 @@ func (s *ReportService) buildAssessmentQuery(filter models.ReportFilter) *gorm.D
 func (s *ReportService) GetDashboardData(filter models.ReportFilter) (*models.DashboardData, error) {
 	data := &models.DashboardData{}
 
-	// 1. Summary Statistics
+	// 1. Statistik Ringkasan
 	query := s.buildAssessmentQuery(filter)
 
 	var stats struct {
@@ -89,12 +89,12 @@ func (s *ReportService) GetDashboardData(filter models.ReportFilter) (*models.Da
 	data.Summary.TotalAssessments = stats.TotalAssessments
 	data.Summary.AverageScore = math.Round(stats.AvgTotal*100) / 100
 
-	// Total Users (who received assessment)
+	// Total Pengguna (yang menerima penilaian)
 	var totalUsers int64
 	s.buildAssessmentQuery(filter).Distinct("target_user_id").Count(&totalUsers)
 	data.Summary.TotalUsers = totalUsers
 
-	// Min/Max scores (per user average)
+	// Skor Min/Max (rata-rata per pengguna)
 	var minMax struct {
 		Min float64
 		Max float64
@@ -116,7 +116,7 @@ func (s *ReportService) GetDashboardData(filter models.ReportFilter) (*models.Da
 	data.Summary.LowestScore = math.Round(minMax.Min*100) / 100
 	data.Summary.HighestScore = math.Round(minMax.Max*100) / 100
 
-	// 2. Score Distribution
+	// 2. Distribusi Skor
 	distribution := []models.ScoreDistribution{
 		{Range: "1.0 - 2.0", Count: 0},
 		{Range: "2.1 - 3.0", Count: 0},
@@ -143,7 +143,7 @@ func (s *ReportService) GetDashboardData(filter models.ReportFilter) (*models.Da
 	}
 	data.ScoreDistribution = distribution
 
-	// 3. Category Breakdown
+	// 3. Rincian Kategori
 	var catStats struct {
 		AvgSer float64
 		AvgAku float64
@@ -154,7 +154,7 @@ func (s *ReportService) GetDashboardData(filter models.ReportFilter) (*models.Da
 		AvgKol float64
 	}
 	s.buildAssessmentQuery(filter).
-		Select("COALESCE(AVG(berorientasi_pelayanan), 0), COALESCE(AVG(akuntabel), 0), COALESCE(AVG(kompeten), 0), COALESCE(AVG(harmonis), 0), COALESCE(AVG(loyal), 0), COALESCE(AVG(adaptif), 0), COALESCE(AVG(kolaboratif), 0)").
+		Select("COALESCE(AVG(berorientasi_pelayanan), 0) as avg_ser, COALESCE(AVG(akuntabel), 0) as avg_aku, COALESCE(AVG(kompeten), 0) as avg_kom, COALESCE(AVG(harmonis), 0) as avg_har, COALESCE(AVG(loyal), 0) as avg_loy, COALESCE(AVG(adaptif), 0) as avg_ada, COALESCE(AVG(kolaboratif), 0) as avg_kol").
 		Scan(&catStats)
 
 	data.CategoryBreakdown = []models.CategoryBreakdown{
@@ -167,7 +167,7 @@ func (s *ReportService) GetDashboardData(filter models.ReportFilter) (*models.Da
 		{Category: "Kolaboratif", Average: math.Round(catStats.AvgKol*100) / 100},
 	}
 
-	// 4. Performance Trend (Last 6 Months)
+	// 4. Tren Performa (6 Bulan Terakhir)
 	var trendData []models.TrendData
 	for i := 5; i >= 0; i-- {
 		targetDate := time.Now().AddDate(0, -i, 0)
@@ -187,7 +187,7 @@ func (s *ReportService) GetDashboardData(filter models.ReportFilter) (*models.Da
 	}
 	data.PerformanceTrend = trendData
 
-	// 5. Top & Low Performers
+	// 5. Performa Tertinggi & Terendah
 	var performers []models.PerformerInfo
 	s.buildAssessmentQuery(filter).
 		Select("target_user.id as user_id, sdm.nama as name, sdm.nip as nip, sdm.unit_kerja as unit_kerja, AVG((berorientasi_pelayanan + akuntabel + kompeten + harmonis + loyal + adaptif + kolaboratif) / 7.0) as score").
@@ -216,7 +216,7 @@ func (s *ReportService) GetDetailedReports(filter models.ReportFilter) ([]models
 	query := s.buildAssessmentQuery(filter)
 	query.Count(&total)
 
-	// SECURE SORTING (Whitelist)
+	// PENGURUTAN AMAN (Daftar Putih)
 	allowedSort := map[string]string{
 		"date":          "peer_assessments.created_at",
 		"created_at":    "peer_assessments.created_at",
@@ -237,7 +237,7 @@ func (s *ReportService) GetDetailedReports(filter models.ReportFilter) ([]models
 		order = "ASC"
 	}
 
-	// Pagination
+	// Paginasi
 	if filter.Page > 0 && filter.PageSize > 0 {
 		query = query.Limit(filter.PageSize).Offset((filter.Page - 1) * filter.PageSize)
 	}
@@ -280,11 +280,11 @@ func (s *ReportService) ExportToExcel(filter models.ReportFilter, adminID uint, 
 	f := excelize.NewFile()
 	defer f.Close()
 
-	// Sheet 1: Summary
+	// Lembar 1: Ringkasan
 	f.SetSheetName("Sheet1", "Ringkasan")
 	dashData, err := s.GetDashboardData(filter)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get dashboard data: %v", err)
+		return nil, fmt.Errorf("Gagal mengambil data dashboard: %v", err)
 	}
 
 	f.SetCellValue("Ringkasan", "A1", "LAPORAN PENILAIAN PEER ASSESSMENT")
@@ -340,7 +340,7 @@ func (s *ReportService) ExportToExcel(filter models.ReportFilter, adminID uint, 
 		return nil, err
 	}
 
-	// Audit Log
+	// Log Audit
 	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, "Export Excel Report", nil)
 
 	return buf.Bytes(), nil
@@ -356,12 +356,12 @@ func (s *ReportService) ExportToPDF(filter models.ReportFilter, adminID uint, ip
 func (s *ReportService) generateGlobalPDF(filter models.ReportFilter, adminID uint, ip, ua string) ([]byte, error) {
 	dashData, err := s.GetDashboardData(filter)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get dashboard data: %v", err)
+		return nil, fmt.Errorf("Gagal mengambil data dashboard: %v", err)
 	}
 
 	details, _, err := s.GetDetailedReports(filter)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get detailed reports: %v", err)
+		return nil, fmt.Errorf("Gagal mengambil detail laporan: %v", err)
 	}
 
 	pdf := gofpdf.New("L", "mm", "A4", "")
@@ -375,7 +375,7 @@ func (s *ReportService) generateGlobalPDF(filter models.ReportFilter, adminID ui
 	pdf.Cell(0, 10, fmt.Sprintf("Dicetak pada: %s", time.Now().Format("02 Jan 2006 15:04")))
 	pdf.Ln(12)
 
-	// Summary Cards
+	// Kartu Ringkasan
 	pdf.SetFillColor(240, 240, 240)
 	pdf.SetFont("Arial", "B", 12)
 	pdf.CellFormat(50, 10, "Ringkasan Statistik", "1", 1, "C", true, 0, "")
@@ -385,7 +385,7 @@ func (s *ReportService) generateGlobalPDF(filter models.ReportFilter, adminID ui
 	pdf.CellFormat(50, 8, fmt.Sprintf("User Dinilai: %d", dashData.Summary.TotalUsers), "1", 1, "L", false, 0, "")
 	pdf.Ln(10)
 
-	// Table Detail
+	// Detail Tabel
 	pdf.SetFont("Arial", "B", 10)
 	cols := []struct {
 		Text  string
@@ -427,7 +427,7 @@ func (s *ReportService) generateGlobalPDF(filter models.ReportFilter, adminID ui
 		return nil, err
 	}
 
-	// Audit Log
+	// Log Audit
 	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, "Export Global PDF Report", nil)
 
 	return buf.Bytes(), nil
@@ -436,18 +436,18 @@ func (s *ReportService) generateGlobalPDF(filter models.ReportFilter, adminID ui
 func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminID uint, ip, ua string) ([]byte, error) {
 	details, _, err := s.GetDetailedReports(filter)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get detailed reports: %v", err)
+		return nil, fmt.Errorf("Gagal mengambil detail laporan: %v", err)
 	}
 
 	if len(details) == 0 {
-		return nil, fmt.Errorf("no report data found for this user")
+		return nil, fmt.Errorf("Tidak ada data laporan yang ditemukan untuk pengguna ini")
 	}
 
 	targetName := details[0].TargetUserName
 	targetNIP := details[0].TargetNIP
 	unitKerja := details[0].UnitKerja
 
-	// Fetch Answers
+	// Ambil Jawaban
 	var detailIDs []uint
 	for _, raw := range details {
 		detailIDs = append(detailIDs, raw.ID)
@@ -455,7 +455,7 @@ func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminI
 	var answers []models.AssessmentAnswer
 	if len(detailIDs) > 0 {
 		if err := s.db.Preload("Question").Where("peer_assessment_id IN ?", detailIDs).Find(&answers).Error; err != nil {
-			return nil, fmt.Errorf("failed to load answers: %v", err)
+			return nil, fmt.Errorf("Gagal memuat jawaban: %v", err)
 		}
 	}
 
@@ -476,7 +476,7 @@ func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminI
 		pdf.CellFormat(0, 10, "RAPOR EVALUASI KINERJA BERAKHLAK", "", 1, "C", false, 0, "")
 		pdf.Ln(4)
 
-		// Target Details
+		// Detail Target
 		pdf.SetFont("Arial", "B", 10)
 		pdf.CellFormat(40, 6, "Nama Pegawai:", "", 0, "L", false, 0, "")
 		pdf.SetFont("Arial", "", 10)
@@ -492,7 +492,7 @@ func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminI
 		pdf.SetFont("Arial", "", 10)
 		pdf.CellFormat(0, 6, unitKerja, "", 1, "L", false, 0, "")
 
-		// Evaluator Details
+		// Detail Penilai (Evaluator)
 		pdf.Ln(1)
 		pdf.SetLineWidth(0.5)
 		pdf.Line(10, pdf.GetY(), 200, pdf.GetY())
@@ -511,7 +511,7 @@ func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminI
 		}
 		pdf.Ln(3)
 
-		// Answers Table Header
+		// Header Tabel Jawaban
 		pdf.SetFont("Arial", "B", 9)
 		pdf.SetFillColor(230, 230, 240)
 		pdf.CellFormat(45, 8, "Indikator", "1", 0, "C", true, 0, "")
@@ -522,10 +522,10 @@ func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminI
 		pdf.SetFillColor(255, 255, 255)
 		pAnswers := answerMap[p.ID]
 		for _, a := range pAnswers {
-			// Save curr Y
+			// Simpan Y saat ini
 			curY := pdf.GetY()
 			pdf.MultiCell(125, 6, a.Question.Text, "1", "L", false)
-			// Draw Indicator and Score
+			// Gambar Indikator dan Skor
 			newY := pdf.GetY()
 			height := newY - curY
 			
@@ -557,7 +557,7 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 	var results []models.UserReportRow
 	var total int64
 
-	// Base query starts from Users who have an NIP (Employee data)
+	// Kueri dasar dimulai dari Pengguna yang memiliki NIP (Data pegawai)
 	query := s.db.Table("users").
 		Select("users.id as user_id, sdm.nama as name, sdm.nip as nip, sdm.jabatan as jabatan, sdm.unit_kerja").
 		Joins("Join sdm_apip as sdm ON sdm.nip = users.nip")
@@ -573,13 +573,13 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 
 	query.Count(&total)
 
-	// Sorting - Map frontend sort fields to valid database columns
+	// Pengurutan - Petakan field urutan dari frontend ke kolom database yang valid
 	sortBy := "sdm.nama" // Default sort by name
 	if filter.SortBy != "" {
 		// Map sort fields to valid columns in this query
 		switch filter.SortBy {
 		case "peer_assessments.created_at":
-			sortBy = "sdm.nama" // Fallback to name since created_at not available here
+			sortBy = "sdm.nama" // Kembali ke nama karena created_at tidak tersedia di sini
 		case "average_score":
 			sortBy = "average_score"
 		case "name":
@@ -595,7 +595,7 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 		order = "DESC"
 	}
 
-	// Pagination
+	// Paginasi
 	if filter.Page > 0 && filter.PageSize > 0 {
 		query = query.Limit(filter.PageSize).Offset((filter.Page - 1) * filter.PageSize)
 	}
@@ -605,10 +605,10 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 		subqueryFilter = ""
 	}
 
-	// Build constraints for subqueries
+	// Bangun batasan (constraints) untuk subkueri
 	if filter.StartDate != nil {
-		// Use manual string concatenation for subquery filter to inject safely
-		// We insert the date string. Note: string formatting might be tricky if we don't pass it as an argument to the main query, But since Select doesn't easily take infinite args for multiple subqueries unless we duplicate them, we can format the date conditionally since it's a strongly typed time/string.
+		// Gunakan penggabungan string manual untuk filter subkueri agar disuntikkan dengan aman
+		// Kita memasukkan string tanggal. Catatan: pemformatan string mungkin sedikit rumit jika kita tidak melewatkannya sebagai argumen ke kueri utama, Tetapi karena Select tidak mudah menerima argumen tak terbatas untuk banyak subkueri kecuali kita menduplikatnya, kita dapat memformat tanggal secara kondisional karena ini adalah time/string yang diketik dengan kuat.
 		dateStr := filter.StartDate.Format("2006-01-02 15:04:05")
 		subqueryFilter += fmt.Sprintf(" AND created_at >= '%s'", dateStr)
 	}
@@ -620,7 +620,7 @@ func (s *ReportService) GetUserReports(filter models.ReportFilter) ([]models.Use
 		subqueryFilter += fmt.Sprintf(" AND assessment_month = %d", *filter.AssessmentMonth)
 	}
 
-	// Dynamic subqueries using Joins or subqueries safely
+	// Subkueri dinamis menggunakan Join atau subkueri secara aman
 	err := query.Select(fmt.Sprintf(`
 		users.id as user_id, 
 		sdm.nama as name, 

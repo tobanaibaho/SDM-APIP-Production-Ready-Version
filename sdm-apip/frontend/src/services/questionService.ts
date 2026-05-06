@@ -21,11 +21,11 @@ export interface UpdateQuestionRequest {
 }
 
 export const questionService = {
-    // Admin & User
+    // Admin & Pengguna
     getQuestions: async (all: boolean = false) => {
         const query = all ? '?all=true' : '';
-        // If the URL is accessed from Admin, we use /admin/questions, else /user/questions
-        // Wait, to keep it simple, since we injected it in both sides, we can just use the role context or provide specific methods
+        // Jika URL diakses dari Admin, kita gunakan /admin/questions, jika tidak /user/questions
+        // Untuk menyederhanakan, karena kita menyuntikkannya di kedua sisi, kita dapat menggunakan konteks peran atau metode spesifik
         return api.get(`/admin/questions${query}`);
     },
 
@@ -54,7 +54,7 @@ export const questionService = {
     },
 
     downloadTemplate: () => {
-        // Build a simple CSV template for users to fill in
+        // Buat template CSV sederhana untuk diisi pengguna
         const header = 'Indikator,Pertanyaan\n';
         const example = [
             'Akuntabel,Pegawai ini bertanggung jawab atas pekerjaan yang diberikan',

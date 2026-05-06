@@ -6,10 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// RoleID type for compile-time safety
+// Tipe RoleID untuk keamanan pada saat kompilasi (compile-time safety)
 type RoleID uint
 
-// Role represents user roles
+// Role merepresentasikan peran pengguna
 type Role struct {
 	ID          RoleID         `gorm:"primaryKey" json:"id"`
 	Name        string         `gorm:"size:50;unique;not null" json:"name"`
@@ -23,7 +23,7 @@ func (Role) TableName() string {
 }
 
 /*
-| Role Constants
+| Konstanta Peran (Role Constants)
 */
 
 const (
@@ -35,20 +35,20 @@ const (
 )
 
 /*
-| Helper Methods
+| Metode Pembantu (Helper Methods)
 */
 
-// IsSuperAdmin checks if role is Super Admin
+// IsSuperAdmin memeriksa apakah peran adalah Super Admin
 func (r Role) IsSuperAdmin() bool {
 	return r.ID == RoleSuperAdmin
 }
 
-// IsUser checks if role is a regular user
+// IsUser memeriksa apakah peran adalah pengguna biasa
 func (r Role) IsUser() bool {
 	return r.ID == RoleUser
 }
 
-// IsValidRole checks if RoleID is allowed
+// IsValidRole memeriksa apakah RoleID diizinkan
 func IsValidRole(id RoleID) bool {
 	return id == RoleSuperAdmin || id == RoleUser
 }

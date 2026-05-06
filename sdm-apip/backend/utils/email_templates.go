@@ -4,13 +4,13 @@ import (
 	"fmt"
 )
 
-// EmailTemplate contains the structure for email content
+// EmailTemplate berisi struktur untuk konten email
 type EmailTemplate struct {
 	Subject string
 	Body    string
 }
 
-// GetVerificationEmailTemplate returns the template for email verification
+// GetVerificationEmailTemplate mengembalikan template untuk verifikasi email
 func GetVerificationEmailTemplate(userName, verificationURL string) EmailTemplate {
 	return EmailTemplate{
 		Subject: "Verifikasi Email - SDM APIP System",
@@ -67,7 +67,7 @@ func GetVerificationEmailTemplate(userName, verificationURL string) EmailTemplat
 	}
 }
 
-// GetOTPVerificationEmailTemplate returns the template for email verification with OTP
+// GetOTPVerificationEmailTemplate mengembalikan template untuk verifikasi email dengan OTP
 func GetOTPVerificationEmailTemplate(userName, verificationURL, otp string) EmailTemplate {
 	return EmailTemplate{
 		Subject: "Verifikasi Email - SDM APIP System",
@@ -132,7 +132,7 @@ func GetOTPVerificationEmailTemplate(userName, verificationURL, otp string) Emai
 	}
 }
 
-// GetPasswordResetEmailTemplate returns the template for password reset
+// GetPasswordResetEmailTemplate mengembalikan template untuk reset kata sandi
 func GetPasswordResetEmailTemplate(userName, resetURL, otp string) EmailTemplate {
 	return EmailTemplate{
 		Subject: "Reset Password - SDM APIP System",
@@ -193,7 +193,7 @@ func GetPasswordResetEmailTemplate(userName, resetURL, otp string) EmailTemplate
 	}
 }
 
-// GetAdminPasswordResetEmailTemplate returns the template for admin password reset
+// GetAdminPasswordResetEmailTemplate mengembalikan template untuk reset kata sandi admin
 func GetAdminPasswordResetEmailTemplate(adminName, resetURL string) EmailTemplate {
 	return EmailTemplate{
 		Subject: "⚠️ Reset Password Administrator - SDM APIP System",

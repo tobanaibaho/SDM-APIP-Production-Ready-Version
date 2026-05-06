@@ -1,47 +1,47 @@
-# Build stage
-FROM golang:1.24-alpine AS builder
+# Tahap Build (Kompilasi)
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
-# Copy go mod and sum files
+# Salin file konfigurasi modul Go
 COPY backend/go.mod backend/go.sum ./
 
-# Download dependencies
+# Unduh dependensi (pustaka yang dibutuhkan)
 RUN go mod download
 
-# Copy source code
+# Salin seluruh kode sumber
 COPY backend/ .
 
-# Build the application (static binary, stripped for smaller size)
+# Lakukan kompilasi aplikasi (membuat file binary statis, ukurannya diperkecil)
 RUN CGO_ENABLED=0 GOOS=linux go build -buildvcs=false -ldflags="-w -s" -o main .
 
-# Run stage — minimal Alpine image
+# Tahap Jalankan (Run) — menggunakan sistem Alpine Linux murni yang sangat kecil
 FROM alpine:latest
 
-# Install CA certificates for TLS/SMTP, and tzdata for timezone
+# Pasang sertifikat CA untuk keamanan TLS/SMTP, dan tzdata untuk mengatur zona waktu
 RUN apk --no-cache add ca-certificates tzdata
 
-# Set timezone to WIB (Asia/Jakarta)
+# Atur zona waktu ke WIB (Asia/Jakarta)
 ENV TZ=Asia/Jakarta
 
 WORKDIR /app
 
-# Copy the binary from builder
+# Salin file binary yang sudah matang dari tahap "builder"
 COPY --from=builder /app/main .
 
-# Copy database migrations (needed for --migrate flag)
+# Salin file migrasi database (dibutuhkan agar sistem bisa melakukan update tabel otomatis)
 COPY database/migrations ./database/migrations
 
-# Create logs directory
+# Buat folder khusus untuk menyimpan catatan aktivitas (logs)
 RUN mkdir -p logs
 
-# Expose port
+# Buka akses port
 EXPOSE 8080
 
-# Health check for container orchestration (Docker Compose / Kubernetes)
+# Cek kesehatan aplikasi secara berkala (Penting untuk Docker Compose / Kubernetes)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD wget -qO- http://localhost:8080/api/health || exit 1
 
-# NOTE: Configuration is injected via environment variables at runtime.
-# DO NOT copy .env files into the image — use docker-compose env_file or K8s secrets.
+# CATATAN: Konfigurasi sistem disuntikkan secara dinamis saat aplikasi dijalankan.
+# JANGAN PERNAH menyalin file .env rahasia ke dalam Docker Image — gunakan docker-compose.yml.
 CMD ["./main"]

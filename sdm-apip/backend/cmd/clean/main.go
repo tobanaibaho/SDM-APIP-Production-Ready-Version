@@ -8,13 +8,13 @@ import (
 )
 
 func main() {
-	// Load configuration
+	// Muat konfigurasi
 	err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Connect to database
+	// Hubungkan ke database
 	err = config.ConnectDatabase()
 	if err != nil {
 		log.Fatal(err)
@@ -23,43 +23,43 @@ func main() {
 	db := config.DB
 	logger.Info("🧹 Memulai pembersihan data transaksional sistem...")
 
-	// 1. Clear Peer Assessments
+	// 1. Hapus Penilaian Sejawat (Peer Assessments)
 	if err := db.Unscoped().Where("1=1").Delete(&models.PeerAssessment{}).Error; err != nil {
 		logger.Fatal("Gagal menghapus peer_assessments: %v", err)
 	}
 	logger.Info("✅ peer_assessments dihapus.")
 
-	// 2. Clear Assessment Relations
+	// 2. Hapus Relasi Penilaian
 	if err := db.Unscoped().Where("1=1").Delete(&models.AssessmentRelation{}).Error; err != nil {
 		logger.Fatal("Gagal menghapus assessment_relations: %v", err)
 	}
 	logger.Info("✅ assessment_relations dihapus.")
 
-	// 3. Clear Assessment Periods
+	// 3. Hapus Periode Penilaian
 	if err := db.Unscoped().Where("1=1").Delete(&models.AssessmentPeriod{}).Error; err != nil {
 		logger.Fatal("Gagal menghapus assessment_periods: %v", err)
 	}
 	logger.Info("✅ assessment_periods dihapus.")
 
-	// 4. Clear User Groups (Many-to-Many bridge table)
+	// 4. Hapus Grup Pengguna (Tabel bridge Many-to-Many)
 	if err := db.Exec("DELETE FROM user_groups").Error; err != nil {
 		logger.Fatal("Gagal menghapus user_groups: %v", err)
 	}
 	logger.Info("✅ user_groups (anggota tim) dihapus.")
 
-	// 5. Clear Groups
+	// 5. Hapus Daftar Grup
 	if err := db.Unscoped().Where("1=1").Delete(&models.Group{}).Error; err != nil {
 		logger.Fatal("Gagal menghapus groups: %v", err)
 	}
 	logger.Info("✅ groups (tim) dihapus.")
 
-	// 6. Optionally clear audit logs to start totally fresh
+	// 6. Opsional: hapus log audit untuk memulai ulang sepenuhnya
 	if err := db.Unscoped().Where("1=1").Delete(&models.AuditLog{}).Error; err != nil {
 		logger.Fatal("Gagal menghapus audit_logs: %v", err)
 	}
 	logger.Info("✅ audit_logs dihapus.")
 
-	// Reset sequences if PostgreSQL (Optional, but good for clean IDs)
+	// Reset nomor urut otomatis (Sequence) jika menggunakan PostgreSQL (Opsional, tapi bagus agar ID kembali dari 1)
 	db.Exec("ALTER SEQUENCE peer_assessments_id_seq RESTART WITH 1")
 	db.Exec("ALTER SEQUENCE assessment_relations_id_seq RESTART WITH 1")
 	db.Exec("ALTER SEQUENCE assessment_periods_id_seq RESTART WITH 1")

@@ -45,7 +45,25 @@ type Config struct {
 
 	FrontendURL string
 
-	AdminDefaultPassword string // Loaded from ADMIN_DEFAULT_PASSWORD env
+	AdminDefaultPassword string // Dimuat dari variabel lingkungan ADMIN_DEFAULT_PASSWORD
+
+	SSOEnabled      bool
+	SSOClientID     string
+	SSOClientSecret string
+	SSOIssuerURL    string
+	SSORedirectURL  string
+
+	GoogleSSOEnabled      bool
+	GoogleSSOClientID     string
+	GoogleSSOClientSecret string
+	GoogleSSOIssuerURL    string
+	GoogleSSORedirectURL  string
+
+	MicrosoftSSOEnabled      bool
+	MicrosoftSSOClientID     string
+	MicrosoftSSOClientSecret string
+	MicrosoftSSOIssuerURL    string
+	MicrosoftSSORedirectURL  string
 }
 
 var AppConfig *Config
@@ -54,20 +72,20 @@ var DB *gorm.DB
 func LoadConfig() error {
 	err := godotenv.Load()
 	if err != nil {
-		logger.Warn("Warning: .env file not found, using environment variables")
+		logger.Warn("Peringatan: file .env tidak ditemukan, menggunakan environment variables bawaan")
 	}
 
-	// Safe JWT Expiry parsing with validation
+	// Parsing aman untuk masa kedaluwarsa JWT beserta validasinya
 	jwtExpiry, err := strconv.Atoi(getEnv("JWT_EXPIRY_HOURS", "24"))
 	if err != nil || jwtExpiry <= 0 {
-		logger.Warn("⚠️ Invalid JWT_EXPIRY_HOURS, defaulting to 24 hours")
+		logger.Warn("⚠️ JWT_EXPIRY_HOURS tidak valid, menggunakan default 24 jam")
 		jwtExpiry = 24
 	}
 
-	// Safe JWT Refresh Expiry parsing with validation
+	// Parsing aman untuk masa kedaluwarsa Refresh Token JWT beserta validasinya
 	jwtRefreshExpiry, err := strconv.Atoi(getEnv("JWT_REFRESH_EXPIRY_HOURS", "168"))
 	if err != nil || jwtRefreshExpiry <= 0 {
-		logger.Warn("⚠️ Invalid JWT_REFRESH_EXPIRY_HOURS, defaulting to 168 hours (7 days)")
+		logger.Warn("⚠️ JWT_REFRESH_EXPIRY_HOURS tidak valid, menggunakan default 168 jam (7 hari)")
 		jwtRefreshExpiry = 168
 	}
 
@@ -103,9 +121,27 @@ func LoadConfig() error {
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:5173"),
 
 		AdminDefaultPassword: getEnv("ADMIN_DEFAULT_PASSWORD", ""),
+
+		SSOEnabled:      getEnv("SSO_ENABLED", "false") == "true",
+		SSOClientID:     getEnv("SSO_CLIENT_ID", ""),
+		SSOClientSecret: getEnv("SSO_CLIENT_SECRET", ""),
+		SSOIssuerURL:    getEnv("SSO_ISSUER_URL", ""),
+		SSORedirectURL:  getEnv("SSO_REDIRECT_URL", "http://localhost:5173/api/auth/sso/callback"),
+
+		GoogleSSOEnabled:      getEnv("GOOGLE_SSO_ENABLED", "false") == "true",
+		GoogleSSOClientID:     getEnv("GOOGLE_SSO_CLIENT_ID", ""),
+		GoogleSSOClientSecret: getEnv("GOOGLE_SSO_CLIENT_SECRET", ""),
+		GoogleSSOIssuerURL:    getEnv("GOOGLE_SSO_ISSUER_URL", "https://accounts.google.com"),
+		GoogleSSORedirectURL:  getEnv("GOOGLE_SSO_REDIRECT_URL", "http://localhost:5173/api/auth/sso/callback/google"),
+
+		MicrosoftSSOEnabled:      getEnv("MICROSOFT_SSO_ENABLED", "false") == "true",
+		MicrosoftSSOClientID:     getEnv("MICROSOFT_SSO_CLIENT_ID", ""),
+		MicrosoftSSOClientSecret: getEnv("MICROSOFT_SSO_CLIENT_SECRET", ""),
+		MicrosoftSSOIssuerURL:    getEnv("MICROSOFT_SSO_ISSUER_URL", "https://login.microsoftonline.com/common/v2.0"),
+		MicrosoftSSORedirectURL:  getEnv("MICROSOFT_SSO_REDIRECT_URL", "http://localhost:5173/api/auth/sso/callback/microsoft"),
 	}
 
-	// Centralized configuration validation
+	// Validasi konfigurasi terpusat
 	return ValidateConfig()
 }
 
@@ -120,7 +156,7 @@ func ConnectDatabase() error {
 		AppConfig.DBSSLMode,
 	)
 
-	// Dynamic GORM logging level based on GIN_MODE
+	// Tingkat logging GORM dinamis berdasarkan GIN_MODE
 	logLevel := gormlogger.Warn
 	if AppConfig.GinMode == "debug" {
 		logLevel = gormlogger.Info
@@ -135,74 +171,74 @@ func ConnectDatabase() error {
 		return err
 	}
 
-	// === CONNECTION POOLING CONFIGURATION ===
+	// === KONFIGURASI PENGELOMPOKAN KONEKSI (CONNECTION POOLING) ===
 	sqlDB, err := DB.DB()
 	if err != nil {
-		return fmt.Errorf("failed to get sql.DB from gorm: %v", err)
+		return fmt.Errorf("Gagal mendapatkan sql.DB dari gorm: %v", err)
 	}
 
-	sqlDB.SetMaxIdleConns(10)               // Minimum idle connections
-	sqlDB.SetMaxOpenConns(100)              // Maximum concurrent open connections
-	sqlDB.SetConnMaxLifetime(time.Hour)     // Maximum recycle time for a connection
+	sqlDB.SetMaxIdleConns(10)               // Jumlah minimum koneksi yang diam (idle)
+	sqlDB.SetMaxOpenConns(100)              // Jumlah maksimum koneksi terbuka secara bersamaan
+	sqlDB.SetConnMaxLifetime(time.Hour)     // Waktu maksimum daur ulang untuk sebuah koneksi
 
 	log.Println("✅ Database connected successfully! (Connection Pool Initialized)")
 	return nil
 }
 
-// RunSQLFile executes SQL commands from a file
+// RunSQLFile menjalankan perintah SQL dari sebuah file
 func RunSQLFile(filePath string) error {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		return fmt.Errorf("failed to read SQL file: %v", err)
+		return fmt.Errorf("Gagal membaca file SQL: %v", err)
 	}
 
-	// Clean path for logging
+	// Bersihkan path untuk keperluan logging
 	absPath, _ := filepath.Abs(filePath)
 	logger.Info("📄 Executing SQL from: %s", absPath)
 
-	// Execute the entire SQL as a single transaction or batch
-	// Note: PostgreSQL handles multiple statements in one query
+	// Eksekusi seluruh SQL sebagai satu transaksi atau batch tunggal
+	// Catatan: PostgreSQL dapat menangani beberapa pernyataan dalam satu query
 	if err := DB.Exec(string(content)).Error; err != nil {
-		return fmt.Errorf("failed to execute SQL: %v", err)
+		return fmt.Errorf("Gagal mengeksekusi SQL: %v", err)
 	}
 
 	return nil
 }
 
-// ValidateConfig performs centralized configuration validation
+// ValidateConfig melakukan validasi konfigurasi terpusat
 func ValidateConfig() error {
-	// Validate mandatory database fields
+	// Validasi field database yang wajib diisi
 	if AppConfig.DBHost == "" || AppConfig.DBUser == "" || AppConfig.DBName == "" {
-		return fmt.Errorf("mandatory database configuration missing (DB_HOST, DB_USER, DB_NAME)")
+		return fmt.Errorf("Konfigurasi database wajib tidak ada (DB_HOST, DB_USER, DB_NAME)")
 	}
 
-	// Validate JWT Secret
+	// Validasi Rahasia (Secret) JWT
 	if AppConfig.JWTSecret == "" {
 		if AppConfig.GinMode == "release" {
-			return fmt.Errorf("JWT_SECRET MUST be set in release mode")
+			return fmt.Errorf("JWT_SECRET HARUS diatur dalam mode rilis")
 		}
-		logger.Warn("WARNING: JWT_SECRET is not set, using insecure default for development")
+		logger.Warn("PERINGATAN: JWT_SECRET tidak diatur, menggunakan default yang tidak aman untuk tahap pengembangan (development)")
 		AppConfig.JWTSecret = "default-insecure-secret-key-change-me"
 	}
 
-	// Validate JWT Refresh Secret
+	// Validasi Rahasia (Secret) Refresh JWT
 	if AppConfig.JWTRefreshSecret == "" {
 		if AppConfig.GinMode == "release" {
-			logger.Warn("⚠️ JWT_REFRESH_SECRET not set in release mode, using JWT_SECRET as fallback")
+			logger.Warn("⚠️ JWT_REFRESH_SECRET tidak diatur dalam mode rilis, menggunakan JWT_SECRET sebagai cadangan")
 		}
 		AppConfig.JWTRefreshSecret = AppConfig.JWTSecret
 	}
 
-	// Security Hardening: Prevent Insecure SMTP in release mode
+	// Penguatan Keamanan: Mencegah SMTP tidak aman dalam mode rilis
 	if AppConfig.GinMode == "release" && AppConfig.SMTPInsecure {
-		logger.Warn("⚠️ SECURITY WARNING: SMTP_INSECURE is set to true in release mode. Forcing to false.")
+		logger.Warn("⚠️ PERINGATAN KEAMANAN: SMTP_INSECURE diatur ke true dalam mode rilis. Memaksa menjadi false.")
 		AppConfig.SMTPInsecure = false
 	}
 
-	// Validate SMTP configuration in release mode
+	// Validasi konfigurasi SMTP dalam mode rilis
 	if AppConfig.GinMode == "release" {
 		if AppConfig.SMTPHost == "" || AppConfig.SMTPUsername == "" || AppConfig.SMTPPassword == "" {
-			logger.Warn("⚠️ SMTP configuration incomplete in release mode (SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD)")
+			logger.Warn("⚠️ Konfigurasi SMTP tidak lengkap dalam mode rilis (SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD)")
 		}
 	}
 

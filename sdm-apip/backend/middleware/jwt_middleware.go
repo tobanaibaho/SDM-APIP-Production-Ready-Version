@@ -11,21 +11,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// JWTAuthMiddleware validates JWT tokens
+// JWTAuthMiddleware memvalidasi token JWT
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
-			utils.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized", "Authorization header required")
+			utils.ErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan", "Header otorisasi diperlukan")
 			c.Abort()
 			return
 		}
 
-		// Check Bearer token format
+		// Periksa format token Bearer
 		parts := strings.Fields(authHeader)
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			utils.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized", "Invalid authorization header format")
+			utils.ErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan", "Format header otorisasi tidak valid")
 			c.Abort()
 			return
 		}
@@ -33,27 +33,27 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		tokenString := parts[1]
 		claims, err := utils.ValidateJWT(tokenString)
 		if err != nil {
-			utils.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized", "Invalid or expired token")
+			utils.ErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan", "Token tidak valid atau sudah kedaluwarsa")
 			c.Abort()
 			return
 		}
 
-		// Set user info in context
+		// Simpan informasi pengguna di dalam context
 		c.Set("user_id", claims.UserID)
 		c.Set("nip", claims.NIP)
 		c.Set("email", claims.Email)
 		c.Set("role", claims.Role)
 
-		// Session Management: Update LastActivityAt dan cek inaktivitas (8 jam = 1 hari kerja)
+		// Manajemen Sesi: Update LastActivityAt dan cek inaktivitas (8 jam = 1 hari kerja)
 		var user models.User
 		if err := config.DB.First(&user, claims.UserID).Error; err == nil {
 			if user.LastActivityAt != nil && time.Since(*user.LastActivityAt) > 8*time.Hour {
-				utils.ErrorResponse(c, http.StatusUnauthorized, "Session Expired", "Inactivity timeout. Please login again.")
+				utils.ErrorResponse(c, http.StatusUnauthorized, "Sesi kedaluwarsa", "Waktu tidak aktif habis. Harap login kembali.")
 				c.Abort()
 				return
 			}
 
-			// Update last activity
+			// Perbarui aktivitas terakhir
 			now := time.Now()
 			config.DB.Model(&user).Update("last_activity_at", &now)
 		}
@@ -62,7 +62,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// GetUserIDFromContext gets user ID from gin context safely
+// GetUserIDFromContext mengambil ID pengguna dari gin context dengan aman
 func GetUserIDFromContext(c *gin.Context) uint {
 	val, exists := c.Get("user_id")
 	if !exists {
@@ -75,7 +75,7 @@ func GetUserIDFromContext(c *gin.Context) uint {
 	return userID
 }
 
-// GetRoleFromContext gets role from gin context safely
+// GetRoleFromContext mengambil peran (role) dari gin context dengan aman
 func GetRoleFromContext(c *gin.Context) string {
 	val, exists := c.Get("role")
 	if !exists {

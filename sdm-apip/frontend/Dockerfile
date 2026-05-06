@@ -5,16 +5,16 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Salin file package
 COPY package.json package-lock.json ./
 
-# Install dependencies
+# Instal dependensi
 RUN npm install --legacy-peer-deps
 
-# Copy source code
+# Salin kode sumber
 COPY . .
 
-# Build the application
+# Bangun aplikasi
 RUN npm run build
 
 # =============================================================
@@ -22,14 +22,14 @@ RUN npm run build
 # =============================================================
 FROM nginx:alpine
 
-# Copy build assets from builder
+# Salin aset hasil build dari tahap builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx config (dengan proper MIME types & CORS headers)
+# Salin konfigurasi nginx (dengan tipe MIME dan header CORS yang sesuai)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port
+# Buka port
 EXPOSE 80
 
-# Command to run nginx
+# Perintah untuk menjalankan nginx
 CMD ["nginx", "-g", "daemon off;"]

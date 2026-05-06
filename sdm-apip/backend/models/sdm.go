@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// SDM represents SDM APIP master data
+// SDM merepresentasikan data master SDM APIP
 type SDM struct {
 	ID              uint           `gorm:"primaryKey" json:"id"`
 	NIP             string         `gorm:"column:nip;size:18;unique;not null" json:"nip"`
@@ -27,7 +27,7 @@ func (SDM) TableName() string {
 	return "sdm_apip"
 }
 
-// SDMCreateRequest for creating new SDM
+// SDMCreateRequest digunakan untuk membuat SDM baru
 type SDMCreateRequest struct {
 	NIP             string `json:"nip" binding:"required,len=18"`
 	Nama            string `json:"nama" binding:"required"`
@@ -40,7 +40,7 @@ type SDMCreateRequest struct {
 	Foto            string `json:"foto"`
 }
 
-// SDMUpdateRequest for updating SDM
+// SDMUpdateRequest digunakan untuk memperbarui data SDM
 type SDMUpdateRequest struct {
 	Nama            string `json:"nama"`
 	Email           string `json:"email" binding:"omitempty,email"`
@@ -52,7 +52,7 @@ type SDMUpdateRequest struct {
 	Foto            string `json:"foto"`
 }
 
-// SDMResponse for API response
+// SDMResponse digunakan untuk respon API
 type SDMResponse struct {
 	ID              uint   `json:"id"`
 	NIP             string `json:"nip"`

@@ -13,7 +13,7 @@ const (
 	TokenTypePasswordReset     VerificationTokenType = "password_reset"
 )
 
-// VerificationToken represents email verification tokens
+// VerificationToken merepresentasikan token verifikasi email
 type VerificationToken struct {
 	ID        uint                  `gorm:"primaryKey" json:"id"`
 	UserID    uint                  `gorm:"not null" json:"user_id"`
@@ -31,22 +31,22 @@ func (VerificationToken) TableName() string {
 	return "verification_tokens"
 }
 
-// IsExpired checks if the token has expired
+// IsExpired memeriksa apakah token sudah kedaluwarsa
 func (vt *VerificationToken) IsExpired() bool {
 	return time.Now().After(vt.ExpiresAt)
 }
 
-// IsUsed checks if the token has been used
+// IsUsed memeriksa apakah token sudah digunakan
 func (vt *VerificationToken) IsUsed() bool {
 	return vt.UsedAt != nil
 }
 
-// IsValid checks if the token is neither expired nor used
+// IsValid memeriksa apakah token belum kedaluwarsa dan belum digunakan
 func (vt *VerificationToken) IsValid() bool {
 	return !vt.IsExpired() && !vt.IsUsed()
 }
 
-// MarkUsed marks the token as used in the database
+// MarkUsed menandai token telah digunakan di database
 func (vt *VerificationToken) MarkUsed(db *gorm.DB) error {
 	now := time.Now()
 	return db.Model(vt).Update("used_at", now).Error

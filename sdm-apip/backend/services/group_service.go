@@ -1,4 +1,4 @@
-﻿package services
+package services
 
 import (
 	"errors"
@@ -37,12 +37,12 @@ func NewGroupService() IGroupService {
 	}
 }
 
-// GetAllGroups returns all groups with member counts, sorting, and pagination
+// GetAllGroups mengembalikan semua grup dengan jumlah anggota, pengurutan, dan paginasi
 func (s *GroupService) GetAllGroups(sortBy, order string, limit, offset int, includeArchived bool) ([]models.Group, int64, error) {
 	var groups []models.Group
 	var total int64
 
-	// Anti-Abuse: Limit validation
+	// Anti-Penyalahgunaan: Validasi batasan limit
 	if limit <= 0 {
 		limit = 10
 	}
@@ -58,19 +58,19 @@ func (s *GroupService) GetAllGroups(sortBy, order string, limit, offset int, inc
 		baseQuery = baseQuery.Unscoped()
 	}
 
-	// 1. Total Count (Pre-filters/joins)
+	// 1. Jumlah Total (Pra-filter/join)
 	if err := baseQuery.Count(&total).Error; err != nil {
 		logger.Error("Database error in GetAllGroups (Count): %v", err)
 		return nil, 0, ErrInternalServer
 	}
 
-	// 2. Query with Joins and Group By for user_count (Respects Soft Delete via baseQuery)
+	// 2. Query dengan Join dan Group By untuk menghitung user_count (Mematuhi Soft Delete melalui baseQuery)
 	query := baseQuery.
 		Select("groups.*, COUNT(user_groups.id) as user_count").
 		Joins("LEFT JOIN user_groups ON user_groups.group_id = groups.id").
 		Group("groups.id")
 
-	// 3. SECURE SORTING (Whitelist + Qualified Columns)
+	// 3. PENGURUTAN AMAN (Daftar Putih + Kolom Berkualitas)
 	allowedSort := map[string]string{
 		"name":       "groups.name",
 		"created_at": "groups.created_at",
@@ -86,7 +86,7 @@ func (s *GroupService) GetAllGroups(sortBy, order string, limit, offset int, inc
 		order = "desc"
 	}
 
-	// 4. Execution with pagination
+	// 4. Eksekusi dengan paginasi
 	err := query.Order(sortColumn + " " + order).
 		Limit(limit).
 		Offset(offset).
@@ -100,7 +100,7 @@ func (s *GroupService) GetAllGroups(sortBy, order string, limit, offset int, inc
 	return groups, total, nil
 }
 
-// GetGroupByID returns a group with detailed member information (No N+1)
+// GetGroupByID mengembalikan grup dengan informasi anggota yang detail (Tanpa N+1)
 func (s *GroupService) GetGroupByID(id uint) (*models.Group, []map[string]interface{}, error) {
 	var group models.Group
 	if err := s.db.Unscoped().First(&group, id).Error; err != nil {
@@ -110,7 +110,7 @@ func (s *GroupService) GetGroupByID(id uint) (*models.Group, []map[string]interf
 		return nil, nil, ErrInternalServer
 	}
 
-	// 1. Fetch member relationships. If group is archived, we use Unscoped to see who was in it
+	// 1. Ambil hubungan anggota. Jika grup diarsipkan, gunakan Unscoped untuk melihat siapa anggotanya
 	var userGroups []models.UserGroup
 	ugQuery := s.db.Where("group_id = ?", id)
 	if group.DeletedAt.Valid {
@@ -125,7 +125,7 @@ func (s *GroupService) GetGroupByID(id uint) (*models.Group, []map[string]interf
 		return &group, []map[string]interface{}{}, nil
 	}
 
-	// 2. Collect User IDs and NIPs
+	// 2. Kumpulkan ID Pengguna dan NIP
 	userIDs := make([]uint, len(userGroups))
 	roleMap := make(map[uint]string)
 	for i, ug := range userGroups {
@@ -133,7 +133,7 @@ func (s *GroupService) GetGroupByID(id uint) (*models.Group, []map[string]interf
 		roleMap[ug.UserID] = ug.Role
 	}
 
-	// 3. Fetch Users with Roles
+	// 3. Ambil Pengguna beserta Perannya
 	var users []models.User
 	if err := s.db.Preload("Role").Where("id IN ?", userIDs).Find(&users).Error; err != nil {
 		logger.Error("Database error in GetGroupByID (User lookup): %v", err)
@@ -147,7 +147,7 @@ func (s *GroupService) GetGroupByID(id uint) (*models.Group, []map[string]interf
 		}
 	}
 
-	// 4. Optimized: Fetch all SDM data in one query
+	// 4. Dioptimalkan: Ambil semua data SDM dalam satu kueri
 	sdmMap := make(map[string]models.SDM)
 	if len(nips) > 0 {
 		var sdmList []models.SDM
@@ -193,7 +193,7 @@ func (s *GroupService) GetGroupByID(id uint) (*models.Group, []map[string]interf
 	return &group, membersResponse, nil
 }
 
-// CreateGroup creates a new group (Handles restoration of soft-deleted groups)
+// CreateGroup membuat grup baru (Menangani pemulihan grup yang dihapus sementara/soft-deleted)
 func (s *GroupService) CreateGroup(name, description string) (*models.Group, error) {
 	name = strings.TrimSpace(name)
 	if len(name) < 1 || len(name) > 100 {
@@ -201,11 +201,11 @@ func (s *GroupService) CreateGroup(name, description string) (*models.Group, err
 	}
 
 	var group models.Group
-	// Check for existing group including soft-deleted ones
+	// Cek apakah grup sudah ada, termasuk yang dihapus sementara
 	err := s.db.Unscoped().Where("name = ?", name).First(&group).Error
 	if err == nil {
 		if group.DeletedAt.Valid {
-			// Found a deleted group with the same name, restore it
+			// Menemukan grup yang dihapus dengan nama yang sama, pulihkan
 			if err := s.db.Unscoped().Model(&group).Updates(map[string]interface{}{
 				"deleted_at":  nil,
 				"description": strings.TrimSpace(description),
@@ -214,21 +214,21 @@ func (s *GroupService) CreateGroup(name, description string) (*models.Group, err
 				return nil, ErrInternalServer
 			}
 
-			// Reload to clear DeletedAt in the struct and get fresh timestamps
+			// Muat ulang untuk membersihkan DeletedAt di struct dan dapatkan timestamp terbaru
 			if err := s.db.First(&group, group.ID).Error; err != nil {
 				logger.Error("Failed to reload restored group: %v", err)
 				return nil, ErrInternalServer
 			}
 			return &group, nil
 		}
-		// Group exists and is active
+		// Grup sudah ada dan aktif
 		return nil, ErrGroupNameExists
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("Database error in CreateGroup: %v", err)
 		return nil, ErrInternalServer
 	}
 
-	// Not found anywhere, create new
+	// Tidak ditemukan dimanapun, buat baru
 	group = models.Group{
 		Name:        name,
 		Description: strings.TrimSpace(description),
@@ -244,7 +244,7 @@ func (s *GroupService) CreateGroup(name, description string) (*models.Group, err
 	return &group, nil
 }
 
-// UpdateGroup updates an existing group
+// UpdateGroup memperbarui grup yang sudah ada
 func (s *GroupService) UpdateGroup(id uint, name, description string) (*models.Group, error) {
 	var group models.Group
 	if err := s.db.First(&group, id).Error; err != nil {
@@ -260,7 +260,7 @@ func (s *GroupService) UpdateGroup(id uint, name, description string) (*models.G
 			return nil, ErrInvalidGroupName
 		}
 
-		// Check if another group (including soft-deleted) has this name
+		// Cek apakah ada grup lain (termasuk yang dihapus sementara) yang menggunakan nama ini
 		var existing models.Group
 		err := s.db.Unscoped().Where("name = ? AND id <> ?", name, id).First(&existing).Error
 		if err == nil {
@@ -285,10 +285,10 @@ func (s *GroupService) UpdateGroup(id uint, name, description string) (*models.G
 	return &group, nil
 }
 
-// DeleteGroup deletes a group and its associated data (UserGroup and PeerAssessment)
+// DeleteGroup menghapus grup dan data terkaitnya (UserGroup dan PeerAssessment)
 func (s *GroupService) DeleteGroup(id uint) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
-		// 1. Check if group exists
+		// 1. Cek apakah grup ada
 		var group models.Group
 		if err := tx.First(&group, id).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -297,19 +297,19 @@ func (s *GroupService) DeleteGroup(id uint) error {
 			return ErrInternalServer
 		}
 
-		// 2. Soft-delete the group
+		// 2. Hapus sementara (soft-delete) grup
 		if err := tx.Delete(&group).Error; err != nil {
 			logger.Error("Failed to delete group: %v", err)
 			return ErrInternalServer
 		}
 
-		// 3. Soft-delete all user associations in this group
+		// 3. Hapus sementara semua asosiasi pengguna di grup ini
 		if err := tx.Where("group_id = ?", id).Delete(&models.UserGroup{}).Error; err != nil {
 			logger.Error("Failed to delete user_groups for group %d: %v", id, err)
 			return ErrInternalServer
 		}
 
-		// 4. Soft-delete all assessments in this group
+		// 4. Hapus sementara semua penilaian (assessment) di grup ini
 		if err := tx.Where("group_id = ?", id).Delete(&models.PeerAssessment{}).Error; err != nil {
 			logger.Error("Failed to delete peer_assessments for group %d: %v", id, err)
 			return ErrInternalServer
@@ -320,14 +320,14 @@ func (s *GroupService) DeleteGroup(id uint) error {
 	})
 }
 
-// AssignUserToGroup assigns a user to a group with status check, duplicate handling, and auditing
+// AssignUserToGroup menugaskan pengguna ke grup dengan pengecekan status, penanganan duplikat, dan pencatatan audit
 func (s *GroupService) AssignUserToGroup(groupID uint, userID uint, role string, adminID uint) error {
-	// 0. Default role: AT (Anggota Tim) is the base role for all group members
+	// 0. Peran bawaan: AT (Anggota Tim) adalah peran dasar untuk semua anggota grup
 	if role == "" {
 		role = "AT"
 	}
 
-	// 1. Check user status
+	// 1. Cek status pengguna
 	var user models.User
 	if err := s.db.First(&user, userID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -341,12 +341,12 @@ func (s *GroupService) AssignUserToGroup(groupID uint, userID uint, role string,
 		return ErrUserInactive
 	}
 
-	// 1.b Restriction: Administrators cannot be assigned to any group
+	// 1.b Batasan: Administrator tidak dapat dimasukkan ke grup mana pun
 	if user.RoleID == models.RoleSuperAdmin {
 		return ErrAdminCannotBeInGroup
 	}
 
-	// 2. Check group existence
+	// 2. Cek keberadaan grup
 	var group models.Group
 	if err := s.db.First(&group, groupID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -356,13 +356,13 @@ func (s *GroupService) AssignUserToGroup(groupID uint, userID uint, role string,
 		return ErrInternalServer
 	}
 
-	// 3. Reject invalid roles
-	// Inspektur is a global role (from sdm_apip.jabatan) — not assigned inside a group.
+	// 3. Tolak peran yang tidak valid
+	// Inspektur adalah peran global (dari sdm_apip.jabatan) — tidak ditetapkan di dalam grup.
 	if role == "Inspektur" || role == "Ketua" || role == "Anggota" {
-		return fmt.Errorf("peran '%s' tidak valid. Gunakan AT, KT, atau Dalnis", role)
+		return fmt.Errorf("Peran '%s' tidak valid. Gunakan AT, KT, atau Dalnis", role)
 	}
 
-	// 4. Single-Occupant Role Rules: Only ONE Dalnis and ONE KT allowed per group
+	// 4. Aturan Peran Penghuni Tunggal: Hanya boleh ada SATU Dalnis dan SATU KT per grup
 	if role == "Dalnis" || role == "KT" {
 		var existingRole models.UserGroup
 		err := s.db.Where("group_id = ? AND role = ? AND user_id != ?", group.ID, role, userID).First(&existingRole).Error
@@ -371,27 +371,27 @@ func (s *GroupService) AssignUserToGroup(groupID uint, userID uint, role string,
 				"Dalnis": "Pengendali Teknis (Dalnis)",
 				"KT":     "Ketua Tim (KT)",
 			}[role]
-			return fmt.Errorf("grup ini sudah memiliki %s. Hapus %s yang ada terlebih dahulu sebelum menetapkan yang baru", roleName, roleName)
+			return fmt.Errorf("Grup ini sudah memiliki %s. Hapus %s yang ada terlebih dahulu sebelum menetapkan yang baru", roleName, roleName)
 		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("Database check error in AssignUserToGroup: %v", err)
 			return ErrInternalServer
 		}
 	}
 
-	// 4. SECURE UPSERT
+	// 4. UPSERT AMAN (SECURE UPSERT)
 	var assignedBy *uint
 	if adminID != 0 {
 		assignedBy = &adminID
 	}
 
-	// Use Transaction for safety
+	// Gunakan Transaksi (Transaction) demi keamanan
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		var existing models.UserGroup
-		// Check for existing (including soft-deleted)
+		// Cek yang sudah ada (termasuk yang dihapus sementara)
 		result := tx.Unscoped().Where("user_id = ? AND group_id = ?", userID, group.ID).First(&existing)
 
 		if result.Error == nil {
-			// Found existing, restore and update
+			// Ditemukan yang sudah ada, pulihkan dan perbarui
 			if err := tx.Unscoped().Model(&existing).Updates(map[string]interface{}{
 				"deleted_at":  nil,
 				"assigned_by": assignedBy,
@@ -400,10 +400,10 @@ func (s *GroupService) AssignUserToGroup(groupID uint, userID uint, role string,
 			}).Error; err != nil {
 				return err
 			}
-			// Reload to ensure instance in memory is "active"
+			// Muat ulang untuk memastikan instans di memori "aktif"
 			return tx.First(&existing, existing.ID).Error
 		} else if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			// Create new
+			// Buat baru
 			userGroup := models.UserGroup{
 				UserID:     userID,
 				GroupID:    group.ID,
@@ -424,7 +424,7 @@ func (s *GroupService) AssignUserToGroup(groupID uint, userID uint, role string,
 	return nil
 }
 
-// RemoveUserFromGroup removes a user from a group
+// RemoveUserFromGroup menghapus pengguna dari sebuah grup
 func (s *GroupService) RemoveUserFromGroup(groupID, userID uint) error {
 	result := s.db.Where("group_id = ? AND user_id = ?", groupID, userID).Delete(&models.UserGroup{})
 	if result.Error != nil {
@@ -438,10 +438,10 @@ func (s *GroupService) RemoveUserFromGroup(groupID, userID uint) error {
 	return nil
 }
 
-// MoveUserBetweenGroups handles atomic movement/upsert with auditing
+// MoveUserBetweenGroups menangani perpindahan/upsert atomik beserta pencatatan audit
 func (s *GroupService) MoveUserBetweenGroups(userID, fromGroupID, toGroupID uint, adminID uint) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
-		// 1. Validate Target Group
+		// 1. Validasi Grup Tujuan
 		var toGroup models.Group
 		if err := tx.First(&toGroup, toGroupID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -451,13 +451,13 @@ func (s *GroupService) MoveUserBetweenGroups(userID, fromGroupID, toGroupID uint
 			return ErrInternalServer
 		}
 
-		// 2. Remove from all old groups to enforce "one group only" policy
+		// 2. Hapus dari semua grup lama untuk menegakkan kebijakan "hanya satu grup"
 		if err := tx.Where("user_id = ?", userID).Delete(&models.UserGroup{}).Error; err != nil {
 			logger.Error("Database error in MoveUserBetweenGroups (Remove old groups): %v", err)
 			return ErrInternalServer
 		}
 
-		// 3. Upsert into new group
+		// 3. Upsert ke grup baru
 		var assignedBy *uint
 		if adminID != 0 {
 			assignedBy = &adminID
@@ -478,7 +478,7 @@ func (s *GroupService) MoveUserBetweenGroups(userID, fromGroupID, toGroupID uint
 	})
 }
 
-// GetMyGroups returns groups for a specific user with role and member count
+// GetMyGroups mengembalikan grup untuk pengguna tertentu beserta peran dan jumlah anggota
 func (s *GroupService) GetMyGroups(userID uint) ([]map[string]interface{}, error) {
 	var results []struct {
 		models.Group
@@ -486,7 +486,7 @@ func (s *GroupService) GetMyGroups(userID uint) ([]map[string]interface{}, error
 		UserCount int    `gorm:"column:user_count"`
 	}
 
-	// Explicit query through join table to ensure we get all active assignments
+	// Kueri eksplisit melalui tabel join untuk memastikan kita mendapatkan semua penugasan aktif
 	err := s.db.Model(&models.Group{}).
 		Select("groups.*, user_groups.role, (SELECT COUNT(id) FROM user_groups WHERE group_id = groups.id AND deleted_at IS NULL) as user_count").
 		Joins("INNER JOIN user_groups ON user_groups.group_id = groups.id").
@@ -513,9 +513,9 @@ func (s *GroupService) GetMyGroups(userID uint) ([]map[string]interface{}, error
 	return response, nil
 }
 
-// GetGroupDetailIfMember returns group details only if the user is a member
+// GetGroupDetailIfMember mengembalikan detail grup hanya jika pengguna adalah anggota
 func (s *GroupService) GetGroupDetailIfMember(userID uint, groupID uint) (*models.Group, []map[string]interface{}, error) {
-	// 1. Check membership
+	// 1. Cek keanggotaan
 	var count int64
 	if err := s.db.Model(&models.UserGroup{}).Where("user_id = ? AND group_id = ?", userID, groupID).Count(&count).Error; err != nil {
 		logger.Error("Database error in GetGroupDetailIfMember (Count): %v", err)
@@ -526,7 +526,7 @@ func (s *GroupService) GetGroupDetailIfMember(userID uint, groupID uint) (*model
 		return nil, nil, ErrAccessDenied
 	}
 
-	// 2. Reuse GetGroupByID for details
+	// 2. Gunakan kembali GetGroupByID untuk mengambil detail
 	return s.GetGroupByID(groupID)
 }
 

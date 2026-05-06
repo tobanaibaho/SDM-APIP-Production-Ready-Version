@@ -12,20 +12,20 @@ import { verifyEmail } from '../services/authService';
 import toast from 'react-hot-toast';
 
 const StatusWrapper = ({ children, gradient, icon: Icon, title, subtitle }: any) => (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute top-0 -left-4 w-72 h-72 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
         <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-accent-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
         <div className="w-full max-w-md z-10 animate-fade-in">
             <div className="glass rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                <div className={`bg-gradient-to-br ${gradient} p-8 text-center`}>
+                <div className={`bg-gradient-to-br ${gradient} p-5 text-center`}>
                     <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md mb-4 shadow-xl border border-white/20">
                         <Icon size={32} className="text-white" />
                     </div>
                     <h1 className="text-2xl font-bold text-white tracking-tight">{title}</h1>
                     <p className="text-white/70 text-sm mt-1 uppercase tracking-widest font-semibold">{subtitle}</p>
                 </div>
-                <div className="p-8">
+                <div className="p-5">
                     {children}
                 </div>
             </div>
@@ -65,7 +65,7 @@ const VerifyEmailPage: React.FC = () => {
         }
     };
 
-    // Auto-verify when OTP reaches 6 digits
+    // Verifikasi otomatis saat OTP mencapai 6 digit
     useEffect(() => {
         if (otp.length === 6 && status === 'idle' && token) {
             handleVerify();
@@ -158,7 +158,7 @@ const VerifyEmailPage: React.FC = () => {
                             value={otp}
                             autoFocus
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            className="form-input pl-11 text-center text-3xl font-black tracking-[0.5em] focus:bg-white bg-slate-50 border-slate-200"
+                            className="form-input pl-11 text-center text-xl font-black tracking-[0.5em] focus:bg-white bg-slate-100 border-slate-300"
                             placeholder="000000"
                             maxLength={6}
                             required

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { changePassword } from '../services/authService';
 import Logo from '../assets/logo.png';
 import toast from 'react-hot-toast';
+import useEscapeKey from '../hooks/useEscapeKey';
 import {
     LayoutDashboard,
     Users,
@@ -23,7 +24,7 @@ import {
     Eye,
     EyeOff,
     Loader2,
-    Power,
+    Settings,
     ChevronUp,
     ChevronDown,
     ArrowLeft,
@@ -43,6 +44,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
     const { pathname } = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showChangePassword, setShowChangePassword] = useState(false);
+
+    useEscapeKey(showChangePassword, () => setShowChangePassword(false));
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
     const [showPw, setShowPw] = useState({ current: false, new_pw: false, confirm: false });
@@ -134,7 +137,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
             `}>
                 <div className="flex h-full flex-col w-full">
                     {/* Sidebar Header */}
-                    <div className="flex border-b border-primary-800/50 bg-primary-950/20 px-6 py-4 items-center gap-3">
+                    <div className="flex border-b border-primary-800/50 bg-primary-950/20 px-4 py-4 items-center gap-3">
                         <div className="h-14 w-14 shrink-0 drop-shadow-md">
                             <img src={Logo} alt="Logo Kemenko" className="h-full w-full object-contain" />
                         </div>
@@ -198,7 +201,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 onClick={() => setShowSettingsMenu(!showSettingsMenu)}
                                 className={`h-8 w-8 shrink-0 flex items-center justify-center rounded-md transition-all ${showSettingsMenu ? 'bg-primary-600 text-white' : 'bg-primary-700/50 text-slate-300 hover:bg-primary-600 hover:text-white'}`}
                             >
-                                <Power size={16} />
+                                <Settings size={16} />
                             </button>
                         </div>
 
@@ -238,7 +241,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                     <img src={Logo} alt="Logo" className="h-8 w-8" />
                     <div className="flex flex-col">
                         <span className="font-bold text-slate-900 text-sm leading-none">SDM APIP</span>
-                        <span className="text-[10px] text-slate-500 font-medium">INSPEKTORAT KEMENKO INFRA</span>
+                        <span className="text-xs text-slate-500 font-medium">INSPEKTORAT KEMENKO INFRA</span>
                     </div>
                 </div>
                 <button
@@ -252,8 +255,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-h-screen pt-16 lg:pt-0 lg:ml-72 bg-transparent w-full lg:w-[calc(100%-18rem)] relative z-10">
                 {/* Content Wrapper */}
-                <div className="flex-1 px-4 py-6 md:px-8 md:py-8 lg:px-10 w-full max-w-[1600px] mx-auto">
-                    <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center bg-white/40 backdrop-blur-md p-5 md:p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 sticky top-[72px] lg:top-4 z-30 animate-fade-in">
+                <div className="flex-1 px-4 py-6 md:px-5 md:py-8 lg:px-4 w-full max-w-[1600px] mx-auto">
+                    <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center bg-white/40 backdrop-blur-md p-5 md:p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 sticky top-[72px] lg:top-4 z-30 animate-fade-in">
                         <div className="flex items-center gap-4">
                             {!isRootPage && (
                                 <button
@@ -265,7 +268,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 </button>
                             )}
                             <div>
-                                <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{title}</h1>
+                                <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-xl">{title}</h1>
                                 {subtitle && <p className="mt-1 text-slate-500 text-sm font-medium">{subtitle}</p>}
                             </div>
                         </div>
@@ -274,7 +277,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 <span className="text-xs font-black text-slate-600 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100 uppercase tracking-wider whitespace-nowrap">
                                     {clock.date}
                                 </span>
-                                <span className="text-[11px] font-mono font-bold text-slate-400 mt-1 pr-1 tracking-widest">
+                                <span className="text-xs font-mono font-bold text-slate-400 mt-1 pr-1 tracking-widest">
                                     {clock.time}
                                 </span>
                             </div>
@@ -317,7 +320,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
             {showChangePassword && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
                     <div className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in">
-                        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+                        <div className="flex items-center justify-between p-4 border-b border-slate-700">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-500/20 rounded-lg">
                                     <KeyRound size={20} className="text-blue-400" />
@@ -331,7 +334,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                                 <X size={18} />
                             </button>
                         </div>
-                        <form onSubmit={handleChangePassword} className="p-6 space-y-4">
+                        <form onSubmit={handleChangePassword} className="p-4 space-y-4">
                             {/* Password Lama */}
                             <div>
                                 <label className="block text-sm font-semibold text-slate-300 mb-1.5">Password Saat Ini</label>

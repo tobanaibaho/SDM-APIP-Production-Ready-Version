@@ -47,10 +47,10 @@ func (s *SDMImportService) ImportExcel(filePath string) (*SDMImportResult, error
 	}
 
 	if len(rows) == 0 {
-		return nil, fmt.Errorf("empty excel file")
+		return nil, fmt.Errorf("File excel kosong")
 	}
 
-	// === HEADER DETECTION ===
+	// === DETEKSI HEADER ===
 	headerRowIndex := 0
 	colMap := make(map[string]int)
 
@@ -85,7 +85,7 @@ func (s *SDMImportService) ImportExcel(filePath string) (*SDMImportResult, error
 	idxHP := getCol("hp", "handphone", "phone", "nomor hp", "no hp")
 
 	if idxNIP == -1 {
-		return nil, fmt.Errorf("NIP column not found")
+		return nil, fmt.Errorf("Kolom NIP tidak ditemukan")
 	}
 
 	result := &SDMImportResult{}
@@ -102,7 +102,7 @@ func (s *SDMImportService) ImportExcel(filePath string) (*SDMImportResult, error
 		return val
 	}
 
-	// === PROCESS ROWS ===
+	// === PROSES BARIS ===
 	for i := headerRowIndex + 1; i < len(rows); i++ {
 		row := rows[i]
 		nip := getVal(row, idxNIP)
@@ -116,7 +116,7 @@ func (s *SDMImportService) ImportExcel(filePath string) (*SDMImportResult, error
 
 		var sdm models.SDM
 		if err := tx.Where("nip = ?", nip).First(&sdm).Error; err == nil {
-			// UPDATE
+			// PERBARUI
 			sdm.Nama = getVal(row, idxNama)
 			sdm.Email = getVal(row, idxEmail)
 			sdm.Jabatan = getVal(row, idxJabatan)
@@ -130,7 +130,7 @@ func (s *SDMImportService) ImportExcel(filePath string) (*SDMImportResult, error
 				continue
 			}
 		} else {
-			// CREATE
+			// BUAT BARU
 			newSDM := models.SDM{
 				NIP:             nip,
 				Nama:            getVal(row, idxNama),

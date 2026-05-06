@@ -14,30 +14,30 @@ import (
 )
 
 func main() {
-	// CLI Flags
+	// Flag CLI
 	migrate := flag.Bool("migrate", false, "Run database migrations and exit")
 	flag.Parse()
 
-	// Load configuration (Fail-fast)
+	// Muat konfigurasi (gagal cepat jika error)
 	if err := config.LoadConfig(); err != nil {
 		logger.Fatal("❌ Configuration error: %v", err)
 	}
 
-	// Initialize Logger with file support
+	// Inisialisasi Logger dengan dukungan file
 	if err := logger.SetupLogger(config.AppConfig.LogFilePath); err != nil {
 		logger.Warn("⚠️ Failed to initialize file logging: %v", err)
 	}
 
-	// Connect to database (Fail-fast)
+	// Hubungkan ke database (gagal cepat jika error)
 	if err := config.ConnectDatabase(); err != nil {
 		logger.Fatal("❌ Database connection failed: %v", err)
 	}
 
-	// Migrate database if flag is provided
+	// Jalankan migrasi database jika flag diberikan
 	if *migrate {
 		logger.Info("🔄 Running database migrations (SQL-based)...")
 
-		// Run SQL migration from file
+		// Jalankan migrasi SQL dari file
 		migrationPath := config.AppConfig.DBMigrationPath
 		if err := config.RunSQLFile(migrationPath); err != nil {
 			logger.Fatal("❌ Migration failed: %v", err)
@@ -47,24 +47,24 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Set Gin mode
+	// Atur mode Gin
 	gin.SetMode(config.AppConfig.GinMode)
 
-	// Create router
+	// Buat router
 	router := gin.Default()
 
-	// Trust proxies (for deployment behind reverse proxy)
+	// Percayai proxy (untuk deployment di balik reverse proxy)
 	if err := router.SetTrustedProxies(nil); err != nil {
 		logger.Warn("⚠️ Warning: Failed to set trusted proxies: %v", err)
 	}
 
-	// Setup routes
+	// Konfigurasi rute
 	routes.SetupRoutes(router)
 
-	// Ensure Admin User exists (Bootstrap)
+	// Pastikan Pengguna Admin ada (Bootstrap)
 	bootstrapAdmin(config.DB)
 
-	// Start server
+	// Jalankan server
 	logger.Info("🚀 SDM APIP Backend starting on port %s", config.AppConfig.ServerPort)
 	logger.Info("📚 API Documentation: http://localhost:%s/api/health", config.AppConfig.ServerPort)
 
@@ -73,24 +73,24 @@ func main() {
 	}
 }
 
-// bootstrapAdmin ensures that at least one SuperAdmin exists.
-// Password is loaded from ADMIN_DEFAULT_PASSWORD env var and hashed at runtime.
+// bootstrapAdmin memastikan setidaknya satu SuperAdmin ada.
+// Password dimuat dari variabel lingkungan ADMIN_DEFAULT_PASSWORD dan di-hash saat runtime.
 func bootstrapAdmin(db *gorm.DB) {
 	logger.Info("🛡️ Checking admin status...")
 
-	// Load password from ENV — never hardcode credentials in source code
+	// Muat password dari ENV — jangan pernah menyimpan kredensial di kode sumber
 	plainPassword := config.AppConfig.AdminDefaultPassword
 	if plainPassword == "" {
 		if config.AppConfig.GinMode == "release" {
 			logger.Warn("⚠️ SECURITY: ADMIN_DEFAULT_PASSWORD is not set. Admin bootstrap skipped for safety.")
 			return
 		}
-		// Development fallback only
+		// Cadangan untuk pengembangan saja
 		plainPassword = "admin123"
 		logger.Warn("⚠️ DEV MODE: Using default admin password 'admin123'. Set ADMIN_DEFAULT_PASSWORD in production!")
 	}
 
-	// Hash password at runtime (never store plaintext or hardcoded hashes)
+	// Hash password saat runtime (jangan simpan teks biasa atau hash yang di-hardcode)
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(plainPassword), bcrypt.DefaultCost)
 	if err != nil {
 		logger.Warn("⚠️ Failed to hash admin password: %v", err)
@@ -116,12 +116,12 @@ func bootstrapAdmin(db *gorm.DB) {
 			logger.Info("✅ Default admin created.")
 		}
 	} else {
-		// Ensure the 'admin' user is active and has the correct role
+		// Pastikan pengguna 'admin' aktif dan memiliki peran yang benar
 		updates := map[string]interface{}{
 			"status":  models.StatusActive,
 			"role_id": models.RoleSuperAdmin,
 		}
-		// Only update password if it's empty (e.g. fresh DB)
+		// Perbarui password hanya jika kosong (misalnya DB baru)
 		if admin.Password == "" {
 			updates["password"] = hashedPassword
 		}

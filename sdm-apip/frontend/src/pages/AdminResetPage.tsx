@@ -55,7 +55,7 @@ const AdminResetPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
             {/* Background */}
             <div className="absolute top-0 -left-4 w-96 h-96 bg-red-900 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
             <div className="absolute -bottom-8 -right-4 w-96 h-96 bg-slate-800 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -74,7 +74,7 @@ const AdminResetPage: React.FC = () => {
 
                     {/* Idle — form input password baru */}
                     {status === 'idle' && (
-                        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+                        <form onSubmit={handleSubmit} className="p-5 space-y-5">
                             <p className="text-slate-400 text-sm leading-relaxed">
                                 Buat password baru untuk akun Administrator. Pastikan password kuat dan mudah Anda ingat.
                             </p>
@@ -163,7 +163,7 @@ const AdminResetPage: React.FC = () => {
 
                     {/* Success */}
                     {status === 'success' && (
-                        <div className="p-8 space-y-6">
+                        <div className="p-5 space-y-6">
                             <div className="flex flex-col items-center text-center">
                                 <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-500/50 mb-4">
                                     <CheckCircle size={40} className="text-emerald-500" />
@@ -182,7 +182,7 @@ const AdminResetPage: React.FC = () => {
 
                     {/* Error */}
                     {status === 'error' && (
-                        <div className="p-8 space-y-6">
+                        <div className="p-5 space-y-6">
                             <div className="flex flex-col items-center text-center">
                                 <div className="w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center border border-rose-500/50 mb-4">
                                     <AlertCircle size={40} className="text-rose-500" />

@@ -47,8 +47,8 @@ const SparkBar: React.FC<{ value: number; max: number; label: string }> = ({ val
                     }}
                 />
             </div>
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-none whitespace-nowrap">{label}</span>
-            <span className="text-[10px] font-black text-slate-700 leading-none">{value}</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-tight leading-none whitespace-nowrap">{label}</span>
+            <span className="text-xs font-black text-slate-700 leading-none">{value}</span>
         </div>
     );
 };
@@ -83,8 +83,8 @@ const AdminDashboard: React.FC = () => {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [recentLogs, setRecentLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
-    
-    // tick every 30s to refresh relative timestamps
+
+    // perbarui setiap 30 detik untuk waktu relatif
     const [, setTick] = useState(0);
     useEffect(() => {
         const id = setInterval(() => setTick(t => t + 1), 30_000);
@@ -127,38 +127,38 @@ const AdminDashboard: React.FC = () => {
     return (
         <Layout
             title="Pusat Kendali Admin"
-            subtitle="Bento Grid Architecture — Tampilan dashboard yang struktural, dinamis, dan terintegrasi penuh."
+            subtitle="Tampilan dashboard yang struktural, dinamis, dan terintegrasi penuh."
         >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 auto-rows-min animate-fade-in pb-10">
 
                 {/* ══════════════════════════════════════════
                     BENTO 1: HERO WIDGET (COL-SPAN 8)
                 ══════════════════════════════════════════ */}
-                <div className="lg:col-span-8 bg-gradient-to-br from-slate-900 via-primary-900 to-primary-900 rounded-[2rem] p-8 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-8 border border-white/10">
+                <div className="lg:col-span-8 bg-gradient-to-br from-slate-900 via-primary-900 to-primary-900 rounded-lg p-5 md:p-4 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-5 border border-white/10">
                     <div className="relative z-10 flex-1 w-full">
                         <div className="flex items-center gap-3 mb-4">
-                            <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black tracking-widest uppercase border border-white/20">
+                            <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-xs font-black tracking-widest uppercase border border-white/20">
                                 {stats?.active_period ? 'Periode Aktif' : 'Standby Mode'}
                             </span>
                         </div>
-                        <h2 className="text-3xl md:text-5xl font-black mb-3 tracking-tighter leading-tight">
+                        <h2 className="text-xl md:text-xl font-black mb-3 tracking-tighter leading-tight">
                             {stats?.active_period_name || 'Tidak ada periode penilaian'}
                         </h2>
-                        
+
                         {prog && stats?.active_period ? (
-                            <div className="mt-8 flex items-end gap-8 border-t border-white/10 pt-8">
+                            <div className="mt-8 flex items-end gap-5 border-t border-white/10 pt-8">
                                 <div>
-                                    <p className="text-[10px] text-white/90 uppercase tracking-widest font-black mb-2">Target Form Tersubmit</p>
-                                    <p className="text-5xl font-black tracking-tighter leading-none">{prog.total_submitted}<span className="text-2xl text-white/80">/{prog.total_required}</span></p>
+                                    <p className="text-xs text-white/90 uppercase tracking-widest font-black mb-2">Target Form Tersubmit</p>
+                                    <p className="text-xl font-black tracking-tighter leading-none">{prog.total_submitted}<span className="text-2xl text-white/80">/{prog.total_required}</span></p>
                                 </div>
                                 <div className="flex-1 max-w-[200px]">
                                     <div className="h-3 w-full bg-black/40 rounded-full overflow-hidden">
-                                        <div 
-                                            className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" 
-                                            style={{ width: `${prog.completion_pct}%` }} 
+                                        <div
+                                            className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400"
+                                            style={{ width: `${prog.completion_pct}%` }}
                                         />
                                     </div>
-                                    <p className="text-[10px] text-emerald-300 font-bold mt-3 tracking-widest uppercase">
+                                    <p className="text-xs text-emerald-300 font-bold mt-3 tracking-widest uppercase">
                                         {prog.completion_pct >= 100 ? 'SELESAI 100%' : `BERJALAN ${prog.completion_pct}%`}
                                     </p>
                                 </div>
@@ -167,11 +167,11 @@ const AdminDashboard: React.FC = () => {
                             <p className="text-sm text-white mt-4 max-w-md leading-relaxed">Aktifkan periode baru untuk mulai melacak progress penilaian kinerja secara langsung.</p>
                         )}
                     </div>
-                    
+
                     {prog && stats?.active_period && (
-                        <div className="relative z-10 shrink-0 bg-white/5 p-6 rounded-[2.5rem] backdrop-blur-2xl border border-white/10 shadow-2xl">
+                        <div className="relative z-10 shrink-0 bg-white/5 p-4 rounded-xl backdrop-blur-2xl border border-white/10 shadow-2xl">
                             <CircleProgress pct={prog.completion_pct} size={150} strokeWidth={14} color="#34d399" />
-                            <span className="absolute inset-0 flex items-center justify-center text-4xl font-black text-white tracking-tighter">
+                            <span className="absolute inset-0 flex items-center justify-center text-2xl font-black text-white tracking-tighter">
                                 {prog.completion_pct}%
                             </span>
                         </div>
@@ -186,22 +186,22 @@ const AdminDashboard: React.FC = () => {
                     BENTO 2: QUICK ACTIONS (COL-SPAN 4)
                 ══════════════════════════════════════════ */}
                 <div className="lg:col-span-4 grid grid-cols-2 gap-5">
-                    <NavLink to="/super-admin/periods" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
+                    <NavLink to="/super-admin/periods" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg p-4 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
                         <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-blue-100 to-primary-100 flex items-center justify-center text-primary-600 shadow-inner"><Plus size={28} /></div>
                         <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Buat Periode</h4></div>
                     </NavLink>
-                    <NavLink to="/super-admin/users" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
+                    <NavLink to="/super-admin/users" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg p-4 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
                         <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center text-emerald-600 shadow-inner relative">
                             <UserPlus size={28} />
                             {(stats?.pending_users ?? 0) > 0 && <span className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-rose-500 rounded-full animate-pulse border-2 border-white shadow-sm" />}
                         </div>
                         <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Verifikasi</h4></div>
                     </NavLink>
-                    <NavLink to="/super-admin/groups" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
+                    <NavLink to="/super-admin/groups" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg p-4 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
                         <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center text-blue-600 shadow-inner"><Users size={28} /></div>
                         <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Tim & Grup</h4></div>
                     </NavLink>
-                    <NavLink to="/super-admin/report" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-6 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
+                    <NavLink to="/super-admin/report" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg p-4 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
                         <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-rose-100 to-orange-100 flex items-center justify-center text-rose-600 shadow-inner"><FileText size={28} /></div>
                         <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Laporan</h4></div>
                     </NavLink>
@@ -210,39 +210,39 @@ const AdminDashboard: React.FC = () => {
                 {/* ══════════════════════════════════════════
                     BENTO 3: 4 METRIC SQUARES (EACH COL-SPAN 3)
                 ══════════════════════════════════════════ */}
-                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
-                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2">Total Personil</p>
-                    <h3 className="text-5xl font-black text-slate-900 tracking-tighter">{stats?.total_sdm ?? 0}</h3>
+                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
+                    <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Total Personil</p>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tighter">{stats?.total_sdm ?? 0}</h3>
                     <Users size={80} className="absolute -bottom-6 -right-6 text-blue-500/10 group-hover:scale-110 group-hover:text-blue-500/20 transition-all duration-500" />
                 </div>
-                
-                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
-                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2">Login Aktif</p>
-                    <h3 className="text-5xl font-black text-slate-900 tracking-tighter">{stats?.active_users ?? 0}</h3>
+
+                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
+                    <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Login Aktif</p>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tighter">{stats?.active_users ?? 0}</h3>
                     <ShieldAlert size={80} className="absolute -bottom-6 -right-6 text-emerald-500/10 group-hover:scale-110 group-hover:text-emerald-500/20 transition-all duration-500" />
                 </div>
 
-                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-rose-500/20 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
-                    <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-2">Antrian Akun</p>
-                    <h3 className="text-5xl font-black text-rose-600 tracking-tighter">{stats?.pending_users ?? 0}</h3>
+                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-rose-500/20 rounded-lg p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
+                    <p className="text-xs font-black text-rose-600 uppercase tracking-widest mb-2">Antrian Akun</p>
+                    <h3 className="text-xl font-black text-rose-600 tracking-tighter">{stats?.pending_users ?? 0}</h3>
                     <Clock size={80} className="absolute -bottom-6 -right-6 text-rose-500/10 group-hover:scale-110 group-hover:text-rose-500/20 transition-all duration-500" />
                 </div>
 
-                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
-                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2">Grup Terdaftar</p>
-                    <h3 className="text-5xl font-black text-slate-900 tracking-tighter">{stats?.total_groups ?? 0}</h3>
+                <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
+                    <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Grup Terdaftar</p>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tighter">{stats?.total_groups ?? 0}</h3>
                     <Activity size={80} className="absolute -bottom-6 -right-6 text-primary-500/10 group-hover:scale-110 group-hover:text-primary-500/20 transition-all duration-500" />
                 </div>
 
                 {/* ══════════════════════════════════════════
                     BENTO 4: PROGRESS DETAIL (COL-SPAN 5)
                 ══════════════════════════════════════════ */}
-                <div className="lg:col-span-5 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col h-[420px]">
-                    <div className="p-8 pb-5 border-b border-black/5 flex items-center justify-between">
+                <div className="lg:col-span-5 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col h-[420px]">
+                    <div className="p-5 pb-5 border-b border-black/5 flex items-center justify-between">
                         <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Progress Grup</h3>
                         <Activity size={18} className="text-slate-400" />
                     </div>
-                    <div className="p-8 pt-4 overflow-y-auto flex-1 space-y-5">
+                    <div className="p-5 pt-4 overflow-y-auto flex-1 space-y-5">
                         {groupProg.length === 0 ? (
                             <div className="h-full flex items-center justify-center text-xs text-slate-400 font-bold uppercase tracking-wider">Belum ada grup aktif</div>
                         ) : (
@@ -254,7 +254,7 @@ const AdminDashboard: React.FC = () => {
                                             {g.pct}%
                                         </span>
                                     </div>
-                                    <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
+                                    <div className="h-2.5 w-full bg-slate-200 rounded-full overflow-hidden border border-slate-200/50">
                                         <div
                                             className="h-full rounded-full transition-all duration-1000"
                                             style={{
@@ -272,8 +272,8 @@ const AdminDashboard: React.FC = () => {
                 {/* ══════════════════════════════════════════
                     BENTO 5: AUDIT LOGS (COL-SPAN 4)
                 ══════════════════════════════════════════ */}
-                <div className="lg:col-span-4 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col h-[420px]">
-                    <div className="p-8 pb-5 border-b border-black/5 flex items-center justify-between">
+                <div className="lg:col-span-4 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col h-[420px]">
+                    <div className="p-5 pb-5 border-b border-black/5 flex items-center justify-between">
                         <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Aktivitas Live</h3>
                         <Link2 size={18} className="text-slate-400" />
                     </div>
@@ -286,9 +286,9 @@ const AdminDashboard: React.FC = () => {
                                     <div className={`mt-1.5 h-3 w-3 rounded-full shrink-0 ${log.action.includes('LOGIN') ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : log.action.includes('DELETE') ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]' : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]'}`} />
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-black text-slate-800 truncate mb-1">{log.user?.name || log.user?.nip || 'Robot Sistem'}</p>
-                                        <p className="text-[11px] text-slate-500 leading-snug line-clamp-2"><span className="font-bold text-slate-700">[{log.action}]</span> {log.details}</p>
+                                        <p className="text-xs text-slate-500 leading-snug line-clamp-2"><span className="font-bold text-slate-700">[{log.action}]</span> {log.details}</p>
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap mt-1">{formatRelativeTime(log.created_at).replace('yang ','')}</span>
+                                    <span className="text-xs text-slate-400 font-bold whitespace-nowrap mt-1">{formatRelativeTime(log.created_at).replace('yang ', '')}</span>
                                 </div>
                             ))
                         )}
@@ -300,10 +300,10 @@ const AdminDashboard: React.FC = () => {
                 ══════════════════════════════════════════ */}
                 <div className="lg:col-span-3 flex flex-col gap-5 h-[420px]">
                     {/* Trend Sparkline */}
-                    <div className="flex-1 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col">
+                    <div className="flex-1 bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col">
                         <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Tren Transaksi</h3>
                         {trend.length === 0 ? (
-                            <div className="flex-1 flex items-center justify-center text-[10px] font-bold uppercase text-slate-300">Kosong</div>
+                            <div className="flex-1 flex items-center justify-center text-xs font-bold uppercase text-slate-300">Kosong</div>
                         ) : (
                             <div className="flex-1 flex items-end gap-2">
                                 {trend.map(t => (
@@ -313,9 +313,9 @@ const AdminDashboard: React.FC = () => {
                         )}
                     </div>
                     {/* Server Status Mini */}
-                    <div className="h-40 bg-slate-900 border border-slate-700 text-white rounded-[2rem] p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between group">
+                    <div className="h-16 bg-slate-900 border border-slate-700 text-white rounded-lg p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between group">
                         <div className="relative z-10 flex items-center justify-between">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-300">Server Health</h4>
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-300">Server Health</h4>
                             <div className="h-3 w-3 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_15px_rgba(52,211,153,0.8)]" />
                         </div>
                         <div className="relative z-10">

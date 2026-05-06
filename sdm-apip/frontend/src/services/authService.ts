@@ -15,13 +15,19 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
     return response.data.data!;
 };
 
-// Update Profile
+// SSO Login (Mock)
+export const ssoLogin = async (nip: string): Promise<LoginResponse> => {
+    const response = await api.post<ApiResponse<LoginResponse>>('/auth/sso/callback', { nip });
+    return response.data.data!;
+};
+
+// Perbarui Profil
 export const updateProfile = async (data: { email?: string; nomor_hp?: string; foto?: string }): Promise<{ user: User; sdm: SDM }> => {
     const response = await api.put<ApiResponse<{ user: User; sdm: SDM }>>('/user/profile', data);
     return response.data.data!;
 };
 
-// Logout (Clear HttpOnly Cookie)
+// Logout (Hapus Cookie HttpOnly)
 export const logoutUser = async (): Promise<void> => {
     await api.post<ApiResponse<null>>('/auth/logout');
 };
@@ -32,13 +38,13 @@ export const superAdminLogin = async (data: any): Promise<LoginResponse> => {
     return response.data.data!;
 };
 
-// Admin Forgot Password
+// Lupa Kata Sandi Admin
 export const superAdminForgotPassword = async (username: string): Promise<string | undefined> => {
     const response = await api.post<ApiResponse<{ debug_token?: string }>>('/auth/super-admin/forgot-password', { username });
     return response.data.data?.debug_token;
 };
 
-// Admin Reset Password via Token (dengan password baru pilihan admin)
+// Reset Kata Sandi Admin via Token (dengan kata sandi baru pilihan admin)
 export const superAdminResetToDefault = async (
     token: string,
     newPassword: string,
@@ -52,7 +58,7 @@ export const superAdminResetToDefault = async (
 };
 
 
-// Change Password (Universal for both User and Admin)
+// Ubah Kata Sandi (Universal untuk Pengguna dan Admin)
 export const changePassword = async (data: {
     current_password: string;
     new_password: string;
@@ -62,52 +68,52 @@ export const changePassword = async (data: {
     await api.post<ApiResponse<null>>(endpoint, data);
 };
 
-// Register
+// Daftar
 export const register = async (data: RegisterRequest): Promise<any> => {
     const response = await api.post<ApiResponse<any>>('/auth/register', data);
     return response.data.data;
 };
 
-// Resend Verification
+// Kirim Ulang Verifikasi
 export const resendVerification = async (email: string): Promise<void> => {
     await api.post<ApiResponse<null>>('/auth/resend-verification', { email });
 };
 
-// Verify Email
+// Verifikasi Email
 export const verifyEmail = async (token: string, otp: string): Promise<{ user_id: number }> => {
     const response = await api.post<ApiResponse<{ token: string; user_id: number }>>('/auth/verify-email', { token, otp });
     return response.data.data!;
 };
 
-// Set Password
+// Tetapkan Kata Sandi
 export const setPassword = async (data: SetPasswordRequest): Promise<void> => {
     await api.post<ApiResponse<null>>('/auth/set-password', data);
 };
 
-// Forgot Password
+// Lupa Kata Sandi
 export const forgotPassword = async (email: string): Promise<any> => {
     const response = await api.post<ApiResponse<any>>('/auth/forgot-password', { email });
     return response.data.data;
 };
 
-// Reset Password
+// Reset Kata Sandi
 export const resetPassword = async (data: any): Promise<void> => {
     await api.post<ApiResponse<null>>('/auth/reset-password', data);
 };
 
-// Get Profile
+// Dapatkan Profil
 export const getProfile = async (): Promise<{ user: User; sdm: SDM }> => {
     const response = await api.get<ApiResponse<{ user: User; sdm: SDM }>>('/user/profile');
     return response.data.data!;
 };
 
-// Check Email Health
+// Cek Kesehatan Email
 export const checkEmailHealth = async (): Promise<any> => {
     const response = await api.get('/health/email');
     return response.data;
 };
 
-// MFA Methods
+// Metode MFA
 export interface MFASetupResponse {
     secret: string;
     qr_url: string;

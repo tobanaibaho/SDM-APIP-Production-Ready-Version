@@ -5,20 +5,20 @@ import { setPassword } from '../services/authService';
 import toast from 'react-hot-toast';
 
 const AuthWrapper = ({ children, gradient, icon: Icon, title, subtitle }: any) => (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute top-0 -left-4 w-72 h-72 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
         <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-accent-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
         <div className="w-full max-w-md z-10 animate-fade-in">
             <div className="glass rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                <div className={`bg-gradient-to-br ${gradient} p-8 text-center`}>
+                <div className={`bg-gradient-to-br ${gradient} p-5 text-center`}>
                     <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md mb-4 shadow-xl border border-white/20">
                         <Icon size={32} className="text-white" />
                     </div>
                     <h1 className="text-2xl font-bold text-white tracking-tight">{title}</h1>
                     <p className="text-white/70 text-sm mt-1 uppercase tracking-widest font-semibold">{subtitle}</p>
                 </div>
-                <div className="p-8">
+                <div className="p-5">
                     {children}
                 </div>
             </div>
@@ -190,12 +190,12 @@ const SetPasswordPage: React.FC = () => {
                                     />
                                 ))}
                             </div>
-                            <p className={`text-[9px] font-black tracking-widest ${strength.strength > 0 ? 'text-slate-400' : 'text-slate-300'}`}>
+                            <p className={`text-xs font-black tracking-widest ${strength.strength > 0 ? 'text-slate-400' : 'text-slate-300'}`}>
                                 {strength.label}
                             </p>
                         </div>
                     )}
-                    {errors.password && <p className="text-[10px] text-red-500 font-bold uppercase mt-1">{errors.password}</p>}
+                    {errors.password && <p className="text-xs text-red-500 font-bold uppercase mt-1">{errors.password}</p>}
                 </div>
 
                 <div className="space-y-1.5">
@@ -219,16 +219,16 @@ const SetPasswordPage: React.FC = () => {
                             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                     </div>
-                    {errors.confirmPassword && <p className="text-[10px] text-red-500 font-bold uppercase mt-1">{errors.confirmPassword}</p>}
+                    {errors.confirmPassword && <p className="text-xs text-red-500 font-bold uppercase mt-1">{errors.confirmPassword}</p>}
                 </div>
 
                 <div className="bg-primary-50/50 rounded-2xl p-4 border border-primary-100 my-4">
-                    <p className="text-[10px] font-bold text-primary-900 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-primary-900 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                         <Shield size={10} /> Standar Keamanan
                     </p>
                     <ul className="space-y-1.5">
                         {['Min. 8 Karakter', 'Besar/kecil (Aa)', 'Kombinasi Angka (123)'].map((rule, i) => (
-                            <li key={i} className="flex items-center gap-2 text-[11px] text-slate-600 font-medium">
+                            <li key={i} className="flex items-center gap-2 text-xs text-slate-600 font-medium">
                                 <CheckCircle2 size={10} className="text-green-500" /> {rule}
                             </li>
                         ))}

@@ -69,10 +69,10 @@ const AssessmentFormPage: React.FC = () => {
     const [comment, setComment] = useState('');
     const [activeStep, setActiveStep] = useState(0); 
     
-    // Dynamic Questions State
+    // Status Pertanyaan Dinamis
     const [indicators, setIndicators] = useState<DynamicIndicator[]>([]);
     
-    // answers[indicatorIndex][questionIndex] = score
+    // jawaban[indicatorIndex][questionIndex] = nilai
     const [answers, setAnswers] = useState<(number | null)[][]>([]);
 
     useEffect(() => {
@@ -87,7 +87,7 @@ const AssessmentFormPage: React.FC = () => {
             const res = await questionService.getQuestionsForUser();
             const qs: Question[] = res.data.data || [];
             
-            // Build Indicators
+            // Bangun Indikator
             const grouped: Record<string, Question[]> = {};
             const ORDER = ['Berorientasi Pelayanan', 'Akuntabel', 'Kompeten', 'Harmonis', 'Loyal', 'Adaptif', 'Kolaboratif'];
             
@@ -245,25 +245,25 @@ const AssessmentFormPage: React.FC = () => {
 
     return (
         <Layout title="Formulir Penilaian 360°" subtitle={`Kuesioner Dinamis BerAKHLAK — ${totalQuestions} Pernyataan.`}>
-            <div className="max-w-5xl mx-auto space-y-6 animate-fade-in pb-24">
+            <div className="w-full mx-auto space-y-6 animate-fade-in pb-24">
                 {/* ══════════════════ Header ══════════════════ */}
-                <div className="relative overflow-hidden bg-slate-900 rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl">
+                <div className="relative overflow-hidden bg-slate-900 rounded-xl p-5 md:p-4 text-white shadow-2xl">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 via-slate-900 to-slate-900 pointer-events-none" />
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                    <div className="absolute top-0 right-0 p-5 opacity-10">
                         <Target size={140} />
                     </div>
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div className="flex items-center gap-5">
-                            <div className="h-18 w-18 h-16 w-16 rounded-3xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-black text-3xl shadow-xl shrink-0">
+                            <div className="h-18 w-18 h-16 w-16 rounded-3xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-black text-xl shadow-xl shrink-0">
                                 {targetName ? targetName.charAt(0) : '?'}
                             </div>
                             <div>
-                                <p className="text-primary-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Menilai Pegawai</p>
-                                <h3 className="text-2xl md:text-3xl font-black tracking-tight">{targetName || 'Memuat...'}</h3>
+                                <p className="text-primary-400 text-xs font-black uppercase tracking-[0.2em] mb-1">Menilai Pegawai</p>
+                                <h3 className="text-2xl md:text-xl font-black tracking-tight">{targetName || 'Memuat...'}</h3>
                                 <div className="flex items-center gap-3 mt-3 flex-wrap">
                                     <div className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-xl px-3 py-1.5">
                                         <Star size={14} className="text-amber-400" />
-                                        <span className="text-sm font-black">{getTotalAvgScore().toFixed(1)}<span className="text-[10px] text-white/50 font-bold ml-1">/100</span></span>
+                                        <span className="text-sm font-black">{getTotalAvgScore().toFixed(1)}</span>
                                     </div>
                                     <span className={`px-3 py-1 rounded-xl text-xs font-black border ${getPredikat(getTotalAvgScore()).bg} ${getPredikat(getTotalAvgScore()).color}`}>
                                         {getPredikat(getTotalAvgScore()).label}
@@ -283,7 +283,7 @@ const AssessmentFormPage: React.FC = () => {
 
                 {/* ══════════════════ Period Selector ══════════════════ */}
                 {periodInfo && getMaxMonths(periodInfo.frequency) > 1 && (
-                    <div className="bg-white/70 backdrop-blur-3xl p-6 rounded-[2rem] border border-white/60 shadow-sm">
+                    <div className="bg-white/70 backdrop-blur-3xl p-4 rounded-lg border border-white/60 shadow-sm">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div>
                                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Bulan Penilaian</h4>
@@ -295,7 +295,7 @@ const AssessmentFormPage: React.FC = () => {
                                 {Array.from({ length: getMaxMonths(periodInfo.frequency) }, (_, i) => i + 1).map(m => (
                                     <button
                                         key={m} type="button" onClick={() => setAssessmentMonth(m)}
-                                        className={`px-4 py-2 rounded-xl font-black text-xs transition-all ${assessmentMonth === m ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                        className={`px-4 py-2 rounded-xl font-black text-xs transition-all ${assessmentMonth === m ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                                     >
                                         Bulan {m}
                                     </button>
@@ -320,42 +320,42 @@ const AssessmentFormPage: React.FC = () => {
                                 key={ind.key}
                                 type="button"
                                 onClick={() => setActiveStep(i)}
-                                className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 border-2 transition-all ${activeStep === i
+                                className={`flex flex-col items-center justify-between gap-1.5 h-full rounded-2xl p-3 border-2 transition-all ${activeStep === i
                                     ? `${ind.bgColor} ${ind.borderColor} shadow-lg`
                                     : isIndicatorComplete(i)
                                         ? 'bg-emerald-50 border-emerald-200'
                                         : 'bg-white/60 border-slate-100 hover:bg-slate-50'
                                     }`}
                             >
-                                <span className="text-xl leading-none">{ind.emoji}</span>
-                                {isIndicatorComplete(i) && activeStep !== i
-                                    ? <CheckCircle2 size={14} className="text-emerald-500" />
-                                    : <span className="text-[8px] font-black text-slate-500 uppercase tracking-tight text-center leading-tight hidden sm:block">
-                                        {ind.label.split(' ')[0]}
+                                <div className="flex items-center gap-1.5 justify-center flex-1 w-full h-full px-1">
+                                    {isIndicatorComplete(i) && activeStep !== i && (
+                                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 hidden sm:block" />
+                                    )}
+                                    <span className={`text-xs xl:text-xs font-bold uppercase tracking-tight text-center leading-tight hidden sm:block ${activeStep === i ? ind.color : isIndicatorComplete(i) ? 'text-emerald-700' : 'text-slate-600'}`}>
+                                        {ind.label}
                                     </span>
-                                }
-                                <div className={`h-1 w-full rounded-full transition-all ${isIndicatorComplete(i) ? 'bg-emerald-400' : activeStep === i ? 'bg-primary-400' : 'bg-slate-100'}`} />
+                                </div>
+                                <div className={`h-1.5 w-full rounded-full transition-all mt-1 ${isIndicatorComplete(i) ? 'bg-emerald-400' : activeStep === i ? 'bg-primary-400' : 'bg-slate-200'}`} />
                             </button>
                         ))}
                     </div>
 
                     {/* ══════════════════ Questionnaire Card ══════════════════ */}
-                    <div className={`bg-white/80 backdrop-blur-3xl rounded-[2.5rem] border-2 ${currentIndicator.borderColor} shadow-[0_20px_50px_rgb(0,0,0,0.06)] overflow-hidden`}>
+                    <div className={`bg-white/80 backdrop-blur-3xl rounded-xl border-2 ${currentIndicator.borderColor} shadow-[0_20px_50px_rgb(0,0,0,0.06)] overflow-hidden`}>
                         {/* Card Header */}
-                        <div className={`${currentIndicator.bgColor} px-8 py-6 border-b ${currentIndicator.borderColor}`}>
+                        <div className={`${currentIndicator.bgColor} px-5 py-6 border-b ${currentIndicator.borderColor}`}>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <span className="text-4xl leading-none">{currentIndicator.emoji}</span>
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Indikator {activeStep + 1} dari {indicators.length}</p>
+                                        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Indikator {activeStep + 1} dari {indicators.length}</p>
                                         <h2 className={`text-2xl font-black ${currentIndicator.color}`}>{currentIndicator.label}</h2>
                                     </div>
                                 </div>
                                 {isIndicatorComplete(activeStep) && (
                                     <div className="text-right">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Skor</p>
-                                        <p className={`text-3xl font-black ${currentIndicator.color}`}>
-                                            {getIndicatorScore(activeStep)}<span className="text-sm text-slate-300 ml-1">/100</span>
+                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Skor</p>
+                                        <p className={`text-xl font-black ${currentIndicator.color}`}>
+                                            {getIndicatorScore(activeStep)}
                                         </p>
                                     </div>
                                 )}
@@ -363,10 +363,10 @@ const AssessmentFormPage: React.FC = () => {
                         </div>
 
                         {/* Questions */}
-                        <div className="px-8 py-6 space-y-8">
+                        <div className="px-5 py-6 space-y-8">
                             <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                                 <Info size={14} className="text-slate-400 shrink-0" />
-                                <p className="text-[10px] font-bold text-slate-500">Pilih satu jawaban yang paling sesuai untuk setiap pernyataan di bawah ini.</p>
+                                <p className="text-xs font-bold text-slate-500">Pilih satu jawaban yang paling sesuai untuk setiap pernyataan di bawah ini.</p>
                             </div>
 
                             {currentIndicator.questions.map((q, qIdx) => {
@@ -388,7 +388,7 @@ const AssessmentFormPage: React.FC = () => {
                                                         className={`relative flex flex-col items-center gap-2 p-3 rounded-2xl border-2 cursor-pointer transition-all select-none
                                                             ${isSelected
                                                                 ? `${currentIndicator.bgColor} ${currentIndicator.borderColor} shadow-md`
-                                                                : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200 hover:shadow-sm'
+                                                                : 'bg-slate-100 border-slate-200 hover:bg-white hover:border-slate-200 hover:shadow-sm'
                                                             }`}
                                                     >
                                                         <input
@@ -406,7 +406,7 @@ const AssessmentFormPage: React.FC = () => {
                                                             }`}>
                                                             {isSelected && <div className={`h-2.5 w-2.5 rounded-full ${currentIndicator.bgColor.replace('bg-', 'bg-').replace('-50', '-400')}`} style={{ backgroundColor: 'currentColor' }} />}
                                                         </div>
-                                                        <span className={`text-[10px] font-black text-center leading-tight ${isSelected ? currentIndicator.color : 'text-slate-400'}`}>
+                                                        <span className={`text-xs font-black text-center leading-tight ${isSelected ? currentIndicator.color : 'text-slate-400'}`}>
                                                             {opt.label}
                                                         </span>
                                                     </label>
@@ -419,7 +419,7 @@ const AssessmentFormPage: React.FC = () => {
                         </div>
 
                         {/* Navigation Footer */}
-                        <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <div className="px-5 py-5 border-t border-slate-100 flex items-center justify-between bg-slate-100/50">
                             <button
                                 type="button"
                                 onClick={() => setActiveStep(s => Math.max(0, s - 1))}
@@ -451,13 +451,13 @@ const AssessmentFormPage: React.FC = () => {
                                     Selanjutnya <ChevronRight size={16} />
                                 </button>
                             ) : (
-                                <span className="text-[10px] font-bold text-slate-400">Langkah Terakhir</span>
+                                <span className="text-xs font-bold text-slate-400">Langkah Terakhir</span>
                             )}
                         </div>
                     </div>
 
                     {/* ══════════════════ Summary Scorecard ══════════════════ */}
-                    <div className="mt-6 bg-white/70 backdrop-blur-3xl rounded-[2rem] border border-white/60 shadow-sm p-6">
+                    <div className="mt-6 bg-white/70 backdrop-blur-3xl rounded-lg border border-white/60 shadow-sm p-4">
                         <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Rekap Skor Sementara</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
                             {indicators.map((ind, i) => {
@@ -470,13 +470,12 @@ const AssessmentFormPage: React.FC = () => {
                                         onClick={() => setActiveStep(i)}
                                         className={`rounded-2xl p-3 text-center border-2 transition-all ${done ? `${ind.bgColor} ${ind.borderColor}` : activeStep === i ? 'bg-white border-primary-200 shadow-sm' : 'bg-slate-50 border-dashed border-slate-200'}`}
                                     >
-                                        <span className="text-xl block mb-1">{ind.emoji}</span>
                                         {done ? (
                                             <p className={`text-lg font-black ${ind.color}`}>{score}</p>
                                         ) : (
                                             <p className="text-lg font-black text-slate-200">—</p>
                                         )}
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-tight leading-tight mt-0.5">{ind.label}</p>
+                                        <p className="text-xs font-black text-slate-400 uppercase tracking-tight leading-tight mt-0.5">{ind.label}</p>
                                     </button>
                                 );
                             })}
@@ -484,9 +483,9 @@ const AssessmentFormPage: React.FC = () => {
                     </div>
 
                     {/* ══════════════════ Comment & Submit ══════════════════ */}
-                    <div className="mt-6 bg-white/70 backdrop-blur-3xl rounded-[2rem] border border-slate-100 shadow-sm p-6">
+                    <div className="mt-6 bg-white/70 backdrop-blur-3xl rounded-lg border border-slate-100 shadow-sm p-4">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="h-9 w-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
+                            <div className="h-9 w-9 bg-slate-200 rounded-xl flex items-center justify-center text-slate-600">
                                 <MessageSquare size={18} />
                             </div>
                             <label className="text-sm font-black text-slate-900">Ulasan & Masukan Konstruktif <span className="text-slate-400 font-normal text-xs">(Opsional)</span></label>
@@ -511,7 +510,7 @@ const AssessmentFormPage: React.FC = () => {
                         <button
                             type="submit"
                             disabled={loading || !allComplete}
-                            className="flex items-center justify-center gap-3 px-10 py-4 bg-slate-900 text-white rounded-[1.5rem] font-black text-sm uppercase tracking-[0.15em] hover:bg-primary-600 hover:shadow-2xl hover:shadow-primary-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center justify-center gap-3 px-4 py-4 bg-slate-900 text-white rounded-md font-black text-sm uppercase tracking-[0.15em] hover:bg-primary-600 hover:shadow-2xl hover:shadow-primary-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? <Loader2 size={20} className="animate-spin" /> : <ArrowRightCircle size={20} />}
                             {loading ? 'Mengirim...' : 'Kirim Penilaian BerAKHLAK'}

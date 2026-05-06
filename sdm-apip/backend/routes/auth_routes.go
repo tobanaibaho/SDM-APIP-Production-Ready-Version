@@ -17,8 +17,13 @@ func RegisterAuthRoutes(api *gin.RouterGroup) {
 
 	auth := api.Group("/auth")
 	{
-		// User auth
+		// Autentikasi Pengguna
 		auth.POST("/login", loginLimit, authController.Login)
+		auth.GET("/sso/login", authController.SSOInitiate)                  // SSO Bawaan (Kemenko)
+		auth.GET("/sso/login/:provider", authController.SSOInitiate)        // SSO Multi-penyedia (Google, Microsoft)
+		auth.GET("/sso/oidc-callback", authController.SSOOIDCCallback)      // Callback OIDC Bawaan
+		auth.GET("/sso/callback/:provider", authController.SSOOIDCCallback) // Callback Multi-penyedia
+		auth.POST("/sso/callback", loginLimit, authController.SSOCallback)  // Mock SSO (Hanya untuk tahap pengembangan/Dev)
 		auth.POST("/register", loginLimit, authController.Register)
 		auth.POST("/resend-verification", loginLimit, authController.ResendVerification)
 		auth.POST("/verify-email", loginLimit, authController.VerifyEmail)
@@ -28,7 +33,7 @@ func RegisterAuthRoutes(api *gin.RouterGroup) {
 		auth.POST("/reset-password", loginLimit, authController.ResetPassword)
 		auth.POST("/logout", authController.Logout)
 
-		// Super admin auth
+		// Autentikasi Super Admin
 		superAdmin := auth.Group("/super-admin")
 		{
 			superAdmin.POST("/login", loginLimit, authController.SuperAdminLogin)
@@ -36,7 +41,7 @@ func RegisterAuthRoutes(api *gin.RouterGroup) {
 			superAdmin.POST("/reset-to-default", loginLimit, authController.SuperAdminResetToDefault)
 		}
 
-		// Protected MFA routes
+		// Rute MFA yang dilindungi
 		mfa := auth.Group("/mfa")
 		mfa.Use(middleware.JWTAuthMiddleware())
 		{

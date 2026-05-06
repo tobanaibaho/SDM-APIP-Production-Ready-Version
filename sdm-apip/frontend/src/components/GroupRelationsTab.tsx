@@ -41,7 +41,7 @@ const GroupRelationsTab: React.FC<Props> = ({
     return (
         <div className="space-y-8">
             {/* Period selector */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100">
                 <div>
                     <h4 className="font-black text-slate-900 uppercase tracking-wider text-sm">Periode Penilaian</h4>
                     <p className="text-xs text-slate-500 mt-1">Pilih periode untuk mengatur relasi penilaian antar anggota.</p>
@@ -57,7 +57,7 @@ const GroupRelationsTab: React.FC<Props> = ({
             </div>
 
             {selectedPeriodId ? (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                     {/* Relation table */}
                     <div className={`space-y-6 ${selectedGroup.group.is_archived ? 'lg:col-span-12' : 'lg:col-span-12 xl:col-span-8'}`}>
                         <div className="flex items-center justify-between">
@@ -67,7 +67,7 @@ const GroupRelationsTab: React.FC<Props> = ({
                             <div className="flex items-center gap-3">
                                 <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{groupRelations.length} Relasi</span>
                                 {groupRelations.length > 0 && !selectedGroup.group.is_archived && (
-                                    <button onClick={onClearAll} className="text-[10px] font-bold text-red-500 hover:text-red-600 border border-red-100 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors uppercase tracking-widest">
+                                    <button onClick={onClearAll} className="text-xs font-bold text-red-500 hover:text-red-600 border border-red-100 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors uppercase tracking-widest">
                                         Hapus Semua
                                     </button>
                                 )}
@@ -77,39 +77,39 @@ const GroupRelationsTab: React.FC<Props> = ({
                         <div className="overflow-hidden rounded-2xl border border-slate-100">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
-                                        <th className="px-6 py-4">Penilai (Evaluator)</th>
-                                        <th className="px-6 py-4">Sebagai</th>
-                                        <th className="px-6 py-4">Yang Dinilai (Target)</th>
-                                        {!selectedGroup.group.is_archived && <th className="px-6 py-4 text-center">Aksi</th>}
+                                    <tr className="bg-slate-50 text-slate-500 text-xs font-black uppercase tracking-widest border-b border-slate-100">
+                                        <th className="px-4 py-4">Penilai (Evaluator)</th>
+                                        <th className="px-4 py-4">Sebagai</th>
+                                        <th className="px-4 py-4">Yang Dinilai (Target)</th>
+                                        {!selectedGroup.group.is_archived && <th className="px-4 py-4 text-center">Aksi</th>}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50 bg-white">
                                     {groupRelations.map((rel, idx) => (
                                         <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center text-[10px] font-bold uppercase">
+                                                    <div className="h-8 w-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center text-xs font-bold uppercase">
                                                         {getUserName(rel.evaluator_id).charAt(0)}
                                                     </div>
                                                     <span className="text-sm font-bold text-slate-900">{getUserName(rel.evaluator_id)}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${relTypeClass(rel.relation_type)}`}>
+                                            <td className="px-4 py-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-tighter border ${relTypeClass(rel.relation_type)}`}>
                                                     {rel.relation_type}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-[10px] font-bold uppercase">
+                                                    <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold uppercase">
                                                         {getUserName(rel.target_user_id).charAt(0)}
                                                     </div>
                                                     <span className="text-sm font-bold text-slate-900">{getUserName(rel.target_user_id)}</span>
                                                 </div>
                                             </td>
                                             {!selectedGroup.group.is_archived && (
-                                                <td className="px-6 py-4 text-center">
+                                                <td className="px-4 py-4 text-center">
                                                     <button onClick={() => onRemoveRelation(idx)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
                                                         <Trash2 size={16} />
                                                     </button>
@@ -118,7 +118,7 @@ const GroupRelationsTab: React.FC<Props> = ({
                                         </tr>
                                     ))}
                                     {groupRelations.length === 0 && (
-                                        <tr><td colSpan={selectedGroup.group.is_archived ? 3 : 4} className="px-6 py-12 text-center text-slate-400">Belum ada relasi penilaian yang dikonfigurasi.</td></tr>
+                                        <tr><td colSpan={selectedGroup.group.is_archived ? 3 : 4} className="px-4 py-12 text-center text-slate-400">Belum ada relasi penilaian yang dikonfigurasi.</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -128,12 +128,12 @@ const GroupRelationsTab: React.FC<Props> = ({
                     {/* Add relation form */}
                     {!selectedGroup.group.is_archived && (
                         <div className="lg:col-span-12 xl:col-span-4">
-                            <div className="bg-slate-900 rounded-3xl p-8 text-white space-y-5">
+                            <div className="bg-slate-900 rounded-3xl p-5 text-white space-y-5">
                             <h4 className="font-bold flex items-center gap-2"><Plus size={20} className="text-primary-500" /> Tambah Relasi</h4>
 
                             {/* Evaluator */}
                             <div>
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 block">Penilai (Evaluator)</label>
+                                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Penilai (Evaluator)</label>
                                 <select
                                     className="w-full bg-slate-800 border-none rounded-xl text-sm py-3 px-4 focus:ring-2 focus:ring-primary-500"
                                     value={newRelation.evaluator_id}
@@ -159,7 +159,7 @@ const GroupRelationsTab: React.FC<Props> = ({
 
                             {/* Target */}
                             <div>
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 block">Yang Dinilai (Target)</label>
+                                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Yang Dinilai (Target)</label>
                                 <select
                                     className="w-full bg-slate-800 border-none rounded-xl text-sm py-3 px-4 focus:ring-2 focus:ring-primary-500"
                                     value={newRelation.target_user_id}
@@ -173,7 +173,7 @@ const GroupRelationsTab: React.FC<Props> = ({
                             {/* Relation type */}
                             {(['relation_type', 'target_position'] as const).map((field, fi) => (
                                 <div key={field}>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block flex items-center justify-between">
+                                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2 block flex items-center justify-between">
                                         <span>{fi === 0 ? 'Tipe Penilai (Role Evaluator)' : 'Tipe Target (Role Yang Dinilai)'}</span>
                                         <span className="text-[8px] opacity-70 font-normal normal-case italic">
                                             {fi === 0 ? 'Pilih "Atasan" jika penilai adalah bos' : 'Pilih "Bawahan" jika target adalah staf'}
@@ -184,7 +184,7 @@ const GroupRelationsTab: React.FC<Props> = ({
                                             <button
                                                 key={t} type="button"
                                                 onClick={() => setNewRelation({ ...newRelation, [field]: t })}
-                                                className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border-2 ${newRelation[field] === t
+                                                className={`py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border-2 ${newRelation[field] === t
                                                     ? (fi === 0 ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-900/40' : 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-900/40')
                                                     : 'bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-300'}`}
                                             >
@@ -205,7 +205,7 @@ const GroupRelationsTab: React.FC<Props> = ({
 
                             <div className="bg-white/5 p-4 rounded-2xl flex gap-3 items-start">
                                 <ShieldCheck size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
-                                <p className="text-[10px] text-slate-400 leading-relaxed">
+                                <p className="text-xs text-slate-400 leading-relaxed">
                                     Relasi ini menentukan siapa yang dapat menilai siapa dalam periode yang dipilih.
                                 </p>
                             </div>
@@ -214,7 +214,7 @@ const GroupRelationsTab: React.FC<Props> = ({
                     )}
                 </div>
             ) : (
-                <div className="py-20 text-center">
+                <div className="py-8 text-center">
                     <Briefcase size={64} className="mx-auto text-slate-100 mb-4" />
                     <p className="text-slate-400 font-medium">Pilih periode penilaian terlebih dahulu untuk mengelola relasi.</p>
                 </div>

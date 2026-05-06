@@ -18,7 +18,7 @@ const (
 	JWTIssuer   = "sdm-apip-system"
 )
 
-// JWTClaims represents the claims in our JWT
+// JWTClaims merepresentasikan klaim di dalam JWT kita
 type JWTClaims struct {
 	UserID         uint   `json:"user_id"`
 	NIP            string `json:"nip,omitempty"`
@@ -28,26 +28,26 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-// GenerateJWT generates a new Access Token (short-lived)
+// GenerateJWT menghasilkan Access Token baru (berumur pendek)
 func GenerateJWT(user *models.User) (string, error) {
-	// Ensure Role is preloaded and has a name
+	// Pastikan Role dimuat sebelumnya (preloaded) dan memiliki nama
 	roleName := user.Role.Name
 	if roleName == "" {
-		// Fallback for safety
+		// Cadangan (fallback) untuk keamanan
 		roleName = models.RoleNameUser
 		if user.RoleID == models.RoleSuperAdmin {
 			roleName = models.RoleNameSuperAdmin
 		}
 	}
 
-	// Determine identifier type
+	// Tentukan tipe identifier
 	identifierType := "NIP"
 	if user.RoleID == models.RoleSuperAdmin {
 		identifierType = "USERNAME"
 	}
 
 	now := time.Now()
-	// Use expiry from config (fallback to 1 hour if not set or invalid)
+	// Gunakan kedaluwarsa dari konfigurasi (cadangan 1 jam jika tidak diatur atau tidak valid)
 	expiryHours := config.AppConfig.JWTExpiryHours
 	if expiryHours <= 0 {
 		expiryHours = 1
@@ -78,10 +78,10 @@ func GenerateJWT(user *models.User) (string, error) {
 	return token.SignedString([]byte(config.AppConfig.JWTSecret))
 }
 
-// GenerateRefreshToken generates a new Refresh Token (long-lived)
+// GenerateRefreshToken menghasilkan Refresh Token baru (berumur panjang)
 func GenerateRefreshToken(user *models.User) (string, error) {
 	now := time.Now()
-	// Use expiry from config (fallback to 7 days if not set or invalid)
+	// Gunakan kedaluwarsa dari konfigurasi (cadangan 7 hari jika tidak diatur atau tidak valid)
 	refreshExpiryHours := config.AppConfig.JWTRefreshExpiryHours
 	if refreshExpiryHours <= 0 {
 		refreshExpiryHours = 7 * 24
@@ -101,7 +101,7 @@ func GenerateRefreshToken(user *models.User) (string, error) {
 	return token.SignedString([]byte(config.AppConfig.JWTSecret))
 }
 
-// ValidateJWT validates a JWT token and returns the claims
+// ValidateJWT memvalidasi token JWT dan mengembalikan klaim
 func ValidateJWT(tokenString string) (*JWTClaims, error) {
 	claims := &JWTClaims{}
 
@@ -110,7 +110,7 @@ func ValidateJWT(tokenString string) (*JWTClaims, error) {
 		claims,
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+				return nil, fmt.Errorf("Metode penandatanganan tidak terduga: %v", token.Header["alg"])
 			}
 			return []byte(config.AppConfig.JWTSecret), nil
 		},
@@ -124,13 +124,13 @@ func ValidateJWT(tokenString string) (*JWTClaims, error) {
 	}
 
 	if !token.Valid {
-		return nil, errors.New("invalid token")
+		return nil, errors.New("Token tidak valid")
 	}
 
 	return claims, nil
 }
 
-// HashToken returns the SHA256 hash of a token string
+// HashToken mengembalikan hash SHA256 dari string token
 func HashToken(token string) string {
 	hash := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(hash[:])

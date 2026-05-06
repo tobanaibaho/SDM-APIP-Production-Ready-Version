@@ -44,7 +44,7 @@ export const groupService = {
         });
     },
 
-    // User facing methods
+    // Metode untuk Pengguna
     getMyGroups: async (): Promise<Group[]> => {
         const response = await api.get<ApiResponse<Group[]>>('/user/my-groups');
         return response.data.data || [];
@@ -55,7 +55,7 @@ export const groupService = {
         return response.data.data!;
     },
 
-    // Relation Management
+    // Manajemen Relasi
     getGroupRelations: async (groupId: number, periodId: number): Promise<any[]> => {
         const response = await api.get<ApiResponse<any[]>>(`/admin/groups/${groupId}/relations`, {
             params: { period_id: periodId }
@@ -71,7 +71,7 @@ export const groupService = {
         });
     },
 
-    // Cross-Group Relation Management
+    // Manajemen Relasi Lintas Grup
     getCrossGroupRelations: async (periodId: number): Promise<any[]> => {
         const response = await api.get<ApiResponse<any[]>>('/admin/relations', {
             params: { period_id: periodId }

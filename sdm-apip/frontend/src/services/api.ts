@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Axios Instance
+// Instansiasi Axios
 // ──────────────────────────────────────────────────────────────────────────────
 const api = axios.create({
     baseURL: '/api',
@@ -10,7 +10,7 @@ const api = axios.create({
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Silent Refresh Token Logic
+// Logika Refresh Token Terselubung (Silent)
 // Saat access token expired (401), atasi dengan refresh token.
 // Jika banyak request gagal bersamaan, semua antri menunggu satu proses refresh.
 // ──────────────────────────────────────────────────────────────────────────────
@@ -32,7 +32,7 @@ const forceLogout = () => {
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Request Interceptor — Sematkan token ke setiap request
+// Interseptor Permintaan — Sematkan token ke setiap request
 // ──────────────────────────────────────────────────────────────────────────────
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
@@ -46,7 +46,7 @@ api.interceptors.request.use(
 );
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Response Interceptor — Tangani 401 dengan silent refresh
+// Interseptor Respons — Tangani 401 dengan silent refresh
 // ──────────────────────────────────────────────────────────────────────────────
 api.interceptors.response.use(
     (response) => response,

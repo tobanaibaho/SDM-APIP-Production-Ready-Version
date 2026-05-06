@@ -79,10 +79,10 @@ func (s *SDMService) GetByID(id string) (*models.SDM, error) {
 }
 
 func (s *SDMService) Create(req models.SDMCreateRequest) (*models.SDM, error) {
-	// Check if NIP already exists
+	// Cek apakah NIP sudah ada
 	var existing models.SDM
 	if err := s.db.Where("nip = ?", req.NIP).First(&existing).Error; err == nil {
-		return nil, fmt.Errorf("nip already exists")
+		return nil, fmt.Errorf("NIP sudah ada")
 	}
 
 	sdm := models.SDM{
@@ -147,17 +147,17 @@ func (s *SDMService) Delete(id string) error {
 		return err
 	}
 
-	// Check if there's a user linked to this SDM
+	// Cek apakah ada pengguna yang terhubung dengan SDM ini
 	var user models.User
 	if err := s.db.Where("nip = ?", sdm.NIP).First(&user).Error; err == nil {
-		return fmt.Errorf("cannot delete SDM: user account linked")
+		return fmt.Errorf("Tidak dapat menghapus SDM: akun pengguna terhubung")
 	}
 
 	return s.db.Delete(&sdm).Error
 }
 
 func (s *SDMService) GetStats() (map[string]interface{}, error) {
-	// --- Core user counts ---
+	// --- Jumlah pengguna inti ---
 	var totalSDM, totalUsers, activeUsers, pendingUsers, totalGroups int64
 	s.db.Model(&models.SDM{}).Count(&totalSDM)
 	s.db.Model(&models.User{}).Count(&totalUsers)
@@ -165,7 +165,7 @@ func (s *SDMService) GetStats() (map[string]interface{}, error) {
 	s.db.Model(&models.User{}).Where("status = ?", models.StatusPendingVerification).Count(&pendingUsers)
 	s.db.Model(&models.Group{}).Where("deleted_at IS NULL").Count(&totalGroups)
 
-	// --- Active period ---
+	// --- Periode aktif ---
 	var activePeriod models.AssessmentPeriod
 	activePeriodFound := false
 	if err := s.db.Where("is_active = ? AND start_date <= NOW() AND end_date >= NOW()", true).
@@ -173,7 +173,7 @@ func (s *SDMService) GetStats() (map[string]interface{}, error) {
 		activePeriodFound = true
 	}
 
-	// --- Assessment progress for active period ---
+	// --- Kemajuan penilaian untuk periode aktif ---
 	assessmentProgress := map[string]interface{}{
 		"total_required":  0,
 		"total_submitted": 0,
@@ -187,14 +187,14 @@ func (s *SDMService) GetStats() (map[string]interface{}, error) {
 		assessmentProgress["period_name"] = activePeriod.Name
 		assessmentProgress["months_required"] = maxMonths
 
-		// Total unique evaluator-target relations for this period
+		// Total relasi evaluator-target unik untuk periode ini
 		var totalRelations int64
 		s.db.Model(&models.AssessmentRelation{}).
 			Where("period_id = ?", activePeriod.ID).
 			Count(&totalRelations)
 		totalRequired := int(totalRelations) * maxMonths
 
-		// Total submitted assessments
+		// Total penilaian yang sudah dikirimkan
 		var totalSubmitted int64
 		s.db.Model(&models.PeerAssessment{}).
 			Where("period_id = ? AND deleted_at IS NULL", activePeriod.ID).
@@ -211,7 +211,7 @@ func (s *SDMService) GetStats() (map[string]interface{}, error) {
 		assessmentProgress["total_submitted"] = int(totalSubmitted)
 		assessmentProgress["completion_pct"] = pct
 
-		// Per-group progress
+		// Kemajuan per grup
 		type GroupRow struct {
 			GroupID   uint   `gorm:"column:group_id"`
 			GroupName string `gorm:"column:group_name"`
@@ -251,7 +251,7 @@ func (s *SDMService) GetStats() (map[string]interface{}, error) {
 		}
 	}
 
-	// --- Never-logged-in users (active accounts, no last_login) ---
+	// --- Pengguna yang belum pernah masuk (akun aktif, tanpa last_login) ---
 	type NeverLoginUser struct {
 		UserID   uint   `gorm:"column:user_id" json:"user_id"`
 		NIP      string `gorm:"column:nip" json:"nip"`
@@ -269,7 +269,7 @@ func (s *SDMService) GetStats() (map[string]interface{}, error) {
 		Limit(10).
 		Scan(&neverLogin)
 
-	// --- Monthly submission trend (last 6 calendar months) ---
+	// --- Tren pengiriman bulanan (6 bulan kalender terakhir) ---
 	type MonthCount struct {
 		Month string `gorm:"column:month" json:"month"`
 		Count int64  `gorm:"column:count" json:"count"`
@@ -282,7 +282,7 @@ func (s *SDMService) GetStats() (map[string]interface{}, error) {
 		Order("month ASC").
 		Scan(&monthlyTrend)
 
-	// --- Unit kerja distribution ---
+	// --- Distribusi unit kerja ---
 	type UnitKerjaStats struct {
 		UnitKerja string `json:"unit_kerja"`
 		Count     int64  `json:"count"`
@@ -312,7 +312,7 @@ func (s *SDMService) GetStats() (map[string]interface{}, error) {
 	}, nil
 }
 
-// periodMaxMonthsSDM mirrors periodMaxMonths from assessment_service without circular dependency
+// periodMaxMonthsSDM mencerminkan periodMaxMonths dari assessment_service tanpa menyebabkan dependensi sirkular
 func periodMaxMonthsSDM(frequency string) int {
 	switch frequency {
 	case "monthly":

@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =============================================
--- 1. BASE TABLES
+-- 1. TABEL DASAR
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS roles (
@@ -32,12 +32,12 @@ CREATE INDEX IF NOT EXISTS idx_sdm_apip_nip ON sdm_apip(nip);
 CREATE INDEX IF NOT EXISTS idx_sdm_apip_deleted_at ON sdm_apip(deleted_at);
 
 -- =============================================
--- 2. USER & AUTH
+-- 2. PENGGUNA & AUTENTIKASI
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    nip VARCHAR(18) UNIQUE, -- Decoupled: Can be NULL for Admins
+    nip VARCHAR(18) UNIQUE, -- Terpisah: Dapat NULL untuk Admin
     username VARCHAR(50) UNIQUE,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255),
@@ -86,7 +86,7 @@ CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id)
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_hash ON refresh_tokens(token_hash);
 
 -- =============================================
--- 3. ORGANIZATIONAL STRUCTURE
+-- 3. STRUKTUR ORGANISASI
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS groups (
@@ -113,7 +113,7 @@ CREATE INDEX IF NOT EXISTS idx_user_groups_user_id ON user_groups(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_groups_group_id ON user_groups(group_id);
 
 -- =============================================
--- 4. ASSESSMENT SYSTEM
+-- 4. SISTEM PENILAIAN
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS assessment_periods (
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS assessment_periods (
     name VARCHAR(100) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    frequency VARCHAR(20) DEFAULT 'monthly', -- monthly, quarterly, semi_annual, annual
+    frequency VARCHAR(20) DEFAULT 'monthly', -- bulanan, kuartalan, semi_tahunan, tahunan
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -133,11 +133,11 @@ CREATE TABLE IF NOT EXISTS peer_assessments (
     id SERIAL PRIMARY KEY,
     evaluator_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     target_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE, -- Nullable: NULL for cross-group relations
+    group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE, -- Nullable: NULL untuk relasi lintas grup
     period_id INTEGER NOT NULL REFERENCES assessment_periods(id) ON DELETE CASCADE,
     assessment_month INTEGER NOT NULL DEFAULT 1,
     
-    -- ASN BerAKHLAK (Scale 1-100)
+    -- Nilai BerAKHLAK ASN (Skala 1-100)
     berorientasi_pelayanan INTEGER NOT NULL DEFAULT 0 CHECK (berorientasi_pelayanan >= 0 AND berorientasi_pelayanan <= 100),
     akuntabel INTEGER NOT NULL DEFAULT 0 CHECK (akuntabel >= 0 AND akuntabel <= 100),
     kompeten INTEGER NOT NULL DEFAULT 0 CHECK (kompeten >= 0 AND kompeten <= 100),
@@ -195,7 +195,7 @@ CREATE INDEX IF NOT EXISTS idx_assessment_answers_pa_id ON assessment_answers(pe
 CREATE INDEX IF NOT EXISTS idx_assessment_answers_q_id ON assessment_answers(question_id);
 
 -- =============================================
--- 5. LOGGING & AUDIT
+-- 5. LOG & AUDIT
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS audit_logs (
@@ -214,7 +214,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 
 -- =============================================
--- 6. SYSTEM LOGIC (TRIGGERS)
+-- 6. LOGIKA SISTEM (TRIGGER)
 -- =============================================
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -231,10 +231,10 @@ CREATE TRIGGER update_groups_updated_at BEFORE UPDATE ON groups FOR EACH ROW EXE
 CREATE TRIGGER update_assessment_periods_updated_at BEFORE UPDATE ON assessment_periods FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =============================================
--- 7. SEED DATA
+-- 7. DATA AWAL (SEED)
 -- =============================================
 
--- Default Roles
+-- Peran Bawaan
 INSERT INTO roles (id, name, description) VALUES 
     (1, 'SuperAdmin', 'Administrator Sistem'),
     (2, 'User', 'Pegawai')
@@ -242,7 +242,7 @@ ON CONFLICT (id) DO UPDATE SET
     name = EXCLUDED.name,
     description = EXCLUDED.description;
 
--- Initial Administrator
+-- Administrator Awal
 INSERT INTO users (nip, username, email, password, role_id, status) VALUES 
     (NULL, 'admin', 'unerojamu@gmail.com', '$2a$10$zTY21HR3m5wi6jkKN7UAOOrKtrxle16mdapoyzJ0//Rzow5XG/qTm', 1, 'active')
 ON CONFLICT (username) DO UPDATE SET 
@@ -252,7 +252,7 @@ ON CONFLICT (username) DO UPDATE SET
 
 
 
--- Default Questions (7 Pilar BerAKHLAK)
+-- Pertanyaan Bawaan (7 Pilar BerAKHLAK)
 INSERT INTO questions (indicator, text, is_active) VALUES
 ('Berorientasi Pelayanan', 'Apakah ASN komunikatif dalam memberikan layanan yang tepat dan efektif?', true),
 ('Berorientasi Pelayanan', 'Seberapa proaktif ASN dalam memberikan solusi dan inisiatif untuk meningkatkan kualitas pelayanan?', true),
@@ -298,7 +298,7 @@ INSERT INTO questions (indicator, text, is_active) VALUES
 ON CONFLICT DO NOTHING;
 
 -- =============================================
--- 8. PERMISSIONS
+-- 8. HAK AKSES (PERMISSIONS)
 -- =============================================
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO sdm_admin;

@@ -8,7 +8,7 @@ import {
     DashboardStats,
 } from '../types';
 
-// Get all SDM with pagination
+// Dapatkan semua SDM dengan paginasi
 export const getAllSDM = async (
     page: number = 1,
     perPage: number = 10,
@@ -22,36 +22,36 @@ export const getAllSDM = async (
     return response.data;
 };
 
-// Get SDM by ID
+// Dapatkan SDM berdasarkan ID
 export const getSDMById = async (id: number): Promise<SDM> => {
     const response = await api.get<ApiResponse<SDM>>(`/admin/sdm/${id}`);
     return response.data.data!;
 };
 
-// Create SDM
+// Buat SDM
 export const createSDM = async (data: SDMCreateRequest): Promise<SDM> => {
     const response = await api.post<ApiResponse<SDM>>('/admin/sdm', data);
     return response.data.data!;
 };
 
-// Update SDM
+// Perbarui SDM
 export const updateSDM = async (id: number, data: SDMUpdateRequest): Promise<SDM> => {
     const response = await api.put<ApiResponse<SDM>>(`/admin/sdm/${id}`, data);
     return response.data.data!;
 };
 
-// Delete SDM
+// Hapus SDM
 export const deleteSDM = async (id: number): Promise<void> => {
     await api.delete(`/admin/sdm/${id}`);
 };
 
-// Get Dashboard Stats
+// Dapatkan Statistik Dasbor
 export const getDashboardStats = async (): Promise<DashboardStats> => {
     const response = await api.get<ApiResponse<DashboardStats>>('/admin/sdm/stats');
     return response.data.data!;
 };
 
-// Import SDM from Excel
+// Impor SDM dari Excel
 export const importSDM = async (file: File): Promise<{ success_count: number; errors: string[] }> => {
     const formData = new FormData();
     formData.append('file', file);

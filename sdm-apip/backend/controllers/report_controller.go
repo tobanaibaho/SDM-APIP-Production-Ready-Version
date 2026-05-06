@@ -33,7 +33,7 @@ func (ctrl *ReportController) parseFilter(c *gin.Context) models.ReportFilter {
 	}
 	if end := c.Query("end_date"); end != "" {
 		if t, err := time.Parse("2006-01-02", end); err == nil {
-			// Set to end of day
+			// Tetapkan ke akhir hari
 			t = time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, t.Location())
 			filter.EndDate = &t
 		}
@@ -72,10 +72,10 @@ func (ctrl *ReportController) parseFilter(c *gin.Context) models.ReportFilter {
 		if pageSize, err := strconv.Atoi(ps); err == nil {
 			filter.PageSize = pageSize
 		} else {
-			filter.PageSize = 10 // Default
+			filter.PageSize = 10 // Bawaan
 		}
 	} else if filter.Page > 0 {
-		filter.PageSize = 10 // Default if page but no page_size
+		filter.PageSize = 10 // Bawaan jika ada page tapi tidak ada page_size
 	}
 
 	return filter
@@ -86,7 +86,7 @@ func (ctrl *ReportController) GetDashboard(c *gin.Context) {
 	data, err := ctrl.reportService.GetDashboardData(filter)
 	if err != nil {
 		fmt.Printf("[ERROR] Dashboard Error: %v\n", err)
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to get dashboard data", "An internal error occurred while processing dashboard data")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data dashboard", "Terjadi kesalahan internal saat memproses data dashboard")
 		return
 	}
 	c.JSON(http.StatusOK, data)
@@ -97,7 +97,7 @@ func (ctrl *ReportController) GetDetails(c *gin.Context) {
 	data, total, err := ctrl.reportService.GetDetailedReports(filter)
 	if err != nil {
 		fmt.Printf("[ERROR] Report Details Error: %v\n", err)
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to get detailed reports", "An internal error occurred while fetching report details")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil detail laporan", "Terjadi kesalahan internal saat mengambil detail laporan")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -111,7 +111,7 @@ func (ctrl *ReportController) GetUserReports(c *gin.Context) {
 	data, total, err := ctrl.reportService.GetUserReports(filter)
 	if err != nil {
 		fmt.Printf("[ERROR] User Reports Error: %v\n", err)
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to get user reports", "An internal error occurred while processing user reports")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil laporan pengguna", "Terjadi kesalahan internal saat memproses laporan pengguna")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -122,8 +122,8 @@ func (ctrl *ReportController) GetUserReports(c *gin.Context) {
 
 func (ctrl *ReportController) ExportExcel(c *gin.Context) {
 	filter := ctrl.parseFilter(c)
-	filter.Page = 0     // Disable pagination for export
-	filter.PageSize = 0 // Disable pagination for export
+	filter.Page = 0     // Nonaktifkan paginasi untuk ekspor
+	filter.PageSize = 0 // Nonaktifkan paginasi untuk ekspor
 	adminID := middleware.GetUserIDFromContext(c)
 	ip := c.ClientIP()
 	ua := c.Request.UserAgent()
@@ -131,7 +131,7 @@ func (ctrl *ReportController) ExportExcel(c *gin.Context) {
 	content, err := ctrl.reportService.ExportToExcel(filter, adminID, ip, ua)
 	if err != nil {
 		fmt.Printf("[ERROR] Export Excel Error: %v\n", err)
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Export failed", "An internal error occurred while generating Excel report")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Ekspor gagal", "Terjadi kesalahan internal saat membuat laporan Excel")
 		return
 	}
 
@@ -143,8 +143,8 @@ func (ctrl *ReportController) ExportExcel(c *gin.Context) {
 
 func (ctrl *ReportController) ExportPDF(c *gin.Context) {
 	filter := ctrl.parseFilter(c)
-	filter.Page = 0     // Disable pagination for export
-	filter.PageSize = 0 // Disable pagination for export
+	filter.Page = 0     // Nonaktifkan paginasi untuk ekspor
+	filter.PageSize = 0 // Nonaktifkan paginasi untuk ekspor
 	adminID := middleware.GetUserIDFromContext(c)
 	ip := c.ClientIP()
 	ua := c.Request.UserAgent()
@@ -152,7 +152,7 @@ func (ctrl *ReportController) ExportPDF(c *gin.Context) {
 	content, err := ctrl.reportService.ExportToPDF(filter, adminID, ip, ua)
 	if err != nil {
 		fmt.Printf("[ERROR] Export PDF Error: %v\n", err)
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Export failed", "An internal error occurred while generating PDF report")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Ekspor gagal", "Terjadi kesalahan internal saat membuat laporan PDF")
 		return
 	}
 
@@ -166,7 +166,7 @@ func (ctrl *ReportController) GetUnitKerjaOptions(c *gin.Context) {
 	options, err := ctrl.reportService.GetUnitKerjaOptions()
 	if err != nil {
 		fmt.Printf("[ERROR] Unit Kerja Options Error: %v\n", err)
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to get options", "An internal error occurred while fetching unit kerja options")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil opsi", "Terjadi kesalahan internal saat mengambil opsi unit kerja")
 		return
 	}
 	c.JSON(http.StatusOK, options)

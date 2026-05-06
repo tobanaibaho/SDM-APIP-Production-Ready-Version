@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster, useToasterStore, toast } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
-// Loading Component for Suspense
+// Komponen Loading untuk Suspense
 const PageLoader = () => (
     <div className="flex items-center justify-center min-h-screen bg-primary-950">
         <div className="relative w-12 h-12">
@@ -13,7 +13,7 @@ const PageLoader = () => (
     </div>
 );
 
-// Lazy Loaded Pages
+// Halaman Lazy Load
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
@@ -39,7 +39,7 @@ const CrossGroupRelationPage = lazy(() => import('./pages/CrossGroupRelationPage
 const AdminAssessmentMonitoringPage = lazy(() => import('./pages/AdminAssessmentMonitoringPage'));
 const AdminQuestionManagement = lazy(() => import('./pages/AdminQuestionManagement'));
 
-// Protected Route Component
+// Komponen Rute Terlindungi
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({
     children,
     adminOnly = false,
@@ -65,7 +65,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean 
     return <>{children}</>;
 };
 
-// Public Route Component (redirect if already logged in)
+// Komponen Rute Publik (dialihkan jika sudah login)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, isAdmin, loading } = useAuth();
 
@@ -87,7 +87,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const AppRoutes: React.FC = () => {
     return (
         <Routes>
-            {/* Public Routes */}
+            {/* Rute Publik */}
             <Route
                 path="/login"
                 element={
@@ -118,7 +118,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/super-admin/reset-password" element={<AdminResetPage />} />
 
-            {/* Super Admin Routes */}
+            {/* Rute Super Admin */}
             <Route
                 path="/super-admin"
                 element={
@@ -209,7 +209,7 @@ const AppRoutes: React.FC = () => {
             />
 
 
-            {/* User Routes */}
+            {/* Rute Pengguna */}
             <Route
                 path="/dashboard"
                 element={
@@ -234,7 +234,7 @@ const AppRoutes: React.FC = () => {
                     </ProtectedRoute>
                 }
             />
-            {/* NEW USER ASSESSMENT ROUTES */}
+            {/* RUTE PENILAIAN PENGGUNA BARU */}
             <Route
                 path="/user/assessments"
                 element={
@@ -252,7 +252,7 @@ const AppRoutes: React.FC = () => {
                 }
             />
 
-            {/* Default Redirect */}
+            {/* Pengalihan Bawaan */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

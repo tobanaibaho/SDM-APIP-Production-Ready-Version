@@ -9,18 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// RBACMiddleware validates user role access
+// RBACMiddleware memvalidasi akses peran (role) pengguna
 func RBACMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role := GetRoleFromContext(c)
 
 		if role == "" {
-			utils.ErrorResponse(c, http.StatusForbidden, "Forbidden", "Role not found in token")
+			utils.ErrorResponse(c, http.StatusForbidden, "Dilarang", "Peran tidak ditemukan dalam token")
 			c.Abort()
 			return
 		}
 
-		// Check if user role is in allowed roles
+		// Periksa apakah peran pengguna ada di dalam daftar peran yang diizinkan
 		allowed := false
 		for _, allowedRole := range allowedRoles {
 			if role == allowedRole {
@@ -30,7 +30,7 @@ func RBACMiddleware(allowedRoles ...string) gin.HandlerFunc {
 		}
 
 		if !allowed {
-			utils.ErrorResponse(c, http.StatusForbidden, "Forbidden", "You don't have permission to access this resource")
+			utils.ErrorResponse(c, http.StatusForbidden, "Dilarang", "Anda tidak memiliki izin untuk mengakses sumber daya ini")
 			c.Abort()
 			return
 		}
@@ -39,22 +39,22 @@ func RBACMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	}
 }
 
-// SuperAdminOnly is a shortcut for super admin access only
+// SuperAdminOnly adalah pintasan untuk akses khusus super admin
 func SuperAdminOnly() gin.HandlerFunc {
 	return RBACMiddleware(models.RoleNameSuperAdmin)
 }
 
-// UserOnly is a shortcut for user-only access
+// UserOnly adalah pintasan untuk akses pengguna biasa (termasuk super admin)
 func UserOnly() gin.HandlerFunc {
 	return RBACMiddleware(models.RoleNameUser, models.RoleNameSuperAdmin)
 }
 
-// HasRole checks if user has a specific role
+// HasRole memeriksa apakah pengguna memiliki peran spesifik tertentu
 func HasRole(role string) gin.HandlerFunc {
 	return RBACMiddleware(role)
 }
 
-// HasAnyRole checks if user has any of the specified roles
+// HasAnyRole memeriksa apakah pengguna memiliki salah satu dari peran yang ditentukan
 func HasAnyRole(roles ...string) gin.HandlerFunc {
 	return RBACMiddleware(roles...)
 }

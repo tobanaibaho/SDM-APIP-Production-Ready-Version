@@ -52,8 +52,8 @@ const ResetPasswordPage: React.FC = () => {
 
     if (!token) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
-                <div className="glass rounded-3xl p-10 max-w-md border border-white/10">
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 text-center">
+                <div className="glass rounded-3xl p-4 max-w-md border border-white/10">
                     <h2 className="text-2xl font-bold text-white mb-4">Link Tidak Valid</h2>
                     <p className="text-slate-400 mb-8">Link reset password tidak valid atau sudah kedaluwarsa.</p>
                     <button
@@ -68,14 +68,14 @@ const ResetPasswordPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
             {/* Animated Background Elements */}
             <div className="absolute top-0 -left-4 w-72 h-72 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
             <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-accent-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
             <div className="w-full max-w-md z-10 animate-fade-in">
                 <div className="glass rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-950 p-8 text-center border-b border-white/5">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-950 p-5 text-center border-b border-white/5">
                         <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md mb-4 shadow-xl border border-white/20">
                             <ShieldCheck size={32} className="text-primary-400" />
                         </div>
@@ -83,10 +83,10 @@ const ResetPasswordPage: React.FC = () => {
                         <p className="text-slate-400 text-sm mt-1 uppercase tracking-widest font-semibold opacity-80">Keamanan Akun Baru</p>
                     </div>
 
-                    <div className="p-8">
+                    <div className="p-5">
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
-                                <label className="form-label text-slate-400 font-bold uppercase tracking-wider text-[10px]">Kode OTP (Cek Email)</label>
+                                <label className="form-label text-slate-400 font-bold uppercase tracking-wider text-xs">Kode OTP (Cek Email)</label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary-500 transition-colors">
                                         <Key size={18} />
@@ -104,7 +104,7 @@ const ResetPasswordPage: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="form-label text-slate-400 font-bold uppercase tracking-wider text-[10px]">Password Baru</label>
+                                <label className="form-label text-slate-400 font-bold uppercase tracking-wider text-xs">Password Baru</label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary-500 transition-colors">
                                         <Lock size={18} />
@@ -128,7 +128,7 @@ const ResetPasswordPage: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="form-label text-slate-400 font-bold uppercase tracking-wider text-[10px]">Konfirmasi Password</label>
+                                <label className="form-label text-slate-400 font-bold uppercase tracking-wider text-xs">Konfirmasi Password</label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary-500 transition-colors">
                                         <Lock size={18} />

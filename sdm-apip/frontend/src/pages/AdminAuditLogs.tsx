@@ -25,7 +25,7 @@ const AdminAuditLogs: React.FC = () => {
     const [page, setPage] = useState(1);
     const [actionFilter, setActionFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
-    // tick every 30s to refresh relative timestamps
+    // perbarui setiap 30 detik untuk waktu relatif
     const [, setTick] = useState(0);
     useEffect(() => {
         const id = setInterval(() => setTick(t => t + 1), 30_000);
@@ -79,14 +79,14 @@ const AdminAuditLogs: React.FC = () => {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="md:col-span-4 bg-white/70 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between"
+                        className="md:col-span-4 bg-white/70 backdrop-blur-3xl p-5 rounded-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between"
                     >
                         <div className="h-12 w-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg mb-6">
                             <Activity size={24} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Total Aktivitas Terinci</p>
-                            <h3 className="text-4xl font-black text-slate-900 tracking-tight">{pagination?.total_items || 0} <span className="text-sm font-bold text-slate-400">Events</span></h3>
+                            <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Total Aktivitas Terinci</p>
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight">{pagination?.total_items || 0} <span className="text-sm font-bold text-slate-400">Events</span></h3>
                         </div>
                     </motion.div>
 
@@ -94,17 +94,17 @@ const AdminAuditLogs: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="md:col-span-4 bg-white/70 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between group overflow-hidden relative"
+                        className="md:col-span-4 bg-white/70 backdrop-blur-3xl p-5 rounded-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between group overflow-hidden relative"
                     >
-                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                        <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:scale-110 transition-transform duration-700">
                             <Shield size={120} />
                         </div>
                         <div className="h-12 w-12 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center shadow-sm mb-6">
                             <Shield size={24} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Security Perimeter</p>
-                            <h3 className="text-4xl font-black text-primary-600 tracking-tight">ENCRYPTED</h3>
+                            <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Security Perimeter</p>
+                            <h3 className="text-2xl font-black text-primary-600 tracking-tight">ENCRYPTED</h3>
                         </div>
                     </motion.div>
 
@@ -112,14 +112,14 @@ const AdminAuditLogs: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="md:col-span-4 bg-white/70 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between"
+                        className="md:col-span-4 bg-white/70 backdrop-blur-3xl p-5 rounded-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between"
                     >
                         <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm mb-6">
                             <Monitor size={24} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Sesi Aktif Terpantau</p>
-                            <h3 className="text-4xl font-black text-emerald-600 tracking-tight">PROTECTED</h3>
+                            <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Sesi Aktif Terpantau</p>
+                            <h3 className="text-2xl font-black text-emerald-600 tracking-tight">PROTECTED</h3>
                         </div>
                     </motion.div>
                 </div>
@@ -131,21 +131,28 @@ const AdminAuditLogs: React.FC = () => {
                         <select
                             id="action-filter"
                             name="actionFilter"
-                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest appearance-none cursor-pointer focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest appearance-none cursor-pointer focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                             value={actionFilter}
                             onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
                         >
                             <option value="">Semua Aktivitas</option>
                             <option value="login">Login</option>
                             <option value="login_failed">Login Gagal</option>
+                            <option value="user_create">Registrasi User</option>
                             <option value="user_update">Update User</option>
+                            <option value="user_delete">Hapus User</option>
                             <option value="role_change">Perubahan Role</option>
                             <option value="status_change">Perubahan Status</option>
                             <option value="admin_reset">Admin Reset</option>
                             <option value="password_change">Ganti Password</option>
+                            <option value="report_export">Ekspor Laporan</option>
+                            <option value="password_change">Ganti Password</option>
                             <option value="period_lock">Sistem Lock Periode</option>
                             <option value="period_update">Update Periode</option>
                             <option value="assessment_submit">Submit Penilaian</option>
+                            <option value="question_create">Tambah Pertanyaan</option>
+                            <option value="question_update">Update Pertanyaan</option>
+                            <option value="question_delete">Hapus Pertanyaan</option>
                         </select>
                     </div>
 
@@ -154,7 +161,7 @@ const AdminAuditLogs: React.FC = () => {
                         <select
                             id="status-filter"
                             name="statusFilter"
-                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest appearance-none cursor-pointer focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest appearance-none cursor-pointer focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                             value={statusFilter}
                             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                         >
@@ -175,29 +182,29 @@ const AdminAuditLogs: React.FC = () => {
                 </div>
 
                 {/* Logs Table Glass Bento */}
-                <div className="bg-white/70 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 shadow-[0_20px_50px_rgb(0,0,0,0.05)] overflow-hidden">
+                <div className="bg-white/70 backdrop-blur-3xl rounded-xl border border-white/60 shadow-[0_20px_50px_rgb(0,0,0,0.05)] overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/50 border-b border-white/40">
-                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 w-48">Audit Timestamp</th>
-                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Initiator / Actor</th>
-                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Action Event</th>
-                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">System Details</th>
-                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Status</th>
-                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Network Info</th>
+                                <tr className="bg-slate-100/50 border-b border-white/40">
+                                    <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500 w-48">Audit Timestamp</th>
+                                    <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500">Initiator / Actor</th>
+                                    <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500">Action Event</th>
+                                    <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500">System Details</th>
+                                    <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500">Status</th>
+                                    <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500">Network Info</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100/50">
                                 {loading ? (
                                     Array(5).fill(0).map((_, i) => (
                                         <tr key={i} className="animate-pulse">
-                                            <td colSpan={6} className="px-8 py-10"><div className="h-5 bg-slate-100 rounded-full w-full opacity-50"></div></td>
+                                            <td colSpan={6} className="px-5 py-6"><div className="h-5 bg-slate-200 rounded-full w-full opacity-50"></div></td>
                                         </tr>
                                     ))
                                 ) : logs.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-8 py-24 text-center">
+                                        <td colSpan={6} className="px-5 py-6 text-center">
                                             <div className="flex flex-col items-center gap-4 opacity-30">
                                                 <Terminal size={64} className="text-slate-400" />
                                                 <p className="text-lg font-black text-slate-900 tracking-tight italic">Encryption sequence ready. No logs detected.</p>
@@ -205,8 +212,8 @@ const AdminAuditLogs: React.FC = () => {
                                         </td>
                                     </tr>
                                 ) : logs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-slate-50/50 transition-all duration-300 group cursor-default">
-                                        <td className="px-8 py-6">
+                                    <tr key={log.id} className="hover:bg-slate-100/50 transition-all duration-300 group cursor-default">
+                                        <td className="px-5 py-6">
                                             <div className="flex flex-col">
                                                 <span
                                                     className="text-[13px] font-black text-primary-700 cursor-help"
@@ -214,12 +221,12 @@ const AdminAuditLogs: React.FC = () => {
                                                 >
                                                     {formatRelativeTime(log.created_at)}
                                                 </span>
-                                                <span className="text-[10px] font-black text-slate-500 font-mono mt-1 uppercase tracking-tight opacity-70">
+                                                <span className="text-xs font-black text-slate-500 font-mono mt-1 uppercase tracking-tight opacity-70">
                                                     {new Date(log.created_at).toLocaleTimeString('id-ID', { hour12: false })} · {new Date(log.created_at).toLocaleDateString('id-ID')}
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-5 py-6">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-10 w-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-xs font-black shadow-lg shadow-slate-200">
                                                     {log.user?.email ? log.user.email[0].toUpperCase() : 'S'}
@@ -228,45 +235,45 @@ const AdminAuditLogs: React.FC = () => {
                                                     <span className="text-[13px] font-black text-slate-900 truncate max-w-[150px]">
                                                         {log.user?.name || log.user?.email || 'SYSTEM AUTOMATION'}
                                                     </span>
-                                                    <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest mt-0.5 opacity-80">
+                                                    <span className="text-xs font-black text-primary-500 uppercase tracking-widest mt-0.5 opacity-80">
                                                         {log.user?.nip ? `IP: ${log.user.nip}` : 'KERNEL ACCESS'}
                                                     </span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-800 text-[10px] font-black tracking-[0.15em] border border-slate-200 shadow-sm uppercase group-hover:bg-white transition-colors">
+                                        <td className="px-5 py-6">
+                                            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-800 text-xs font-black tracking-[0.15em] border border-slate-200 shadow-sm uppercase group-hover:bg-white transition-colors">
                                                 {getActionLabel(log.action)}
                                             </span>
                                         </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-5 py-6">
                                             <div className="flex flex-col max-w-sm">
-                                                <p className="text-[11px] font-bold text-slate-600 leading-relaxed font-mono">
+                                                <p className="text-xs font-bold text-slate-600 leading-relaxed font-mono">
                                                     {log.details || '-'}
                                                 </p>
                                                 {log.target_user && (
                                                     <div className="flex items-center gap-2 mt-2 bg-primary-50/50 w-fit px-2 py-1 rounded-lg border border-primary-100">
                                                         <Activity size={10} className="text-primary-400" />
-                                                        <p className="text-[9px] font-black text-primary-700 uppercase tracking-tight">
+                                                        <p className="text-xs font-black text-primary-700 uppercase tracking-tight">
                                                             OBJ: {log.target_user.name || log.target_user.email}
                                                         </p>
                                                     </div>
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] border shadow-sm ${getStatusStyle(log.status)}`}>
+                                        <td className="px-5 py-6">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-black uppercase tracking-[0.1em] border shadow-sm ${getStatusStyle(log.status)}`}>
                                                 {log.status === 'success' ? <CheckCircle2 size={12} strokeWidth={3} /> : <AlertCircle size={12} strokeWidth={3} />}
                                                 {log.status}
                                             </span>
                                         </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-5 py-6">
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-2 text-slate-900">
                                                     <Monitor size={14} className="text-primary-500" />
                                                     <span className="text-[12px] font-black font-mono tracking-tight">{log.ip_address}</span>
                                                 </div>
-                                                <div className="mt-1.5 text-[10px] text-slate-500 font-bold truncate max-w-[150px] italic opacity-60" title={log.user_agent}>
+                                                <div className="mt-1.5 text-xs text-slate-500 font-bold truncate max-w-[150px] italic opacity-60" title={log.user_agent}>
                                                     {log.user_agent || 'Secured Connection'}
                                                 </div>
                                             </div>
@@ -279,8 +286,8 @@ const AdminAuditLogs: React.FC = () => {
 
                     {/* Pagination Glass */}
                     {pagination && pagination.total_pages > 1 && (
-                        <div className="px-8 py-6 border-t border-slate-100/50 flex items-center justify-between bg-slate-50/30">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Halaman {page} / {pagination.total_pages}</span>
+                        <div className="px-5 py-6 border-t border-slate-100/50 flex items-center justify-between bg-slate-50/30">
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-[0.3em]">Halaman {page} / {pagination.total_pages}</span>
                             <div className="flex items-center gap-3">
                                 <button
                                     className="h-10 w-10 flex items-center justify-center rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 transition-all active:scale-95 shadow-sm"

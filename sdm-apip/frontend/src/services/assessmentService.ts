@@ -51,7 +51,7 @@ export interface AssessmentSummary {
 }
 
 const assessmentService = {
-    // Admin Endpoints
+    // Endpoint Admin
     getAllPeriods: async (): Promise<AssessmentPeriod[]> => {
         const response = await api.get('/user/periods');
         return response.data.data;
@@ -74,7 +74,7 @@ const assessmentService = {
         await api.delete(`/admin/periods/${id}`);
     },
 
-    // User Endpoints
+    // Endpoint Pengguna
     submitAssessment: async (data: SubmitAssessmentRequest): Promise<void> => {
         await api.post('/user/assessments', data);
     },

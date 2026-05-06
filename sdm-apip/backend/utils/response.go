@@ -2,7 +2,7 @@ package utils
 
 import "github.com/gin-gonic/gin"
 
-// Response represents a standard API response
+// Response merepresentasikan respons API standar
 type Response struct {
 	Success bool        `json:"success"`
 	Message string      `json:"message"`
@@ -10,7 +10,7 @@ type Response struct {
 	Error   string      `json:"error,omitempty"`
 }
 
-// SuccessResponse sends a success response
+// SuccessResponse mengirimkan respons sukses
 func SuccessResponse(c *gin.Context, statusCode int, message string, data interface{}) {
 	c.JSON(statusCode, Response{
 		Success: true,
@@ -19,7 +19,7 @@ func SuccessResponse(c *gin.Context, statusCode int, message string, data interf
 	})
 }
 
-// ErrorResponse sends an error response
+// ErrorResponse mengirimkan respons error
 func ErrorResponse(c *gin.Context, statusCode int, message string, err string) {
 	c.JSON(statusCode, Response{
 		Success: false,
@@ -28,7 +28,7 @@ func ErrorResponse(c *gin.Context, statusCode int, message string, err string) {
 	})
 }
 
-// PaginatedResponse represents a paginated API response
+// PaginatedResponse merepresentasikan respons API dengan paginasi
 type PaginatedResponse struct {
 	Success    bool        `json:"success"`
 	Message    string      `json:"message"`
@@ -36,7 +36,7 @@ type PaginatedResponse struct {
 	Pagination Pagination  `json:"pagination"`
 }
 
-// Pagination represents pagination metadata
+// Pagination merepresentasikan metadata paginasi
 type Pagination struct {
 	CurrentPage int   `json:"current_page"`
 	PerPage     int   `json:"per_page"`
@@ -44,7 +44,7 @@ type Pagination struct {
 	TotalPages  int   `json:"total_pages"`
 }
 
-// PaginatedSuccessResponse sends a paginated success response
+// PaginatedSuccessResponse mengirimkan respons sukses dengan paginasi
 func PaginatedSuccessResponse(c *gin.Context, statusCode int, message string, data interface{}, pagination Pagination) {
 	c.JSON(statusCode, PaginatedResponse{
 		Success:    true,

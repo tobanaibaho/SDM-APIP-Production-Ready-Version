@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import assessmentService, { AssessmentPeriod } from '../services/assessmentService';
 import GroupMemberModal from '../components/GroupMemberModal';
 import GroupRelationsTab from '../components/GroupRelationsTab';
+import useEscapeKey from '../hooks/useEscapeKey';
 
 const GroupManagement: React.FC = () => {
     const [groups, setGroups] = useState<Group[]>([]);
@@ -48,6 +49,11 @@ const GroupManagement: React.FC = () => {
         target_position: 'Peer' as 'Atasan' | 'Peer' | 'Bawahan',
     });
     const [showRelationDeleteModal, setShowRelationDeleteModal] = useState(false);
+
+    useEscapeKey(showCreateModal, () => setShowCreateModal(false));
+    useEscapeKey(showDetailModal, () => setShowDetailModal(false));
+    useEscapeKey(showDeleteModal, () => setShowDeleteModal(false));
+    useEscapeKey(showRelationDeleteModal, () => setShowRelationDeleteModal(false));
     const [relationToRemoveIndex, setRelationToRemoveIndex] = useState<number | null>(null);
 
     useEffect(() => { fetchGroups(); fetchUsers(); fetchPeriods(); }, [sortBy, sortOrder, showArchived]);
@@ -62,7 +68,7 @@ const GroupManagement: React.FC = () => {
             setPeriods(data || []);
             const active = data?.find((p: AssessmentPeriod) => p.is_active);
             if (active) setSelectedPeriodId(active.id);
-        } catch { /* ignore */ }
+        } catch { /* abaikan */ }
     };
 
     const fetchRelations = async () => {
@@ -70,7 +76,7 @@ const GroupManagement: React.FC = () => {
         try {
             const data = await groupService.getGroupRelations(selectedGroup.group.id, Number(selectedPeriodId));
             setGroupRelations(data);
-        } catch { /* ignore */ }
+        } catch { /* abaikan */ }
     };
 
     const fetchGroups = async () => {
@@ -89,7 +95,7 @@ const GroupManagement: React.FC = () => {
                 const j = u.jabatan?.toLowerCase() || '';
                 return r !== 'admin' && r !== 'super admin' && u.id !== 1 && !j.includes('inspektur');
             }));
-        } catch { /* ignore */ }
+        } catch { /* abaikan */ }
     };
 
     const handleSort = (col: string) => {
@@ -192,15 +198,15 @@ const GroupManagement: React.FC = () => {
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="md:col-span-4 bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl group border border-slate-800"
+                        className="md:col-span-4 bg-slate-900 rounded-xl p-5 text-white relative overflow-hidden shadow-2xl group border border-slate-800"
                     >
                         <div className="relative z-10 h-full flex flex-col justify-between">
                             <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mb-6">
                                 <Users size={24} className="text-white" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 mb-1">Total Grup Terdaftar</p>
-                                <h3 className="text-5xl font-black tracking-tighter group-hover:scale-105 transition-transform origin-left duration-500">
+                                <p className="text-xs font-black uppercase tracking-[0.25em] text-white/50 mb-1">Total Grup Terdaftar</p>
+                                <h3 className="text-xl font-black tracking-tighter group-hover:scale-105 transition-transform origin-left duration-500">
                                     {(groups || []).length}
                                 </h3>
                             </div>
@@ -211,15 +217,15 @@ const GroupManagement: React.FC = () => {
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="md:col-span-8 bg-white/70 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_10px_40px_rgb(0,0,0,0.04)] flex flex-col justify-center"
+                        className="md:col-span-8 bg-white/70 backdrop-blur-3xl rounded-xl p-5 border border-white/60 shadow-[0_10px_40px_rgb(0,0,0,0.04)] flex flex-col justify-center"
                     >
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
                             <div className="space-y-2">
                                 <h4 className="text-xl font-black text-slate-900 tracking-tight">Tata Kelola Tim</h4>
                                 <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-md">Kelola unit kerja Inspektorat untuk mendefinisikan relasi evaluator dan target penilaian secara tepat dan akurat.</p>
                             </div>
                             <div className="flex gap-4 shrink-0">
-                                <button onClick={() => setShowCreateModal(true)} className="px-8 py-5 rounded-[1.8rem] bg-primary-600 text-white font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-primary-100 active:scale-95 flex items-center gap-3">
+                                <button onClick={() => setShowCreateModal(true)} className="px-5 py-5 rounded-[1.8rem] bg-primary-600 text-white font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-primary-100 active:scale-95 flex items-center gap-3">
                                     <Plus size={20} strokeWidth={3} /> Buat Grup Baru
                                 </button>
                             </div>
@@ -247,7 +253,7 @@ const GroupManagement: React.FC = () => {
                                 <div className={`block w-11 h-6 rounded-full transition-colors ${showArchived ? 'bg-rose-500' : 'bg-slate-200'}`}></div>
                                 <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${showArchived ? 'transform translate-x-5' : ''}`}></div>
                             </div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Arsip</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Arsip</span>
                         </label>
 
                         <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1">
@@ -266,33 +272,33 @@ const GroupManagement: React.FC = () => {
 
                 {/* Content Logic */}
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {[1, 2, 3].map(i => <div key={i} className="bg-white/50 h-56 rounded-[2.5rem] animate-pulse border border-white/50" />)}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        {[1, 2, 3].map(i => <div key={i} className="bg-white/50 h-56 rounded-xl animate-pulse border border-white/50" />)}
                     </div>
                 ) : filteredGroups.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="py-32 text-center bg-white/40 backdrop-blur-3xl rounded-[3rem] border-4 border-dashed border-white/60"
+                        className="py-32 text-center bg-white/40 backdrop-blur-3xl rounded-2xl border-4 border-dashed border-white/60"
                     >
                         <Users size={80} className="mx-auto text-slate-200 mb-6 drop-shadow-sm" />
                         <h3 className="text-2xl font-black text-slate-900 tracking-tight italic">Unit Tidak Ditemukan.</h3>
-                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.4em] mt-3">Sesuaikan parameter pencarian atau reset filter</p>
+                        <p className="text-slate-400 font-bold uppercase text-xs tracking-[0.4em] mt-3">Sesuaikan parameter pencarian atau reset filter</p>
                     </motion.div>
                 ) : viewMode === 'list' ? (
-                    <div className="bg-white/70 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 shadow-[0_20px_50px_rgb(0,0,0,0.05)] overflow-hidden">
+                    <div className="bg-white/70 backdrop-blur-3xl rounded-xl border border-white/60 shadow-[0_20px_50px_rgb(0,0,0,0.05)] overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50/50 border-b border-white/40">
-                                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('name')}>
+                                    <tr className="bg-slate-100/50 border-b border-white/40">
+                                        <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('name')}>
                                             <div className="flex items-center gap-2">Identitas Unit <ArrowUpDown size={12} className="opacity-50" /></div>
                                         </th>
-                                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Misi & Deskripsi</th>
-                                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-center" onClick={() => handleSort('user_count')}>
+                                        <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500">Misi & Deskripsi</th>
+                                        <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500 text-center" onClick={() => handleSort('user_count')}>
                                             <div className="flex items-center justify-center gap-2">Kekuatan Personil <ArrowUpDown size={12} className="opacity-50" /></div>
                                         </th>
-                                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-right">Manajemen</th>
+                                        <th className="px-5 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500 text-right">Manajemen</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100/50">
@@ -303,22 +309,22 @@ const GroupManagement: React.FC = () => {
                                             transition={{ delay: idx * 0.05 }}
                                             key={group.id}
                                             onClick={() => openDetail(group.id)}
-                                            className="group hover:bg-slate-50/50 cursor-pointer transition-all duration-300"
+                                            className="group hover:bg-slate-100/50 cursor-pointer transition-all duration-300"
                                         >
-                                            <td className="px-8 py-6 font-black text-slate-900">
+                                            <td className="px-5 py-6 font-black text-slate-900">
                                                 <div className="flex items-center gap-4">
                                                     <div className={`h-11 w-11 rounded-2xl flex items-center justify-center border shadow-sm transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 ${group.is_archived ? 'bg-rose-50 border-rose-100 text-rose-500' : 'bg-primary-50 border-primary-100 text-primary-600'}`}><Users size={20} strokeWidth={2.5} /></div>
                                                     <div>
                                                         <p className="text-[14px] tracking-tight">{group.name}</p>
-                                                        {group.is_archived && <span className="text-[9px] font-black uppercase tracking-widest text-rose-500 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 mt-1 inline-block animate-pulse">TERMINATED</span>}
+                                                        {group.is_archived && <span className="text-xs font-black uppercase tracking-widest text-rose-500 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 mt-1 inline-block animate-pulse">TERMINATED</span>}
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 text-[13px] text-slate-500 font-medium max-w-xs">{group.description || <span className="italic opacity-30">Tidak ada deskripsi misi terdaftar.</span>}</td>
-                                            <td className="px-8 py-6 text-center">
-                                                <span className="inline-flex items-center rounded-2xl bg-white border border-slate-100 px-4 py-2 text-[11px] font-black text-slate-700 shadow-sm group-hover:shadow-md transition-shadow group-hover:bg-primary-50 group-hover:border-primary-100 group-hover:text-primary-700">{group.user_count || 0} PERSONIL</span>
+                                            <td className="px-5 py-6 text-[13px] text-slate-500 font-medium max-w-xs">{group.description || <span className="italic opacity-30">Tidak ada deskripsi misi terdaftar.</span>}</td>
+                                            <td className="px-5 py-6 text-center">
+                                                <span className="inline-flex items-center rounded-2xl bg-white border border-slate-100 px-4 py-2 text-xs font-black text-slate-700 shadow-sm group-hover:shadow-md transition-shadow group-hover:bg-primary-50 group-hover:border-primary-100 group-hover:text-primary-700">{group.user_count || 0} PERSONIL</span>
                                             </td>
-                                            <td className="px-8 py-6 text-right">
+                                            <td className="px-5 py-6 text-right">
                                                 {!group.is_archived && (
                                                     <button onClick={e => handleDelete(group, e)} className="h-10 w-10 flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0">
                                                         <Trash2 size={18} strokeWidth={2.5} />
@@ -332,7 +338,7 @@ const GroupManagement: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {filteredGroups.map((group, idx) => (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -340,7 +346,7 @@ const GroupManagement: React.FC = () => {
                                 transition={{ delay: idx * 0.05 }}
                                 key={group.id}
                                 onClick={() => openDetail(group.id)}
-                                className="bg-white/70 backdrop-blur-3xl rounded-[2.8rem] border border-white/60 p-8 shadow-[0_15px_45px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.06)] transition-all flex flex-col justify-between group h-full relative overflow-hidden"
+                                className="bg-white/70 backdrop-blur-3xl rounded-[2.8rem] border border-white/60 p-5 shadow-[0_15px_45px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.06)] transition-all flex flex-col justify-between group h-full relative overflow-hidden"
                             >
                                 <div>
                                     <div className="flex items-start justify-between mb-6">
@@ -349,7 +355,7 @@ const GroupManagement: React.FC = () => {
                                     </div>
                                     <h3 className="text-2xl font-black text-slate-900 tracking-tight group-hover:text-primary-600 transition-colors">
                                         {group.name}
-                                        {group.is_archived && <span className="ml-2 px-2 py-0.5 rounded-md bg-rose-50 text-rose-500 text-[10px] font-black uppercase tracking-widest align-middle border border-rose-100">ARCHIVED</span>}
+                                        {group.is_archived && <span className="ml-2 px-2 py-0.5 rounded-md bg-rose-50 text-rose-500 text-xs font-black uppercase tracking-widest align-middle border border-rose-100">ARCHIVED</span>}
                                     </h3>
                                     <p className="text-sm text-slate-500 mt-3 font-medium line-clamp-3 leading-relaxed min-h-[4.5rem] italic opacity-80 group-hover:opacity-100 transition-opacity">{group.description || 'Struktur unit kerja tanpa deskripsi misi publik.'}</p>
                                 </div>
@@ -357,18 +363,18 @@ const GroupManagement: React.FC = () => {
                                 <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
                                     <div className="flex -space-x-3">
                                         {Array.from({ length: Math.min(group.user_count || 0, 4) }).map((_, i) => (
-                                            <div key={i} className="h-9 w-9 rounded-xl bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-black text-slate-600 shadow-sm transition-transform group-hover:translate-x-1 group-hover:scale-105" style={{ zIndex: 10 - i }}>
+                                            <div key={i} className="h-9 w-9 rounded-xl bg-slate-100 border-2 border-white flex items-center justify-center text-xs font-black text-slate-600 shadow-sm transition-transform group-hover:translate-x-1 group-hover:scale-105" style={{ zIndex: 10 - i }}>
                                                 {String.fromCharCode(65 + i)}
                                             </div>
                                         ))}
                                         {(group.user_count || 0) > 4 && (
-                                            <div className="h-9 w-9 rounded-xl bg-primary-50 border-2 border-white flex items-center justify-center text-[10px] font-black text-primary-600 shadow-sm relative z-0">
+                                            <div className="h-9 w-9 rounded-xl bg-primary-50 border-2 border-white flex items-center justify-center text-xs font-black text-primary-600 shadow-sm relative z-0">
                                                 +{(group.user_count || 0) - 4}
                                             </div>
                                         )}
-                                        {group.user_count === 0 && <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">VACANT</span>}
+                                        {group.user_count === 0 && <span className="text-xs font-black text-slate-300 uppercase tracking-widest">VACANT</span>}
                                     </div>
-                                    <span className="text-[11px] font-black uppercase tracking-widest text-primary-600 flex items-center gap-1 group-hover:translate-x-2 transition-transform">Unit Detail <ChevronRight size={16} strokeWidth={3} /></span>
+                                    <span className="text-xs font-black uppercase tracking-widest text-primary-600 flex items-center gap-1 group-hover:translate-x-2 transition-transform">Unit Detail <ChevronRight size={16} strokeWidth={3} /></span>
                                 </div>
                             </motion.div>
                         ))}
@@ -379,27 +385,27 @@ const GroupManagement: React.FC = () => {
             {/* Create Modal Premium */}
             <AnimatePresence>
                 {showCreateModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-md">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0" onClick={() => setShowCreateModal(false)} />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 30 }}
-                            className="relative bg-white w-full max-w-lg rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.35)] overflow-hidden"
+                            className="relative bg-white w-full max-w-lg rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.35)] overflow-hidden"
                         >
-                            <div className="bg-slate-900 px-10 py-10 text-white text-center relative overflow-hidden border-b border-white/5">
+                            <div className="bg-slate-900 px-4 py-6 text-white text-center relative overflow-hidden border-b border-white/5">
                                 <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12">
                                     <Users size={100} />
                                 </div>
-                                <h3 className="text-3xl font-black italic tracking-tight relative z-10 uppercase">Arsitektur Unit</h3>
-                                <p className="text-primary-400 text-[10px] font-black uppercase tracking-[0.3em] mt-2 relative z-10 italic">Struktur Organisasi Inspektorat</p>
+                                <h3 className="text-xl font-black italic tracking-tight relative z-10 uppercase">Arsitektur Unit</h3>
+                                <p className="text-primary-400 text-xs font-black uppercase tracking-[0.3em] mt-2 relative z-10 italic">Struktur Organisasi Inspektorat</p>
                             </div>
-                            <form onSubmit={handleCreate} className="p-10 space-y-8">
+                            <form onSubmit={handleCreate} className="p-4 space-y-8">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Nama Unit/Grup Kerja</label>
+                                    <label className="text-xs font-black text-slate-900 uppercase tracking-widest block pl-1">Nama Unit/Grup Kerja</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-4 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
                                         required
                                         placeholder="Contoh: Tim Audit Internal Wilayah II"
                                         value={formData.name}
@@ -408,9 +414,9 @@ const GroupManagement: React.FC = () => {
                                     />
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block pl-1">Misi & Deskripsi Operasional</label>
+                                    <label className="text-xs font-black text-slate-900 uppercase tracking-widest block pl-1">Misi & Deskripsi Operasional</label>
                                     <textarea
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-6 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner min-h-[120px]"
+                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-4 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner min-h-[120px]"
                                         placeholder="Deskripsikan fokus kerja atau tanggung jawab tim ini..."
                                         value={formData.description}
                                         onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -418,8 +424,8 @@ const GroupManagement: React.FC = () => {
                                     />
                                 </div>
                                 <div className="flex gap-4 pt-4">
-                                    <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 py-5 rounded-2xl bg-white border-2 border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all">Batalkan</button>
-                                    <button type="submit" className="flex-[2] py-5 rounded-3xl bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest hover:bg-primary-600 transition-all shadow-2xl shadow-primary-100 flex items-center justify-center gap-3 active:scale-95" disabled={saving}>
+                                    <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 py-5 rounded-2xl bg-white border-2 border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all">Batalkan</button>
+                                    <button type="submit" className="flex-[2] py-5 rounded-3xl bg-slate-900 text-white font-black text-xs uppercase tracking-widest hover:bg-primary-600 transition-all shadow-2xl shadow-primary-100 flex items-center justify-center gap-3 active:scale-95" disabled={saving}>
                                         {saving ? <Loader2 size={18} className="animate-spin" /> : 'Inisialisasi Unit'}
                                     </button>
                                 </div>
@@ -465,24 +471,24 @@ const GroupManagement: React.FC = () => {
             {/* Termination Modal Premium */}
             <AnimatePresence>
                 {showDeleteModal && groupToDelete && (
-                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-950/70 backdrop-blur-md">
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0" onClick={() => !saving && setShowDeleteModal(false)} />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                            className="relative bg-white w-full max-w-lg rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden"
+                            className="relative bg-white w-full max-w-lg rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden"
                         >
-                            <div className="bg-rose-600 px-10 py-10 text-white text-center relative overflow-hidden">
-                                <div className="h-24 w-24 rounded-[2.2rem] bg-white/20 backdrop-blur-md flex items-center justify-center mx-auto mb-6 border-2 border-white/30 shadow-2xl relative z-10"><Trash2 size={40} strokeWidth={2.5} /></div>
-                                <h3 className="text-3xl font-black italic tracking-tighter relative z-10 uppercase">TERMINASI UNIT</h3>
-                                <p className="text-rose-200 text-[10px] font-black uppercase tracking-[0.3em] mt-2 relative z-10 font-bold">Penghapusan Berskala Permanen</p>
+                            <div className="bg-rose-600 px-4 py-6 text-white text-center relative overflow-hidden">
+                                <div className="h-16 w-16 rounded-[2.2rem] bg-white/20 backdrop-blur-md flex items-center justify-center mx-auto mb-6 border-2 border-white/30 shadow-2xl relative z-10"><Trash2 size={40} strokeWidth={2.5} /></div>
+                                <h3 className="text-xl font-black italic tracking-tighter relative z-10 uppercase">TERMINASI UNIT</h3>
+                                <p className="text-rose-200 text-xs font-black uppercase tracking-[0.3em] mt-2 relative z-10 font-bold">Penghapusan Berskala Permanen</p>
                             </div>
-                            <div className="p-10 space-y-8">
-                                <div className="bg-rose-50 border border-rose-100 p-6 rounded-[2rem] space-y-4">
+                            <div className="p-4 space-y-8">
+                                <div className="bg-rose-50 border border-rose-100 p-4 rounded-lg space-y-4">
                                     <div className="flex items-center gap-3">
                                         <ShieldAlert size={18} className="text-rose-600" />
-                                        <span className="text-[11px] font-black text-rose-900 uppercase tracking-widest">Protocol Override</span>
+                                        <span className="text-xs font-black text-rose-900 uppercase tracking-widest">Protocol Override</span>
                                     </div>
                                     <p className="text-[13px] font-bold text-rose-700 leading-relaxed italic opacity-80">
                                         "Seluruh riwayat penilaian, relasi evaluator, dan konfigurasi logistik unit <span className="not-italic text-rose-900 underline">{groupToDelete.name}</span> akan dihapus dari grid memori sistem selamanya."
@@ -490,7 +496,7 @@ const GroupManagement: React.FC = () => {
                                 </div>
                                 <div className="flex flex-col gap-3 pt-4">
                                     <button onClick={confirmDelete} className="w-full py-5 rounded-3xl bg-slate-900 text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-rose-200 hover:bg-rose-600 transition-all active:scale-95">Yakin, Hapus Permanen</button>
-                                    <button onClick={() => { setShowDeleteModal(false); setGroupToDelete(null); }} className="w-full py-2 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors">Batalkan Operasi</button>
+                                    <button onClick={() => { setShowDeleteModal(false); setGroupToDelete(null); }} className="w-full py-2 text-slate-400 font-black text-xs uppercase tracking-widest hover:text-slate-900 transition-colors">Batalkan Operasi</button>
                                 </div>
                             </div>
                         </motion.div>
@@ -498,23 +504,23 @@ const GroupManagement: React.FC = () => {
                 )}
 
                 {showRelationDeleteModal && relationToRemoveIndex !== null && (
-                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-md">
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0" onClick={() => !saving && setShowRelationDeleteModal(false)} />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                            className="relative bg-white w-full max-w-md rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.4)] overflow-hidden"
+                            className="relative bg-white w-full max-w-md rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.4)] overflow-hidden"
                         >
-                            <div className="p-10 text-center">
+                            <div className="p-4 text-center">
                                 <div className="h-20 w-20 rounded-[1.8rem] bg-rose-50 text-rose-500 flex items-center justify-center mx-auto mb-6 shadow-inner border border-rose-100/50"><Trash2 size={32} strokeWidth={2.5} /></div>
                                 <h3 className="text-2xl font-black text-slate-900 tracking-tight italic">Hapus Relasi?</h3>
                                 <p className="text-sm text-slate-500 font-bold mt-4 leading-relaxed">
                                     Relasi antara <strong className="text-primary-600">{getUserName(groupRelations[relationToRemoveIndex].evaluator_id)}</strong> dan <strong className="text-primary-600">{getUserName(groupRelations[relationToRemoveIndex].target_user_id)}</strong> akan dihapus dari basis data periode ini.
                                 </p>
                                 <div className="grid grid-cols-2 gap-4 mt-10">
-                                    <button onClick={() => { setShowRelationDeleteModal(false); setRelationToRemoveIndex(null); }} className="py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-[10px] uppercase tracking-widest rounded-2xl transition-all">Gagalkan</button>
-                                    <button onClick={confirmRemoveRelation} className="py-4 bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-rose-200 active:scale-95">Ya, Hapus</button>
+                                    <button onClick={() => { setShowRelationDeleteModal(false); setRelationToRemoveIndex(null); }} className="py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-2xl transition-all">Gagalkan</button>
+                                    <button onClick={confirmRemoveRelation} className="py-4 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-rose-200 active:scale-95">Ya, Hapus</button>
                                 </div>
                             </div>
                         </motion.div>
@@ -523,7 +529,7 @@ const GroupManagement: React.FC = () => {
             </AnimatePresence>
 
             {showDetailModal && (
-                <button className="fixed top-8 right-8 z-[110] h-14 w-14 bg-white/20 text-white rounded-[1.5rem] flex items-center justify-center hover:bg-rose-500 transition-all active:scale-90 shadow-2xl backdrop-blur-xl border border-white/20"
+                <button className="fixed top-8 right-8 z-[110] h-14 w-14 bg-white/20 text-white rounded-md flex items-center justify-center hover:bg-rose-500 transition-all active:scale-90 shadow-2xl backdrop-blur-xl border border-white/20"
                     onClick={() => setShowDetailModal(false)}>
                     <X size={24} strokeWidth={3} />
                 </button>

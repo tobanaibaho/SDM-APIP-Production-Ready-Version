@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// RefreshToken represents stored refresh tokens for rotation
+// RefreshToken merepresentasikan refresh token yang disimpan untuk rotasi
 type RefreshToken struct {
 	ID        uint       `gorm:"primaryKey" json:"id"`
 	UserID    uint       `gorm:"column:user_id;not null" json:"user_id"`

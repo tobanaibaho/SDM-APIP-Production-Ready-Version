@@ -7,23 +7,23 @@ import (
 	"strings"
 )
 
-// ValidateNIP validates NIP format (18 digits)
+// ValidateNIP memvalidasi format NIP (18 digit)
 func ValidateNIP(nip string) bool {
-	// NIP should be exactly 18 digits
+	// NIP harus terdiri dari tepat 18 digit angka
 	matched, _ := regexp.MatchString(`^\d{18}$`, nip)
 	return matched
 }
 
-// ValidateEmail validates email format
+// ValidateEmail memvalidasi format email
 func ValidateEmail(email string) bool {
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return emailRegex.MatchString(email)
 }
 
-// ValidatePassword validates password strength
+// ValidatePassword memvalidasi kekuatan kata sandi
 func ValidatePassword(password string) (bool, string) {
 	if len(password) < 8 {
-		return false, "Password must be at least 8 characters"
+		return false, "Kata sandi harus minimal 8 karakter"
 	}
 
 	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(password)
@@ -31,25 +31,25 @@ func ValidatePassword(password string) (bool, string) {
 	hasNumber := regexp.MustCompile(`[0-9]`).MatchString(password)
 
 	if !hasUpper || !hasLower || !hasNumber {
-		return false, "Password must contain uppercase, lowercase, and number"
+		return false, "Kata sandi harus mengandung huruf besar, huruf kecil, dan angka"
 	}
 
 	return true, ""
 }
 
-// SanitizeString removes potentially dangerous characters
+// SanitizeString menghapus karakter yang berpotensi berbahaya
 func SanitizeString(input string) string {
-	// Remove HTML tags
+	// Hapus tag HTML
 	htmlRegex := regexp.MustCompile(`<[^>]*>`)
 	sanitized := htmlRegex.ReplaceAllString(input, "")
 
-	// Trim whitespace
+	// Hapus spasi di awal dan akhir
 	sanitized = strings.TrimSpace(sanitized)
 
 	return sanitized
 }
 
-// GenerateRandomToken generates a random token for verification
+// GenerateRandomToken menghasilkan token acak untuk verifikasi
 func GenerateRandomToken(length int) (string, error) {
 	bytes := make([]byte, length)
 	if _, err := rand.Read(bytes); err != nil {
@@ -58,7 +58,7 @@ func GenerateRandomToken(length int) (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-// GenerateOTP generates a numeric OTP code
+// GenerateOTP menghasilkan kode OTP berupa angka
 func GenerateOTP(length int) (string, error) {
 	const digits = "0123456789"
 	bytes := make([]byte, length)

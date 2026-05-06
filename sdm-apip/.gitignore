@@ -18,7 +18,7 @@ node_modules/
 frontend/node_modules/
 frontend/dist/
 
-# ─── Environment & Secrets — NEVER COMMIT ─────────
+# ─── Lingkungan & Rahasia — JANGAN PERNAH DI-COMMIT ─────────
 .env
 .env.*
 !.env.example
@@ -29,7 +29,7 @@ frontend/.env.local
 frontend/.env.*
 .env.production
 
-# ─── SSL Certificates ─────────────────────────────
+# ─── Sertifikat SSL ─────────────────────────────
 nginx/ssl/
 
 # ─── Logs ─────────────────────────────────────────

@@ -30,6 +30,7 @@ import {
     Calendar
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import useEscapeKey from '../hooks/useEscapeKey';
 
 /* ─────────────────────── Types ─────────────────────── */
 interface AssessmentTarget {
@@ -67,6 +68,8 @@ const UserDashboard: React.FC = () => {
     const [targetsLoading, setTargetsLoading] = useState(false);
     const [myGroups, setMyGroups] = useState<Group[]>([]);
     const [showGroupDetailModal, setShowGroupDetailModal] = useState(false);
+
+    useEscapeKey(showGroupDetailModal, () => setShowGroupDetailModal(false));
     const [selectedGroupDetail, setSelectedGroupDetail] = useState<any>(null);
     const [periods, setPeriods] = useState<AssessmentPeriod[]>([]);
     const [selectedPeriodId, setSelectedPeriodId] = useState<number | null>(null);
@@ -150,7 +153,7 @@ const UserDashboard: React.FC = () => {
     const pct = totalForms > 0 ? Math.round((doneForms / totalForms) * 100) : 0;
     const remaining = totalForms - doneForms;
     const partial = targets.filter(t => !t.is_done && t.months_done.length > 0).length;
-    // selectedPeriod is the same as currentPeriod below
+    // selectedPeriod sama dengan currentPeriod di bawah
 
     /* ── Loading state ── */
     if (loading) {
@@ -182,7 +185,7 @@ const UserDashboard: React.FC = () => {
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white/70 backdrop-blur-3xl rounded-[2.5rem] p-6 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+                        className="bg-white/70 backdrop-blur-3xl rounded-xl p-4 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-5 items-center"
                     >
                         {/* Selector */}
                         <div className="lg:col-span-5 flex items-center gap-5">
@@ -190,7 +193,7 @@ const UserDashboard: React.FC = () => {
                                 <Calendar size={32} strokeWidth={2.5} />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1.5 opacity-80">Periode Aktif</p>
+                                <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-1.5 opacity-80">Periode Aktif</p>
                                 <div className="relative group">
                                     <select
                                         className="appearance-none bg-transparent text-slate-900 font-black text-2xl focus:ring-0 border-none p-0 cursor-pointer pr-8 w-full"
@@ -211,13 +214,13 @@ const UserDashboard: React.FC = () => {
                         </div>
 
                         {/* Status Guard */}
-                        <div className="lg:col-span-4 px-6 lg:border-l lg:border-r border-slate-100 h-full flex flex-col justify-center">
+                        <div className="lg:col-span-4 px-4 lg:border-l lg:border-r border-slate-100 h-full flex flex-col justify-center">
                             {isExpired ? (
                                 <div className="flex items-center gap-4 text-rose-600">
                                     <Clock size={24} className="shrink-0" />
                                     <div>
                                         <p className="text-xs font-black uppercase tracking-wider">Periode Berakhir</p>
-                                        <p className="text-[11px] text-slate-600 font-bold opacity-80 leading-tight">
+                                        <p className="text-xs text-slate-600 font-bold opacity-80 leading-tight">
                                             Sistem ditutup pada {currentPeriod?.end_date ? new Date(currentPeriod.end_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long' }) : '-'}
                                         </p>
                                     </div>
@@ -229,7 +232,7 @@ const UserDashboard: React.FC = () => {
                                         <p className="text-xs font-black uppercase tracking-wider">
                                             {daysRemaining === 0 ? 'Hari Terakhir!' : `Sisa ${daysRemaining} Hari!`}
                                         </p>
-                                        <p className="text-[11px] text-slate-600 font-bold opacity-80 leading-tight">
+                                        <p className="text-xs text-slate-600 font-bold opacity-80 leading-tight">
                                             Segera selesaikan semua formulir
                                         </p>
                                     </div>
@@ -237,10 +240,10 @@ const UserDashboard: React.FC = () => {
                             ) : (
                                 <div>
                                     <div className="flex justify-between items-end mb-2">
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress Kolektif</span>
+                                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Progress Kolektif</span>
                                         <span className="text-xs font-black text-primary-600">{pct}%</span>
                                     </div>
-                                    <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                    <div className="h-2.5 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${pct}%` }}
@@ -248,7 +251,7 @@ const UserDashboard: React.FC = () => {
                                             className="h-full bg-primary-500 rounded-full"
                                         />
                                     </div>
-                                    <p className="text-[9px] text-slate-500 mt-2 font-bold tracking-tight">
+                                    <p className="text-xs text-slate-500 mt-2 font-bold tracking-tight">
                                         {doneForms}/{totalForms} formulir selesai ({remaining} tersisa)
                                     </p>
                                 </div>
@@ -260,7 +263,7 @@ const UserDashboard: React.FC = () => {
                             <button
                                 onClick={() => !isExpired && (remaining > 0 ? navigate('/user/assessments') : toast.success('Semua penilaian selesai!'))}
                                 disabled={isExpired && remaining > 0}
-                                className={`group relative flex items-center justify-center gap-3 w-full px-8 py-4 rounded-2xl font-black text-sm transition-all duration-300 shadow-lg ${isExpired && remaining > 0
+                                className={`group relative flex items-center justify-center gap-3 w-full px-5 py-4 rounded-2xl font-black text-sm transition-all duration-300 shadow-lg ${isExpired && remaining > 0
                                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
                                     : 'bg-primary-600 text-white hover:bg-primary-700 hover:scale-[1.03] active:scale-95 shadow-primary-200'}`}
                             >
@@ -277,15 +280,15 @@ const UserDashboard: React.FC = () => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="relative overflow-hidden rounded-[3rem] bg-white/70 backdrop-blur-3xl border border-white/60 shadow-[0_20px_60px_rgb(0,0,0,0.08)] group"
+                    className="relative overflow-hidden rounded-2xl bg-white/70 backdrop-blur-3xl border border-white/60 shadow-[0_20px_60px_rgb(0,0,0,0.08)] group"
                 >
                     <div className="absolute inset-0 opacity-20 pointer-events-none">
                         <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-primary-500 blur-[100px] group-hover:bg-primary-400 transition-colors duration-2000" />
                         <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-emerald-500 blur-[100px] group-hover:bg-emerald-400 transition-colors duration-2000" />
                     </div>
-                    <div className="relative z-10 flex flex-col items-center gap-10 p-10 md:flex-row md:items-start">
+                    <div className="relative z-10 flex flex-col items-center gap-6 p-4 md:flex-row md:items-start">
                         {/* Avatar */}
-                        <div className="shrink-0 h-32 w-32 md:h-40 md:w-40 rounded-[2.5rem] bg-gradient-to-br from-primary-500 to-primary-700 font-black text-white text-5xl shadow-2xl shadow-primary-200 ring-8 ring-white/50 overflow-hidden flex items-center justify-center transition-transform duration-500 group-hover:rotate-2 group-hover:scale-105">
+                        <div className="shrink-0 h-20 w-20 md:h-16 md:w-16 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 font-black text-white text-xl shadow-2xl shadow-primary-200 ring-8 ring-white/50 overflow-hidden flex items-center justify-center transition-transform duration-500 group-hover:rotate-2 group-hover:scale-105">
                             {sdmData?.foto
                                 ? <img src={sdmData.foto} alt="Profile" className="h-full w-full object-cover" />
                                 : (sdmData?.nama?.charAt(0).toUpperCase() || 'U')}
@@ -294,7 +297,7 @@ const UserDashboard: React.FC = () => {
                         {/* Info Section */}
                         <div className="flex-1 min-w-0 flex flex-col justify-center items-center md:items-start text-center md:text-left">
                             <div className="space-y-3">
-                                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">
+                                <h2 className="text-xl sm:text-2xl md:text-xl font-black text-slate-900 tracking-tight leading-[1.1]">
                                     {sdmData?.nama || 'Pengguna'}
                                 </h2>
                                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
@@ -319,7 +322,7 @@ const UserDashboard: React.FC = () => {
                             <div className="mt-8 flex flex-wrap justify-center md:justify-start gap-4">
                                 <button
                                     onClick={() => navigate('/profile')}
-                                    className="flex items-center gap-3 rounded-2xl bg-slate-900 px-8 py-4 text-[13px] font-black text-white transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 shadow-xl shadow-slate-200 uppercase tracking-widest"
+                                    className="flex items-center gap-3 rounded-2xl bg-slate-900 px-5 py-4 text-[13px] font-black text-white transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 shadow-xl shadow-slate-200 uppercase tracking-widest"
                                 >
                                     <User size={18} /> Edit Profil
                                 </button>
@@ -335,7 +338,7 @@ const UserDashboard: React.FC = () => {
                 {/* ═══════════════════════════════════════════
                     MAIN GRID
                 ═══════════════════════════════════════════ */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
                     {/* ── LEFT: Status Kelengkapan Penilaian ── */}
                     <div className="lg:col-span-8">
@@ -346,7 +349,7 @@ const UserDashboard: React.FC = () => {
                             animate={{ opacity: 1, x: 0 }}
                             className="card overflow-hidden mb-8"
                         >
-                            <div className="px-8 py-6 border-b border-white/60 flex items-center justify-between bg-emerald-50/30">
+                            <div className="px-5 py-6 border-b border-white/60 flex items-center justify-between bg-emerald-50/30">
                                 <div className="flex items-center gap-3">
                                     <div className="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm">
                                         <TrendingUp size={22} strokeWidth={2.5} />
@@ -354,11 +357,11 @@ const UserDashboard: React.FC = () => {
                                     <h3 className="text-xl font-black text-slate-900 tracking-tight">Rangkuman Kinerja BerAKHLAK</h3>
                                 </div>
                             </div>
-                            <div className="p-8">
+                            <div className="p-5">
                                 {resultsLoading ? (
                                     <div className="flex justify-center py-12"><div className="loading-spinner" /></div>
                                 ) : !myResults || !myResults.average_score || myResults.average_score === 0 ? (
-                                    <div className="text-center py-12 bg-white/40 rounded-[2rem] border border-dashed border-slate-200">
+                                    <div className="text-center py-12 bg-white/40 rounded-lg border border-dashed border-slate-200">
                                         <div className="h-16 w-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto text-slate-300 mb-4">
                                             <AlertCircle size={32} />
                                         </div>
@@ -367,15 +370,15 @@ const UserDashboard: React.FC = () => {
                                     </div>
                                 ) : (
                                     <div className="animate-fade-in space-y-8">
-                                        <div className="flex flex-col lg:flex-row gap-8 items-stretch">
-                                            <div className="bg-white/80 backdrop-blur-md border border-white p-8 rounded-[2rem] text-center w-full lg:w-2/5 shadow-sm flex flex-col justify-center">
-                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 opacity-70">Skor Rata-rata Kumulatif</p>
+                                        <div className="flex flex-col lg:flex-row gap-5 items-stretch">
+                                            <div className="bg-white/80 backdrop-blur-md border border-white p-5 rounded-lg text-center w-full lg:w-2/5 shadow-sm flex flex-col justify-center">
+                                                <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 opacity-70">Skor Rata-rata Kumulatif</p>
                                                 <p className="text-7xl font-black text-slate-900 tracking-tighter">{myResults.average_score.toFixed(2)}</p>
                                                 <div className="mt-6">
                                                     {(() => {
                                                         const p = getPredikat(myResults.average_score);
                                                         return (
-                                                            <span className={`inline-flex px-6 py-2 rounded-2xl text-[11px] font-black border shadow-sm uppercase tracking-widest ${p.bg} ${p.color}`}>
+                                                            <span className={`inline-flex px-4 py-2 rounded-2xl text-xs font-black border shadow-sm uppercase tracking-widest ${p.bg} ${p.color}`}>
                                                                 Predikat: {p.label}
                                                             </span>
                                                         );
@@ -383,7 +386,7 @@ const UserDashboard: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="w-full lg:w-3/5 flex flex-col justify-center">
-                                                <div className="p-6 rounded-[2rem] bg-primary-50/50 border border-primary-100/50">
+                                                <div className="p-4 rounded-lg bg-primary-50/50 border border-primary-100/50">
                                                     <h4 className="flex items-center gap-2 text-primary-900 font-black text-sm mb-3">
                                                         <Zap size={16} className="text-primary-500" /> Insight Performa
                                                     </h4>
@@ -392,14 +395,14 @@ const UserDashboard: React.FC = () => {
                                                     </p>
                                                     <div className="flex items-center gap-2.5 bg-white/60 px-4 py-3 rounded-2xl border border-white shadow-sm">
                                                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">Kerahasiaan Terjamin 100%</span>
+                                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-tight">Kerahasiaan Terjamin 100%</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <h4 className="text-[10px] font-black text-slate-400 mb-5 uppercase tracking-[0.2em]">Pecahan Nilai per Indikator</h4>
+                                            <h4 className="text-xs font-black text-slate-400 mb-5 uppercase tracking-[0.2em]">Pecahan Nilai per Indikator</h4>
                                             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                                                 {Object.entries(myResults.details || {}).map(([key, value]: [string, any]) => {
                                                     if (key === "Ide Inovasi (Bonus)") return null;
@@ -409,8 +412,8 @@ const UserDashboard: React.FC = () => {
                                                             key={key}
                                                             className="bg-white/60 backdrop-blur-sm p-5 rounded-2xl border border-white shadow-sm flex flex-col items-center text-center transition-all hover:bg-white hover:border-primary-200"
                                                         >
-                                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 min-h-[24px] flex items-center justify-center">{key.replace(/_/g, ' ')}</p>
-                                                            <p className="text-3xl font-black text-slate-900 mb-3">{Number(value).toFixed(2)}</p>
+                                                            <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 min-h-[24px] flex items-center justify-center">{key.replace(/_/g, ' ')}</p>
+                                                            <p className="text-xl font-black text-slate-900 mb-3">{Number(value).toFixed(2)}</p>
                                                             <div className="flex gap-1">
                                                                 {[1, 2, 3, 4, 5].map(star => {
                                                                     const filled = Math.round((Number(value) / 100) * 5);
@@ -429,7 +432,7 @@ const UserDashboard: React.FC = () => {
 
                         <div className="card overflow-hidden">
                             {/* Header */}
-                            <div className="px-8 py-6 border-b border-white/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/40">
+                            <div className="px-5 py-6 border-b border-white/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/40">
                                 <div className="flex items-center gap-3">
                                     <div className="h-10 w-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-sm">
                                         <ClipboardCheck size={22} strokeWidth={2.5} />
@@ -454,16 +457,16 @@ const UserDashboard: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="p-8">
+                            <div className="p-5">
                                 {targetsLoading ? (
-                                    <div className="flex justify-center items-center py-20">
+                                    <div className="flex justify-center items-center py-8">
                                         <div className="loading-spinner" />
                                     </div>
                                 ) : targets.length === 0 ? (
                                     /* ── Empty state ── */
-                                    <div className="py-20 text-center rounded-[3rem] border-2 border-dashed border-slate-100 bg-slate-50/30">
+                                    <div className="py-8 text-center rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50/30">
                                         <div className="mb-6 relative inline-block">
-                                            <div className="h-24 w-24 rounded-3xl bg-white shadow-xl flex items-center justify-center mx-auto text-primary-200 relative z-10">
+                                            <div className="h-16 w-16 rounded-3xl bg-white shadow-xl flex items-center justify-center mx-auto text-primary-200 relative z-10">
                                                 <ClipboardCheck size={48} />
                                             </div>
                                             <div className="absolute inset-0 bg-primary-500 rounded-full blur-[40px] opacity-20 scale-150 animate-pulse" />
@@ -477,21 +480,21 @@ const UserDashboard: React.FC = () => {
                                     <>
                                         {/* ── Summary Stats Row ── */}
                                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-                                            <div className="bg-white/60 p-5 rounded-[2rem] border border-white shadow-sm text-center">
-                                                <p className="text-3xl font-black text-slate-900">{totalForms}</p>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Total Formulir</p>
+                                            <div className="bg-white/60 p-5 rounded-lg border border-white shadow-sm text-center">
+                                                <p className="text-xl font-black text-slate-900">{totalForms}</p>
+                                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">Total Formulir</p>
                                             </div>
-                                            <div className="bg-emerald-50/50 p-5 rounded-[2rem] border border-emerald-100/50 shadow-sm text-center">
-                                                <p className="text-3xl font-black text-emerald-600">{doneForms}</p>
-                                                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-1">Selesai</p>
+                                            <div className="bg-emerald-50/50 p-5 rounded-lg border border-emerald-100/50 shadow-sm text-center">
+                                                <p className="text-xl font-black text-emerald-600">{doneForms}</p>
+                                                <p className="text-xs font-black text-emerald-500 uppercase tracking-widest mt-1">Selesai</p>
                                             </div>
-                                            <div className="bg-amber-50/50 p-5 rounded-[2rem] border border-amber-100/50 shadow-sm text-center">
-                                                <p className="text-3xl font-black text-amber-600">{partial}</p>
-                                                <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mt-1">Parsial</p>
+                                            <div className="bg-amber-50/50 p-5 rounded-lg border border-amber-100/50 shadow-sm text-center">
+                                                <p className="text-xl font-black text-amber-600">{partial}</p>
+                                                <p className="text-xs font-black text-amber-500 uppercase tracking-widest mt-1">Parsial</p>
                                             </div>
-                                            <div className={`${remaining > 0 ? 'bg-primary-50/50 border-primary-100/50' : 'bg-emerald-50/50 border-emerald-100/50'} p-5 rounded-[2rem] border shadow-sm text-center`}>
-                                                <p className={`text-3xl font-black ${remaining > 0 ? 'text-primary-600' : 'text-emerald-600'}`}>{remaining}</p>
-                                                <p className={`text-[10px] font-black ${remaining > 0 ? 'text-primary-500' : 'text-emerald-500'} uppercase tracking-widest mt-1`}>Tunggakan</p>
+                                            <div className={`${remaining > 0 ? 'bg-primary-50/50 border-primary-100/50' : 'bg-emerald-50/50 border-emerald-100/50'} p-5 rounded-lg border shadow-sm text-center`}>
+                                                <p className={`text-xl font-black ${remaining > 0 ? 'text-primary-600' : 'text-emerald-600'}`}>{remaining}</p>
+                                                <p className={`text-xs font-black ${remaining > 0 ? 'text-primary-500' : 'text-emerald-500'} uppercase tracking-widest mt-1`}>Tunggakan</p>
                                             </div>
                                         </div>
 
@@ -499,7 +502,7 @@ const UserDashboard: React.FC = () => {
                                         <div className="space-y-4">
                                             <div className="flex items-center gap-3 mb-4">
                                                 <div className="h-0.5 flex-1 bg-slate-100"></div>
-                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Daftar Rekan Kerja</span>
+                                                <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Daftar Rekan Kerja</span>
                                                 <div className="h-0.5 flex-1 bg-slate-100"></div>
                                             </div>
 
@@ -543,11 +546,11 @@ const UserDashboard: React.FC = () => {
                                                                     {Array.from({ length: months_required }, (_, i) => i + 1).map(m => (
                                                                         <div
                                                                             key={m}
-                                                                            className={`flex flex-col items-center gap-0.5 w-11 py-2 rounded-xl text-[9px] font-black uppercase transition-all shadow-sm border ${months_done.includes(m)
+                                                                            className={`flex flex-col items-center gap-0.5 w-11 py-2 rounded-xl text-xs font-black uppercase transition-all shadow-sm border ${months_done.includes(m)
                                                                                 ? 'bg-emerald-500 border-emerald-400 text-white'
                                                                                 : m === nextMonth && !is_done && !isExpired
                                                                                     ? 'bg-white border-primary-500 text-primary-600 ring-4 ring-primary-500/10'
-                                                                                    : 'bg-slate-50 border-slate-100 text-slate-400'
+                                                                                    : 'bg-slate-100 border-slate-200 text-slate-400'
                                                                                 }`}
                                                                         >
                                                                             <span>Bln</span>
@@ -560,7 +563,7 @@ const UserDashboard: React.FC = () => {
                                                             {/* Action */}
                                                             <div className="shrink-0">
                                                                 {is_done ? (
-                                                                    <div className="flex items-center gap-2 text-emerald-600 bg-white border border-emerald-100 px-5 py-3 rounded-2xl text-[11px] font-black uppercase shadow-sm">
+                                                                    <div className="flex items-center gap-2 text-emerald-600 bg-white border border-emerald-100 px-5 py-3 rounded-2xl text-xs font-black uppercase shadow-sm">
                                                                         <CheckCircle2 size={14} strokeWidth={3} /> Selesai
                                                                     </div>
                                                                 ) : (
@@ -569,14 +572,14 @@ const UserDashboard: React.FC = () => {
                                                                             `/user/assessments/new?target_id=${relation?.target_user_id}&period_id=${selectedPeriodId}&relation=${relation?.relation_type}`
                                                                         )}
                                                                         disabled={isExpired}
-                                                                        className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-xs font-black transition-all shadow-lg ${isExpired
+                                                                        className={`flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl text-xs font-black transition-all shadow-lg ${isExpired
                                                                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                                             : isPartial
                                                                                 ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-200'
                                                                                 : 'bg-primary-600 text-white hover:bg-primary-700 shadow-primary-200'
                                                                             }`}
                                                                     >
-                                                                        {isExpired ? 'Waktu Habis' : isPartial ? `Lanjut: Bln ${nextMonth}` : 'Isi Survei'}
+                                                                        {isExpired ? 'Waktu Habis' : isPartial ? `Lanjut: Bln ${nextMonth}` : 'Isi Kuesioner'}
                                                                         {!isExpired && <ChevronRight size={16} strokeWidth={3} />}
                                                                     </button>
                                                                 )}
@@ -623,7 +626,7 @@ const UserDashboard: React.FC = () => {
 
                         {/* Account Status */}
                         <div className={`card p-5 border-l-4 ${user?.status === 'active' ? 'border-l-green-500' : 'border-l-amber-500'}`}>
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Status Penggunaan</h4>
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Status Penggunaan</h4>
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2.5">
@@ -683,7 +686,7 @@ const UserDashboard: React.FC = () => {
                                                 <div>
                                                     <h4 className="font-bold text-slate-900 group-hover:text-primary-700 transition-colors text-sm truncate w-36">{group.name}</h4>
                                                     <div className="flex items-center gap-1.5 mt-0.5">
-                                                        <p className="text-[9px] text-slate-400 font-bold uppercase">{group.user_count || 0} anggota</p>
+                                                        <p className="text-xs text-slate-400 font-bold uppercase">{group.user_count || 0} anggota</p>
                                                         {group.user_role && (
                                                             <RoleBadge role={group.user_role} />
                                                         )}
@@ -698,8 +701,8 @@ const UserDashboard: React.FC = () => {
                         </div>
 
                         {/* Legend in Sidebar */}
-                        <div className="card p-6 bg-slate-50/50 border-slate-200 mt-6 shadow-sm">
-                            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-5 text-center">Panduan Range Predikat</h4>
+                        <div className="card p-4 bg-slate-100/50 border-slate-200 mt-6 shadow-sm">
+                            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-5 text-center">Panduan Range Predikat</h4>
                             <div className="space-y-3 text-sm font-black">
                                 <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm w-full">
                                     <span className="bg-emerald-50 text-emerald-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&ge; 110</span>

@@ -3,6 +3,7 @@ import { Users, UserPlus, Trash2, X } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { GroupDetail } from '../types';
 import RoleBadge from './RoleBadge';
+import useEscapeKey from '../hooks/useEscapeKey';
 
 interface Props {
     selectedGroup: GroupDetail;
@@ -27,11 +28,13 @@ const GroupMemberModal: React.FC<Props> = ({
     selectedRole, setSelectedRole,
     saving, onAssignUser, onRemoveUser, onClose,
     relationsTab,
-}) => (
+}) => {
+    useEscapeKey(true, onClose);
+    return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
         <div className="card w-full max-w-5xl max-h-[90vh] flex flex-col animate-slide-up shadow-2xl">
             {/* Header */}
-            <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+            <div className="px-5 py-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
                 <div>
                     <h3 className="text-2xl font-black text-slate-950">{selectedGroup.group.name}</h3>
                     <p className="text-sm text-slate-500 mt-1">{selectedGroup.group.description || 'Grup penugasan tim Inspektorat Utama.'}</p>
@@ -42,7 +45,7 @@ const GroupMemberModal: React.FC<Props> = ({
             </div>
 
             {/* Tabs */}
-            <div className="px-8 pt-6 border-b border-slate-100 flex gap-8">
+            <div className="px-5 pt-6 border-b border-slate-100 flex gap-5">
                 {(['members', 'relations'] as const).map(tab => (
                     <button
                         key={tab}
@@ -56,9 +59,9 @@ const GroupMemberModal: React.FC<Props> = ({
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-8 lg:p-10">
+            <div className="flex-1 overflow-y-auto p-5 lg:p-4">
                 {activeTab === 'members' ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                         {/* Member list */}
                         <div className={`space-y-6 ${selectedGroup.group.is_archived ? 'lg:col-span-12' : 'lg:col-span-8'}`}>
                             <div className="flex items-center justify-between">
@@ -76,10 +79,10 @@ const GroupMemberModal: React.FC<Props> = ({
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold text-slate-950 truncate">{member.name}</p>
                                             <div className="flex items-center gap-2">
-                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{member.jabatan || 'Anggota Tim'}</p>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{member.jabatan || 'Anggota Tim'}</p>
                                                 <RoleBadge role={member.group_role} />
                                             </div>
-                                            <p className="text-[10px] font-mono text-slate-400 mt-0.5">{member.nip}</p>
+                                            <p className="text-xs font-mono text-slate-400 mt-0.5">{member.nip}</p>
                                         </div>
                                         {!selectedGroup.group.is_archived && (
                                             <button onClick={() => onRemoveUser(member.id)} className="p-2 text-slate-200 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
@@ -89,7 +92,7 @@ const GroupMemberModal: React.FC<Props> = ({
                                     </div>
                                 ))}
                                 {(!selectedGroup.members || selectedGroup.members.length === 0) && (
-                                    <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-3xl">
+                                    <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-3xl">
                                         <UserPlus size={48} className="mx-auto text-slate-200 mb-3" />
                                         <p className="text-slate-400 font-medium">Belum ada anggota di grup ini.</p>
                                     </div>
@@ -100,10 +103,10 @@ const GroupMemberModal: React.FC<Props> = ({
                         {/* Add member panel */}
                         {!selectedGroup.group.is_archived && (
                             <div className="lg:col-span-4">
-                                <div className="bg-slate-900 rounded-3xl p-6 text-white space-y-4">
+                                <div className="bg-slate-900 rounded-3xl p-4 text-white space-y-4">
                                     <h4 className="font-bold flex items-center gap-2"><UserPlus size={18} /> Tambah Anggota</h4>
                                     <div>
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 block">Cari Pegawai</label>
+                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Cari Pegawai</label>
                                         <select
                                             className="w-full bg-slate-800 border-none rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
                                             value={selectedUserId}
@@ -115,7 +118,7 @@ const GroupMemberModal: React.FC<Props> = ({
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 block">Peran dalam Grup</label>
+                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Peran dalam Grup</label>
                                         <select
                                             className="w-full bg-slate-800 border-none rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
                                             value={selectedRole}
@@ -126,7 +129,7 @@ const GroupMemberModal: React.FC<Props> = ({
                                             <option value="KT">KT — Ketua Tim</option>
                                             <option value="Dalnis">Dalnis — Pengendali Teknis</option>
                                         </select>
-                                        <p className="text-[9px] text-slate-500 mt-2 leading-relaxed">
+                                        <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                                             ℹ️ Inspektur terdeteksi otomatis dari jabatan di data SDM, tidak perlu ditambahkan ke grup.
                                         </p>
                                     </div>
@@ -137,7 +140,7 @@ const GroupMemberModal: React.FC<Props> = ({
                                     >
                                         {saving ? <Loader2 size={18} className="animate-spin mx-auto" /> : 'Assign Ke Grup'}
                                     </button>
-                                    <p className="text-[10px] text-slate-500 leading-relaxed bg-white/5 p-3 rounded-lg">
+                                    <p className="text-xs text-slate-500 leading-relaxed bg-white/5 p-3 rounded-lg">
                                         ℹ️ Pegawai yang ditambahkan akan dapat berpartisipasi dalam penilaian dalam grup ini.
                                     </p>
                                 </div>
@@ -148,6 +151,7 @@ const GroupMemberModal: React.FC<Props> = ({
             </div>
         </div>
     </div>
-);
+    );
+};
 
 export default GroupMemberModal;

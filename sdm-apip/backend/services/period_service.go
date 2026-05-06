@@ -10,16 +10,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// --- Period Management ---
+// --- Manajemen Periode ---
 
 func (s *AssessmentService) CreatePeriod(req models.CreatePeriodRequest) (*models.AssessmentPeriod, error) {
 	start, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
-		return nil, errors.New("invalid start date format")
+		return nil, errors.New("Format tanggal mulai tidak valid")
 	}
 	end, err := time.Parse("2006-01-02", req.EndDate)
 	if err != nil {
-		return nil, errors.New("invalid end date format")
+		return nil, errors.New("Format tanggal akhir tidak valid")
 	}
 	end = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, end.Location())
 
@@ -55,16 +55,16 @@ func (s *AssessmentService) UpdatePeriod(id uint, req models.UpdatePeriodRequest
 	}
 	start, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
-		return errors.New("invalid start date format")
+		return errors.New("Format tanggal mulai tidak valid")
 	}
 	end, err := time.Parse("2006-01-02", req.EndDate)
 	if err != nil {
-		return errors.New("invalid end date format")
+		return errors.New("Format tanggal akhir tidak valid")
 	}
 	end = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, end.Location())
 
-	// Re-evaluate if it should be active based on dates (optional logic, but typically if they set future/past it updates active state)
-	// We'll trust the admin override. Let's just update the period.
+	// Evaluasi ulang apakah harus aktif berdasarkan tanggal (logika opsional, tetapi biasanya jika mereka mengatur masa depan/masa lalu, ini akan memperbarui status aktif)
+	// Kita akan memercayai pengabaian (override) dari admin. Mari kita perbarui periodenya saja.
 	period.Name = req.Name
 	period.StartDate = start
 	period.EndDate = end
@@ -82,7 +82,7 @@ func (s *AssessmentService) UpdatePeriodStatus(id uint, isActive bool) error {
 	}
 
 	if isActive {
-		// Deactivate other periods first (only one active)
+		// Nonaktifkan periode lain terlebih dahulu (hanya satu yang aktif)
 		if err := s.db.Model(&models.AssessmentPeriod{}).
 			Where("id != ? AND is_active = ?", id, true).
 			Update("is_active", false).Error; err != nil {
@@ -149,7 +149,7 @@ func (s *AssessmentService) GetActivePeriod() (*models.AssessmentPeriod, error) 
 		logger.Info("Period '%s' (ID:%d) telah melewati end_date — otomatis dinonaktifkan.", period.Name, period.ID)
 		s.db.Model(&period).Update("is_active", false)
 		
-		// Audit Log (System Event)
+		// Log Audit (Event Sistem)
 		details := fmt.Sprintf("System auto-locked period '%s' (ID %d) because current date passed end_date (%v)", 
 			period.Name, period.ID, period.EndDate.Format("2006-01-02"))
 		models.CreateAuditLog(s.db, nil, models.AuditActionPeriodLock, models.AuditStatusSuccess, 
@@ -162,7 +162,7 @@ func (s *AssessmentService) GetActivePeriod() (*models.AssessmentPeriod, error) 
 	return &period, nil
 }
 
-// periodMaxMonths returns the number of assessment months required by a given frequency.
+// periodMaxMonths mengembalikan jumlah bulan penilaian yang diperlukan berdasarkan frekuensi tertentu.
 func periodMaxMonths(frequency string) int {
 	switch frequency {
 	case "monthly":

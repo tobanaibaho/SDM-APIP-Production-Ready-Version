@@ -6,10 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// WIB is the Asia/Jakarta timezone location
+// WIB adalah lokasi zona waktu Asia/Jakarta
 var WIB, _ = time.LoadLocation("Asia/Jakarta")
 
-// AuditAction represents the type of action being audited
+// AuditAction merepresentasikan jenis tindakan yang diaudit
 type AuditAction string
 
 const (
@@ -27,9 +27,12 @@ const (
 	AuditActionPeriodUpdate   AuditAction = "period_update"
 	AuditActionPeriodLock     AuditAction = "period_lock"
 	AuditActionAssessmentSubmit AuditAction = "assessment_submit"
+	AuditActionQuestionCreate AuditAction = "question_create"
+	AuditActionQuestionUpdate AuditAction = "question_update"
+	AuditActionQuestionDelete AuditAction = "question_delete"
 )
 
-// AuditStatus represents the result of the audited action
+// AuditStatus merepresentasikan hasil dari tindakan yang diaudit
 type AuditStatus string
 
 const (
@@ -38,7 +41,7 @@ const (
 	AuditStatusPending AuditStatus = "pending"
 )
 
-// AuditLog represents a security audit log entry
+// AuditLog merepresentasikan entri catatan audit keamanan
 type AuditLog struct {
 	ID           uint           `gorm:"primaryKey" json:"id"`
 	UserID       *uint          `gorm:"column:user_id;index" json:"user_id"`
@@ -53,7 +56,7 @@ type AuditLog struct {
 	CreatedAt    time.Time      `gorm:"column:created_at" json:"-"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 
-	// CreatedAtWIB is always sent to frontend with explicit +07:00 offset
+	// CreatedAtWIB selalu dikirim ke frontend dengan offset +07:00 secara eksplisit
 	CreatedAtWIB string `gorm:"-" json:"created_at"`
 }
 
@@ -61,18 +64,18 @@ func (AuditLog) TableName() string {
 	return "audit_logs"
 }
 
-// AfterFind hook: converts CreatedAt to WIB string after every DB query
+// Hook AfterFind: mengubah CreatedAt menjadi string berformat WIB setelah setiap query ke database
 func (a *AuditLog) AfterFind(tx *gorm.DB) error {
 	loc := WIB
 	if loc == nil {
 		loc = time.UTC
 	}
-	// Always output with explicit +07:00 so frontend has unambiguous timezone
+	// Selalu keluarkan output dengan +07:00 secara eksplisit agar frontend tidak bingung dengan zona waktunya
 	a.CreatedAtWIB = a.CreatedAt.UTC().In(loc).Format("2006-01-02T15:04:05+07:00")
 	return nil
 }
 
-// CreateAuditLog is a helper function to create audit log entries
+// CreateAuditLog adalah fungsi pembantu (helper) untuk membuat entri catatan audit
 func CreateAuditLog(db *gorm.DB, userID *uint, action AuditAction, status AuditStatus, ipAddress, userAgent, details string, targetUserID *uint) error {
 	log := AuditLog{
 		UserID:       userID,

@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// UserGroup represents the many-to-many relationship between users and groups
+// UserGroup merepresentasikan hubungan banyak-ke-banyak (many-to-many) antara pengguna dan tim
 type UserGroup struct {
 	ID         uint           `gorm:"primaryKey" json:"id"`
 	UserID     uint           `gorm:"column:user_id;not null;index:idx_user_group,unique" json:"user_id"`

@@ -37,7 +37,7 @@ func (ac *AuditController) GetAll(c *gin.Context) {
 
 	logs, total, err := ac.auditService.GetAll(page, limit, action, status, userID)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch audit logs", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil log audit", err.Error())
 		return
 	}
 

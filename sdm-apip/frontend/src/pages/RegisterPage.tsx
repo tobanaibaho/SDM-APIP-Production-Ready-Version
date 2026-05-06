@@ -50,13 +50,13 @@ const RegisterPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
             <div className="absolute top-0 -left-4 w-72 h-72 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
             <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-accent-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
             <div className="w-full max-w-md z-10 animate-fade-in">
                 <div className="glass rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                    <div className="bg-gradient-to-br from-primary-600 to-primary-800 p-8 text-center">
+                    <div className="bg-gradient-to-br from-primary-600 to-primary-800 p-5 text-center">
                         <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md mb-4 shadow-xl border border-white/20">
                             <Building2 size={32} className="text-accent-400" />
                         </div>
@@ -64,7 +64,7 @@ const RegisterPage: React.FC = () => {
                         <p className="text-slate-300 text-sm mt-1 uppercase tracking-widest font-semibold opacity-80">Inspektorat &mdash; Kemenko Infra</p>
                     </div>
 
-                    <div className="p-8">
+                    <div className="p-5">
                         <div className="mb-6 rounded-2xl bg-primary-50/50 p-4 border border-primary-100 flex gap-3 animate-slide-down">
                             <Info size={18} className="text-primary-600 shrink-0" />
                             <p className="text-xs text-primary-800 leading-relaxed font-medium">
@@ -82,7 +82,7 @@ const RegisterPage: React.FC = () => {
                                     <input
                                         type="text"
                                         autoFocus
-                                        className="form-input pl-11 bg-slate-50 border-slate-200 focus:bg-white"
+                                        className="form-input pl-11 bg-slate-100 border-slate-300 focus:bg-white"
                                         placeholder="Contoh: 19850101..."
                                         value={nip}
                                         onChange={(e) => {
@@ -104,7 +104,7 @@ const RegisterPage: React.FC = () => {
                                     </div>
                                     <input
                                         type="email"
-                                        className="form-input pl-11 bg-slate-50 border-slate-200 focus:bg-white"
+                                        className="form-input pl-11 bg-slate-100 border-slate-300 focus:bg-white"
                                         placeholder="email@kemenkoinfra.go.id"
                                         value={email}
                                         onChange={(e) => {

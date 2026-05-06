@@ -1,9 +1,15 @@
 package controllers
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"time"
+
+	oidc "github.com/coreos/go-oidc/v3/oidc"
+	"golang.org/x/oauth2"
 
 	"sdm-apip-backend/config"
 	"sdm-apip-backend/middleware"
@@ -14,7 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AuthController handles authentication endpoints.
+// AuthController menangani endpoint autentikasi.
 type AuthController struct {
 	authService  services.IAuthService
 	emailService *services.EmailService
@@ -27,7 +33,7 @@ func NewAuthController(authService services.IAuthService) *AuthController {
 	}
 }
 
-// mapAuthError translates service errors to HTTP responses.
+// mapAuthError menerjemahkan error dari service menjadi respons HTTP.
 func (ac *AuthController) mapAuthError(c *gin.Context, err error, action string) {
 	switch err {
 	case services.ErrInvalidCredentials:
@@ -51,18 +57,18 @@ func (ac *AuthController) mapAuthError(c *gin.Context, err error, action string)
 	case services.ErrPasswordNotSet:
 		utils.ErrorResponse(c, http.StatusUnauthorized, action, "Silakan atur password Anda terlebih dahulu.")
 	case services.ErrInternalServer:
-		utils.ErrorResponse(c, http.StatusInternalServerError, action, "An internal server error occurred.")
+		utils.ErrorResponse(c, http.StatusInternalServerError, action, "Terjadi kesalahan server internal.")
 	default:
 		utils.ErrorResponse(c, http.StatusInternalServerError, action, err.Error())
 	}
 }
 
-// Login handles regular user login (NIP-based).
+// Login menangani login pengguna biasa (berbasis NIP).
 // POST /api/login
 func (ac *AuthController) Login(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	resp, err := ac.authService.Login(req.NIP, req.Password, req.TOTP, c.ClientIP(), c.GetHeader("User-Agent"))
@@ -75,23 +81,23 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 
-	// Set Refresh Token HTTP-Only Cookie
+	// Tetapkan Refresh Token sebagai HTTP-Only Cookie
 	isProd := config.AppConfig.GinMode == "release"
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("refresh_token", resp.RefreshToken, 7*24*3600, "/", "", isProd, true)
 
-	// Don't send refresh token in JSON response
+	// Jangan kirim refresh token di respons JSON
 	resp.RefreshToken = ""
 
 	utils.SuccessResponse(c, http.StatusOK, "Login successful", resp)
 }
 
-// SuperAdminLogin handles site administrator login (username-based).
+// SuperAdminLogin menangani login administrator sistem (berbasis username).
 // POST /api/super-admin/login
 func (ac *AuthController) SuperAdminLogin(c *gin.Context) {
 	var req models.AdminLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	resp, err := ac.authService.SuperAdminLogin(req.Username, req.Password, req.TOTP, c.ClientIP(), c.GetHeader("User-Agent"))
@@ -104,23 +110,23 @@ func (ac *AuthController) SuperAdminLogin(c *gin.Context) {
 		return
 	}
 
-	// Set Refresh Token HTTP-Only Cookie
+	// Tetapkan Refresh Token sebagai HTTP-Only Cookie
 	isProd := config.AppConfig.GinMode == "release"
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("refresh_token", resp.RefreshToken, 7*24*3600, "/", "", isProd, true)
 
-	// Don't send refresh token in JSON response
+	// Jangan kirim refresh token di respons JSON
 	resp.RefreshToken = ""
 
 	utils.SuccessResponse(c, http.StatusOK, "Login successful", resp)
 }
 
-// Register handles user self-registration.
+// Register menangani pendaftaran mandiri pengguna.
 // POST /api/register
 func (ac *AuthController) Register(c *gin.Context) {
 	var req models.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	user, token, otp, nama, err := ac.authService.Register(req.NIP, req.Email, c.ClientIP(), c.GetHeader("User-Agent"))
@@ -132,7 +138,7 @@ func (ac *AuthController) Register(c *gin.Context) {
 		if user.Status == models.StatusPendingVerification {
 			config.DB.Unscoped().Delete(&user)
 		}
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Registration failed: Could not send verification email. Please check your email address and try again.", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Registrasi gagal: tidak dapat mengirim email verifikasi. Harap periksa alamat email Anda dan coba lagi.", err.Error())
 		return
 	}
 	resp := gin.H{"nip": user.NIP, "email": user.Email, "token": token}
@@ -144,14 +150,14 @@ func (ac *AuthController) Register(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusCreated, "Registration successful. Please check your email for verification link.", resp)
 }
 
-// ResendVerification resends the verification email.
+// ResendVerification mengirim ulang email verifikasi.
 // POST /api/auth/resend-verification
 func (ac *AuthController) ResendVerification(c *gin.Context) {
 	var req struct {
 		Email string `json:"email" binding:"required,email"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	user, token, otp, nama, err := ac.authService.ResendVerification(req.Email, c.ClientIP(), c.GetHeader("User-Agent"))
@@ -160,18 +166,18 @@ func (ac *AuthController) ResendVerification(c *gin.Context) {
 		return
 	}
 	if err := ac.emailService.SendVerificationEmailWithOTP(user.Email, nama, token, otp); err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to send email", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengirim email", err.Error())
 		return
 	}
 	utils.SuccessResponse(c, http.StatusOK, "Verification email resent successfully.", nil)
 }
 
-// VerifyEmail confirms the user's email address.
+// VerifyEmail mengkonfirmasi alamat email pengguna.
 // POST /api/verify-email
 func (ac *AuthController) VerifyEmail(c *gin.Context) {
 	var req models.VerifyEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	if err := ac.authService.VerifyEmail(req.Token, req.OTP, c.ClientIP(), c.GetHeader("User-Agent")); err != nil {
@@ -183,20 +189,20 @@ func (ac *AuthController) VerifyEmail(c *gin.Context) {
 	})
 }
 
-// SetPassword sets the user password after email verification.
+// SetPassword mengatur kata sandi pengguna setelah verifikasi email.
 // POST /api/set-password
 func (ac *AuthController) SetPassword(c *gin.Context) {
 	var req models.SetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	if req.Password != req.ConfirmPassword {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid password", "Passwords do not match")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Password tidak valid", "Password tidak cocok")
 		return
 	}
 	if valid, msg := utils.ValidatePassword(req.Password); !valid {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid password", msg)
+		utils.ErrorResponse(c, http.StatusBadRequest, "Password tidak valid", msg)
 		return
 	}
 	if err := ac.authService.SetPassword(req.Token, req.OTP, req.Password, c.ClientIP(), c.GetHeader("User-Agent")); err != nil {
@@ -206,12 +212,12 @@ func (ac *AuthController) SetPassword(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Password set successfully. You can now login.", nil)
 }
 
-// ForgotPassword sends a password-reset link to the user's email.
+// ForgotPassword mengirimkan tautan reset kata sandi ke email pengguna.
 // POST /api/auth/forgot-password
 func (ac *AuthController) ForgotPassword(c *gin.Context) {
 	var req models.ForgotPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	var user models.User
@@ -238,34 +244,34 @@ func (ac *AuthController) ForgotPassword(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "If your email is registered, we will send password reset instructions.", resp)
 }
 
-// ResetPassword completes the password-reset flow.
+// ResetPassword menyelesaikan alur reset kata sandi.
 // POST /api/auth/reset-password
 func (ac *AuthController) ResetPassword(c *gin.Context) {
 	var req models.ResetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	if req.NewPassword != req.ConfirmPassword {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid password", "Passwords do not match")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Password tidak valid", "Password tidak cocok")
 		return
 	}
 	if valid, msg := utils.ValidatePassword(req.NewPassword); !valid {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid password", msg)
+		utils.ErrorResponse(c, http.StatusBadRequest, "Password tidak valid", msg)
 		return
 	}
 	var token models.VerificationToken
 	if err := config.DB.Where("token_hash = ? AND token_type = ?", utils.HashToken(req.Token), models.TokenTypePasswordReset).
 		First(&token).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid or expired token", "Session invalid")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Token tidak valid atau sudah kedaluwarsa", "Sesi tidak valid")
 		return
 	}
 	if !token.IsValid() {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid or expired token", "Session expired or already used")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Token tidak valid atau sudah kedaluwarsa", "Sesi telah kedaluwarsa atau sudah digunakan")
 		return
 	}
 	if token.OTP != req.OTP {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid OTP", "OTP verification failed")
+		utils.ErrorResponse(c, http.StatusBadRequest, "OTP tidak valid", "Verifikasi OTP gagal")
 		return
 	}
 	hashed, _ := utils.HashPassword(req.NewPassword)
@@ -273,12 +279,12 @@ func (ac *AuthController) ResetPassword(c *gin.Context) {
 	if err := tx.Model(&models.User{}).Where("id = ?", token.UserID).
 		Updates(map[string]interface{}{"password": hashed, "status": models.StatusActive}).Error; err != nil {
 		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to reset password", "")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mereset password", "")
 		return
 	}
 	if err := token.MarkUsed(tx); err != nil {
 		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "System error", "Failed to invalidate token")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Kesalahan sistem", "Gagal membatalkan token")
 		return
 	}
 	tx.Model(&models.RefreshToken{}).Where("user_id = ?", token.UserID).Update("revoked_at", time.Now())
@@ -286,13 +292,13 @@ func (ac *AuthController) ResetPassword(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Password reset successfully. You can now login.", nil)
 }
 
-// GetProfile returns current user's profile.
+// GetProfile mengembalikan profil pengguna yang sedang aktif.
 // GET /api/profile
 func (ac *AuthController) GetProfile(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	var user models.User
 	if err := config.DB.Preload("Role").First(&user, userID).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "User not found", "Failed to get user profile")
+		utils.ErrorResponse(c, http.StatusNotFound, "Pengguna tidak ditemukan", "Gagal mengambil profil pengguna")
 		return
 	}
 	var sdm models.SDM
@@ -308,44 +314,44 @@ func (ac *AuthController) GetProfile(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Profile retrieved", gin.H{"user": user.ToResponse(), "sdm": sdm.ToResponse()})
 }
 
-// UpdateProfileRequest for updating user profile.
+// UpdateProfileRequest untuk memperbarui profil pengguna.
 type UpdateProfileRequest struct {
 	Email   string `json:"email" binding:"omitempty,email"`
 	NomorHP string `json:"nomor_hp"`
 	Foto    string `json:"foto"`
 }
 
-// UpdateProfile updates the current user's profile.
+// UpdateProfile memperbarui profil pengguna yang sedang aktif.
 // PUT /api/profile
 func (ac *AuthController) UpdateProfile(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	var req UpdateProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	var user models.User
 	if err := config.DB.First(&user, userID).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "User not found", "")
+		utils.ErrorResponse(c, http.StatusNotFound, "Pengguna tidak ditemukan", "")
 		return
 	}
 	var sdm models.SDM
 	hasSDM := user.NIP != nil && config.DB.Where("TRIM(nip) = TRIM(?)", *user.NIP).First(&sdm).Error == nil
 	if !hasSDM && user.RoleID != models.RoleSuperAdmin {
-		utils.ErrorResponse(c, http.StatusNotFound, "SDM not found", "SDM record not found for this user")
+		utils.ErrorResponse(c, http.StatusNotFound, "SDM tidak ditemukan", "Rekam SDM tidak ditemukan untuk pengguna ini")
 		return
 	}
 
 	updates, sdmUpdates := map[string]interface{}{}, map[string]interface{}{}
 	if req.Email != "" && req.Email != user.Email {
 		if !utils.ValidateEmail(req.Email) {
-			utils.ErrorResponse(c, http.StatusBadRequest, "Invalid email", "Invalid email format")
+			utils.ErrorResponse(c, http.StatusBadRequest, "Email tidak valid", "Format email tidak valid")
 			return
 		}
 		var cnt int64
 		config.DB.Model(&models.User{}).Where("email = ? AND id != ?", req.Email, user.ID).Count(&cnt)
 		if cnt > 0 {
-			utils.ErrorResponse(c, http.StatusConflict, "Email exists", "Email already used by another account")
+			utils.ErrorResponse(c, http.StatusConflict, "Email sudah ada", "Email sudah digunakan oleh akun lain")
 			return
 		}
 		updates["email"] = req.Email
@@ -362,14 +368,14 @@ func (ac *AuthController) UpdateProfile(c *gin.Context) {
 	if len(updates) > 0 {
 		if err := tx.Model(&user).Updates(updates).Error; err != nil {
 			tx.Rollback()
-			utils.ErrorResponse(c, http.StatusInternalServerError, "Update failed", "")
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Pembaruan gagal", "")
 			return
 		}
 	}
 	if len(sdmUpdates) > 0 && hasSDM {
 		if err := tx.Model(&sdm).Updates(sdmUpdates).Error; err != nil {
 			tx.Rollback()
-			utils.ErrorResponse(c, http.StatusInternalServerError, "Update failed", "")
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Pembaruan gagal", "")
 			return
 		}
 	}
@@ -387,31 +393,31 @@ func (ac *AuthController) UpdateProfile(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Profile updated successfully", gin.H{"user": user.ToResponse(), "sdm": sdm.ToResponse()})
 }
 
-// RefreshToken performs secure refresh-token rotation.
+// RefreshToken melakukan rotasi refresh-token yang aman.
 // POST /api/auth/refresh-token
 func (ac *AuthController) RefreshToken(c *gin.Context) {
 	cookieToken, err := c.Cookie("refresh_token")
 	if err != nil || cookieToken == "" {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "Invalid request", "Refresh token missing")
+		utils.ErrorResponse(c, http.StatusUnauthorized, "Permintaan tidak valid", "Token penyegaran tidak ada")
 		return
 	}
 
 	var stored models.RefreshToken
 	if err := config.DB.Preload("User.Role").Where("token_hash = ?", utils.HashToken(cookieToken)).
 		First(&stored).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "Invalid refresh token", "Session not found or expired")
+		utils.ErrorResponse(c, http.StatusUnauthorized, "Token penyegaran tidak valid", "Sesi tidak ditemukan atau kedaluwarsa")
 		return
 	}
 	if stored.IsRevoked() {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "Token revoked", "This session has been invalidated")
+		utils.ErrorResponse(c, http.StatusUnauthorized, "Token dicabut", "Sesi ini telah dibatalkan")
 		return
 	}
 	if stored.IsExpired() {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "Token expired", "Session expired, please login again")
+		utils.ErrorResponse(c, http.StatusUnauthorized, "Token kedaluwarsa", "Sesi kedaluwarsa, harap login kembali")
 		return
 	}
 	if stored.User.Status != models.StatusActive {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "Account restricted", "Your account is no longer active")
+		utils.ErrorResponse(c, http.StatusUnauthorized, "Akun dibatasi", "Akun Anda tidak lagi aktif")
 		return
 	}
 
@@ -419,19 +425,19 @@ func (ac *AuthController) RefreshToken(c *gin.Context) {
 	tx := config.DB.Begin()
 	if err := tx.Model(&stored).Update("revoked_at", &now).Error; err != nil {
 		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotation failed", "Failed to invalidate old session")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotasi gagal", "Gagal membatalkan sesi lama")
 		return
 	}
 	newAccess, err := utils.GenerateJWT(&stored.User)
 	if err != nil {
 		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotation failed", "Failed to generate access token")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotasi gagal", "Gagal membuat token akses")
 		return
 	}
 	newRefresh, err := utils.GenerateRefreshToken(&stored.User)
 	if err != nil {
 		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotation failed", "Failed to generate refresh token")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotasi gagal", "Gagal membuat token penyegaran")
 		return
 	}
 	if err := tx.Create(&models.RefreshToken{
@@ -440,11 +446,11 @@ func (ac *AuthController) RefreshToken(c *gin.Context) {
 		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 	}).Error; err != nil {
 		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotation failed", "Failed to save new session")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotasi gagal", "Gagal menyimpan sesi baru")
 		return
 	}
 	if err := tx.Commit().Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotation failed", "Transaction failed")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Rotasi gagal", "Transaksi gagal")
 		return
 	}
 	isProd := config.AppConfig.GinMode == "release"
@@ -456,16 +462,16 @@ func (ac *AuthController) RefreshToken(c *gin.Context) {
 	})
 }
 
-// Logout clears the refresh token cookie
+// Logout menghapus cookie refresh token
 // POST /api/auth/logout
 func (ac *AuthController) Logout(c *gin.Context) {
 	cookieToken, err := c.Cookie("refresh_token")
 	if err == nil && cookieToken != "" {
-		// Optional: Revoke in DB
+		// Opsional: Cabut di DB
 		config.DB.Model(&models.RefreshToken{}).Where("token_hash = ?", utils.HashToken(cookieToken)).Update("revoked_at", time.Now())
 	}
 
-	// Always clear the cookie
+	// Selalu hapus cookie
 	isProd := config.AppConfig.GinMode == "release"
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("refresh_token", "", -1, "/", "", isProd, true)
@@ -473,8 +479,8 @@ func (ac *AuthController) Logout(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Logged out successfully", nil)
 }
 
-// ChangePassword allows any logged-in user (admin or normal) to change their own password.
-// POST /api/user/change-password or /api/admin/change-password
+// ChangePassword memungkinkan pengguna yang sudah masuk (admin atau biasa) mengubah kata sandinya sendiri.
+// POST /api/user/change-password atau /api/admin/change-password
 func (ac *AuthController) ChangePassword(c *gin.Context) {
 	var req struct {
 		CurrentPassword string `json:"current_password" binding:"required"`
@@ -482,7 +488,7 @@ func (ac *AuthController) ChangePassword(c *gin.Context) {
 		ConfirmPassword string `json:"confirm_password" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
@@ -549,24 +555,337 @@ func (ac *AuthController) ChangePassword(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Password berhasil diubah. Silakan login ulang.", nil)
 }
 
-// TestEmailConnection tests the email configuration.
+// TestEmailConnection menguji konfigurasi email.
 // POST /api/test-email
 func (ac *AuthController) TestEmailConnection(c *gin.Context) {
 	var req struct {
 		Email string `json:"email" binding:"required,email"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	otp, err := utils.GenerateOTP(6)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to generate test OTP", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat OTP tes", err.Error())
 		return
 	}
 	if err := ac.emailService.SendVerificationEmailWithOTP(req.Email, "Test User", "test-token-123", otp); err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Email test failed", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Tes email gagal", err.Error())
 		return
 	}
 	utils.SuccessResponse(c, http.StatusOK, "Email test successful", gin.H{"test_otp": otp, "recipient": req.Email})
+}
+
+// Helper untuk mendapatkan kredensial SSO berdasarkan nama provider
+func getSSOProviderConfig(providerName string) (bool, string, string, string, string) {
+	switch providerName {
+	case "google":
+		return config.AppConfig.GoogleSSOEnabled, config.AppConfig.GoogleSSOClientID, config.AppConfig.GoogleSSOClientSecret, config.AppConfig.GoogleSSOIssuerURL, config.AppConfig.GoogleSSORedirectURL
+	case "microsoft":
+		return config.AppConfig.MicrosoftSSOEnabled, config.AppConfig.MicrosoftSSOClientID, config.AppConfig.MicrosoftSSOClientSecret, config.AppConfig.MicrosoftSSOIssuerURL, config.AppConfig.MicrosoftSSORedirectURL
+	default:
+		return config.AppConfig.SSOEnabled, config.AppConfig.SSOClientID, config.AppConfig.SSOClientSecret, config.AppConfig.SSOIssuerURL, config.AppConfig.SSORedirectURL
+	}
+}
+
+// ============================================================
+// SSO - TAHAP 3: Endpoint Keberangkatan (Memulai Alur SSO)
+// GET /api/auth/sso/login/:provider
+// Mengalihkan pengguna ke IdP asli ATAU mengembalikan info mock jika SSO_ENABLED=false.
+// ============================================================
+func (ac *AuthController) SSOInitiate(c *gin.Context) {
+	providerName := c.Param("provider")
+	enabled, clientID, clientSecret, issuerURL, redirectURL := getSSOProviderConfig(providerName)
+
+	if !enabled {
+		// Mode Dev: Beri tahu frontend untuk menggunakan halaman mock
+		c.JSON(http.StatusOK, gin.H{
+			"sso_enabled": false,
+			"redirect_url": "/mock-sso",
+			"message":     "SSO provider not configured. Redirecting to mock SSO for development.",
+		})
+		return
+	}
+
+	// Mode Produksi: Konfigurasi provider OIDC
+	provider, err := oidc.NewProvider(context.Background(), issuerURL)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menghubungi server SSO", err.Error())
+		return
+	}
+
+	oauth2Config := oauth2.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectURL,
+		Endpoint:     provider.Endpoint(),
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
+	}
+
+	// Buat token 'state' acak untuk perlindungan CSRF
+	b := make([]byte, 16)
+	rand.Read(b)
+	state := base64.URLEncoding.EncodeToString(b)
+
+	// Simpan state dalam cookie sementara yang aman
+	isProd := config.AppConfig.GinMode == "release"
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("sso_state", state, 300, "/", "", isProd, true)
+
+	// Alihkan pengguna ke halaman login IdP
+	c.Redirect(http.StatusFound, oauth2Config.AuthCodeURL(state))
+}
+
+// ============================================================
+// SSO - TAHAP 4: Endpoint Kedatangan / OIDC Callback
+// GET /api/auth/sso/oidc-callback
+// Memvalidasi token OIDC, mengekstrak NIP, menjalankan JIT provisioning.
+// ============================================================
+func (ac *AuthController) SSOOIDCCallback(c *gin.Context) {
+	// 1. Validasi 'state' untuk mencegah serangan CSRF
+	cookieState, err := c.Cookie("sso_state")
+	if err != nil || cookieState != c.Query("state") {
+		c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/login?error=invalid_state")
+		return
+	}
+	c.SetCookie("sso_state", "", -1, "/", "", false, true) // Hapus cookie state
+
+	providerName := c.Param("provider")
+	enabled, clientID, clientSecret, issuerURL, redirectURL := getSSOProviderConfig(providerName)
+
+	if !enabled {
+		c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/login?error=provider_disabled")
+		return
+	}
+
+	// 2. Konfigurasi provider OIDC
+	provider, err := oidc.NewProvider(context.Background(), issuerURL)
+	if err != nil {
+		c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/login?error=sso_unavailable")
+		return
+	}
+
+	oauth2Config := oauth2.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectURL,
+		Endpoint:     provider.Endpoint(),
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
+	}
+
+	// 3. Tukarkan authorization code dengan token
+	oauth2Token, err := oauth2Config.Exchange(context.Background(), c.Query("code"))
+	if err != nil {
+		c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/login?error=token_exchange_failed")
+		return
+	}
+
+	// 4. Ekstrak dan verifikasi ID Token
+	verifier := provider.Verifier(&oidc.Config{ClientID: clientID})
+	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
+	if !ok {
+		c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/login?error=no_id_token")
+		return
+	}
+	idToken, err := verifier.Verify(context.Background(), rawIDToken)
+	if err != nil {
+		c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/login?error=token_invalid")
+		return
+	}
+
+	// 5. Ekstrak klaim pengguna (NIP harus disediakan oleh IdP)
+	var claims struct {
+		NIP   string `json:"nip"`
+		Email string `json:"email"`
+		Name  string `json:"name"`
+	}
+	if err := idToken.Claims(&claims); err != nil {
+		c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/login?error=claims_failed")
+		return
+	}
+	if claims.NIP == "" && claims.Email == "" {
+		c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/login?error=identity_not_found")
+		return
+	}
+
+	// 6. Jalankan logika JIT Provisioning yang sama (dibagi dengan Mock SSO)
+	nip := claims.NIP
+	token, err := ac.processSSO(c, nip, claims.Email)
+	if err != nil {
+		c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/login?error=access_denied")
+		return
+	}
+
+	// 7. Arahkan kembali ke dashboard frontend dengan token JWT
+	c.Redirect(http.StatusFound, config.AppConfig.FrontendURL+"/dashboard?sso_token="+token)
+}
+
+// SSOCallback menangani respons balik dari provider SSO mock
+// POST /api/auth/sso/callback
+func (ac *AuthController) SSOCallback(c *gin.Context) {
+	var req struct {
+		NIP string `json:"nip" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
+		return
+	}
+
+	// 1. Cek Master SDM
+	var sdm models.SDM
+	if err := config.DB.Where("TRIM(nip) = TRIM(?)", req.NIP).First(&sdm).Error; err != nil {
+		utils.ErrorResponse(c, http.StatusForbidden, "Akses Ditolak", "NIP Anda tidak terdaftar sebagai pegawai APIP.")
+		return
+	}
+
+	// 2. Petakan Peran (Untuk SSO, terapkan peran Pengguna sesuai desain Hibrida)
+	roleID := models.RoleUser
+
+	// 3. Just-In-Time Provisioning
+	var user models.User
+	if err := config.DB.Where("TRIM(nip) = TRIM(?)", req.NIP).First(&user).Error; err != nil {
+		// Buat pengguna baru
+		user = models.User{
+			NIP:      &req.NIP,
+			Email:    req.NIP + "@sso.local", // Email sementara untuk pengguna SSO
+			RoleID:   roleID,
+			Status:   models.StatusActive,
+			Password: "", // Tanpa kata sandi
+		}
+		if err := config.DB.Create(&user).Error; err != nil {
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat akun SSO", err.Error())
+			return
+		}
+		models.CreateAuditLog(config.DB, &user.ID, models.AuditActionUserCreate, models.AuditStatusSuccess, c.ClientIP(), c.GetHeader("User-Agent"), "SSO Just-In-Time Provisioning", nil)
+	} else {
+		// Login berikutnya: pastikan akun aktif dan peran adalah User
+		if user.Status != models.StatusActive || user.RoleID != roleID {
+			config.DB.Model(&user).Updates(map[string]interface{}{
+				"status":  models.StatusActive,
+				"role_id": roleID,
+			})
+		}
+	}
+
+	// 4. Buat JWT
+	config.DB.Preload("Role").First(&user, user.ID)
+	token, err := utils.GenerateJWT(&user)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal generate token", err.Error())
+		return
+	}
+	refreshToken, err := utils.GenerateRefreshToken(&user)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal generate refresh token", err.Error())
+		return
+	}
+
+	// Perbarui waktu login terakhir
+	now := time.Now()
+	config.DB.Model(&user).Updates(map[string]interface{}{
+		"last_login_at":    now,
+		"last_activity_at": now,
+		"last_ip":          c.ClientIP(),
+	})
+
+	// Simpan Refresh Token
+	config.DB.Create(&models.RefreshToken{
+		UserID:    user.ID,
+		TokenHash: utils.HashToken(refreshToken),
+		ExpiresAt: now.Add(7 * 24 * time.Hour),
+	})
+
+	isProd := config.AppConfig.GinMode == "release"
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("refresh_token", refreshToken, 7*24*3600, "/", "", isProd, true)
+
+	models.CreateAuditLog(config.DB, &user.ID, models.AuditActionLogin, models.AuditStatusSuccess, c.ClientIP(), c.GetHeader("User-Agent"), "SSO Login successful", nil)
+
+	utils.SuccessResponse(c, http.StatusOK, "SSO Login successful", models.LoginResponse{
+		Token: token,
+		User:  user.ToResponse(),
+	})
+}
+
+// processSSO adalah helper bersama yang menjalankan JIT provisioning berdasarkan NIP.
+// Dipanggil oleh SSOCallback (Mock) maupun SSOOIDCCallback (Produksi).
+func (ac *AuthController) processSSO(c *gin.Context, nip, email string) (string, error) {
+	// 1. Verifikasi NIP atau Email ada di Master SDM (Sumber Kebenaran)
+	var sdm models.SDM
+	var err error
+
+	if nip != "" {
+		err = config.DB.Where("TRIM(nip) = TRIM(?)", nip).First(&sdm).Error
+	} else if email != "" {
+		err = config.DB.Where("TRIM(email) = TRIM(?)", email).First(&sdm).Error
+		if err == nil {
+			nip = sdm.NIP // Ambil NIP dari Master SDM karena tabel User menggunakan NIP
+		}
+	} else {
+		err = fmt.Errorf("no identity provided")
+	}
+
+	if err != nil {
+		models.CreateAuditLog(config.DB, nil, models.AuditActionLogin, models.AuditStatusFailed, c.ClientIP(), c.GetHeader("User-Agent"), "SSO: Identitas tidak ditemukan di Master SDM (NIP/Email)", nil)
+		return "", fmt.Errorf("Pegawai tidak terdaftar")
+	}
+
+	// 2. JIT Provisioning: Buat atau perbarui pengguna
+	var user models.User
+	if err := config.DB.Where("TRIM(nip) = TRIM(?)", nip).First(&user).Error; err != nil {
+		// Login pertama: buat akun secara otomatis
+		userEmail := email
+		if userEmail == "" {
+			userEmail = nip + "@sso.local"
+		}
+		user = models.User{
+			NIP:      &nip,
+			Email:    userEmail,
+			RoleID:   models.RoleUser,
+			Status:   models.StatusActive,
+			Password: "",
+		}
+		if err := config.DB.Create(&user).Error; err != nil {
+			return "", fmt.Errorf("gagal membuat akun SSO: %v", err)
+		}
+		models.CreateAuditLog(config.DB, &user.ID, models.AuditActionUserCreate, models.AuditStatusSuccess, c.ClientIP(), c.GetHeader("User-Agent"), "SSO Just-In-Time Provisioning: "+nip, nil)
+	} else {
+		// Login berikutnya: pastikan akun aktif
+		if user.Status != models.StatusActive {
+			config.DB.Model(&user).Update("status", models.StatusActive)
+		}
+	}
+
+	// 3. Buat JWT
+	config.DB.Preload("Role").First(&user, user.ID)
+	token, err := utils.GenerateJWT(&user)
+	if err != nil {
+		return "", fmt.Errorf("gagal generate token: %v", err)
+	}
+	refreshToken, err := utils.GenerateRefreshToken(&user)
+	if err != nil {
+		return "", fmt.Errorf("gagal generate refresh token: %v", err)
+	}
+
+	// 4. Perbarui metadata login
+	now := time.Now()
+	config.DB.Model(&user).Updates(map[string]interface{}{
+		"last_login_at":    now,
+		"last_activity_at": now,
+		"last_ip":          c.ClientIP(),
+	})
+	config.DB.Create(&models.RefreshToken{
+		UserID:    user.ID,
+		TokenHash: utils.HashToken(refreshToken),
+		ExpiresAt: now.Add(7 * 24 * time.Hour),
+	})
+
+	isProd := config.AppConfig.GinMode == "release"
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("refresh_token", refreshToken, 7*24*3600, "/", "", isProd, true)
+
+	models.CreateAuditLog(config.DB, &user.ID, models.AuditActionLogin, models.AuditStatusSuccess, c.ClientIP(), c.GetHeader("User-Agent"), "SSO Login successful: "+nip, nil)
+
+	return token, nil
 }

@@ -15,13 +15,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SDMController handles SDM APIP CRUD operations
+// SDMController menangani operasi CRUD SDM APIP
 type SDMController struct {
 	sdmService    services.ISDMService
 	importService services.ISDMImportService
 }
 
-// NewSDMController creates a new SDM controller
+// NewSDMController membuat controller SDM baru
 func NewSDMController(sdmService services.ISDMService, importService services.ISDMImportService) *SDMController {
 	return &SDMController{
 		sdmService:    sdmService,
@@ -29,7 +29,7 @@ func NewSDMController(sdmService services.ISDMService, importService services.IS
 	}
 }
 
-// GetAll returns all SDM data with pagination
+// GetAll mengembalikan semua data SDM dengan paginasi
 // GET /api/admin/sdm
 func (sc *SDMController) GetAll(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -47,11 +47,11 @@ func (sc *SDMController) GetAll(c *gin.Context) {
 
 	sdmList, total, err := sc.sdmService.GetAll(page, perPage, search, sortBy, order)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to get SDM data", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data SDM", err.Error())
 		return
 	}
 
-	// Convert to response
+	// Konversi ke respons
 	responseList := []models.SDMResponse{}
 	for _, sdm := range sdmList {
 		responseList = append(responseList, sdm.ToResponse())
@@ -70,42 +70,42 @@ func (sc *SDMController) GetAll(c *gin.Context) {
 	})
 }
 
-// GetByID returns a single SDM by ID
+// GetByID mengembalikan satu data SDM berdasarkan ID
 // GET /api/super-admin/sdm/:id
 func (sc *SDMController) GetByID(c *gin.Context) {
 	id := c.Param("id")
 
 	sdm, err := sc.sdmService.GetByID(id)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "SDM not found", "No SDM found with the given ID")
+		utils.ErrorResponse(c, http.StatusNotFound, "SDM tidak ditemukan", "Tidak ada SDM yang ditemukan dengan ID tersebut")
 		return
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, "SDM data retrieved", sdm.ToResponse())
 }
 
-// Create creates a new SDM record
+// Create membuat data SDM baru
 // POST /api/super-admin/sdm
 func (sc *SDMController) Create(c *gin.Context) {
 	var req models.SDMCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
-	// Validate NIP format
+	// Validasi format NIP
 	if !utils.ValidateNIP(req.NIP) {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid NIP format", "NIP must be 18 digits")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Format NIP tidak valid", "NIP harus 18 digit")
 		return
 	}
 
-	// Validate email
+	// Validasi email
 	if !utils.ValidateEmail(req.Email) {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid email format", "Please provide a valid email address")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Format email tidak valid", "Harap berikan alamat email yang valid")
 		return
 	}
 
-	// Sanitize
+	// Bersihkan input
 	req.Nama = utils.SanitizeString(req.Nama)
 	req.Jabatan = utils.SanitizeString(req.Jabatan)
 	req.PangkatGolongan = utils.SanitizeString(req.PangkatGolongan)
@@ -116,9 +116,9 @@ func (sc *SDMController) Create(c *gin.Context) {
 	sdm, err := sc.sdmService.Create(req)
 	if err != nil {
 		if err.Error() == "nip already exists" {
-			utils.ErrorResponse(c, http.StatusConflict, "NIP already exists", "An SDM record with this NIP already exists")
+			utils.ErrorResponse(c, http.StatusConflict, "NIP sudah ada", "Rekam SDM dengan NIP ini sudah ada")
 		} else {
-			utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create SDM", err.Error())
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat SDM", err.Error())
 		}
 		return
 	}
@@ -126,24 +126,24 @@ func (sc *SDMController) Create(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusCreated, "SDM created successfully", sdm.ToResponse())
 }
 
-// Update updates an existing SDM record
+// Update memperbarui data SDM yang sudah ada
 // PUT /api/admin/sdm/:id
 func (sc *SDMController) Update(c *gin.Context) {
 	id := c.Param("id")
 
 	var req models.SDMUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
-	// Validate email if provided
+	// Validasi email jika diberikan
 	if req.Email != "" && !utils.ValidateEmail(req.Email) {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid email format", "Please provide a valid email address")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Format email tidak valid", "Harap berikan alamat email yang valid")
 		return
 	}
 
-	// Sanitize
+	// Bersihkan input
 	if req.Nama != "" {
 		req.Nama = utils.SanitizeString(req.Nama)
 	}
@@ -165,14 +165,14 @@ func (sc *SDMController) Update(c *gin.Context) {
 
 	sdm, err := sc.sdmService.Update(id, req)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to update SDM", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui SDM", err.Error())
 		return
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, "SDM updated successfully", sdm.ToResponse())
 }
 
-// Delete deletes an SDM record
+// Delete menghapus data SDM
 // DELETE /api/admin/sdm/:id
 func (sc *SDMController) Delete(c *gin.Context) {
 	id := c.Param("id")
@@ -180,9 +180,9 @@ func (sc *SDMController) Delete(c *gin.Context) {
 	err := sc.sdmService.Delete(id)
 	if err != nil {
 		if err.Error() == "cannot delete SDM: user account linked" {
-			utils.ErrorResponse(c, http.StatusConflict, "Cannot delete SDM", "There is a user account linked to this SDM. Please delete the user account first.")
+			utils.ErrorResponse(c, http.StatusConflict, "Tidak dapat menghapus SDM", "Ada akun pengguna yang terhubung dengan SDM ini. Harap hapus akun pengguna terlebih dahulu.")
 		} else {
-			utils.ErrorResponse(c, http.StatusNotFound, "SDM not found", "No SDM found with the given ID or deletion failed")
+			utils.ErrorResponse(c, http.StatusNotFound, "SDM tidak ditemukan", "Tidak ada SDM yang ditemukan dengan ID tersebut atau penghapusan gagal")
 		}
 		return
 	}
@@ -190,27 +190,27 @@ func (sc *SDMController) Delete(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "SDM deleted successfully", nil)
 }
 
-// GetStats returns SDM statistics for dashboard
+// GetStats mengembalikan statistik SDM untuk dashboard
 // GET /api/admin/sdm/stats
 func (sc *SDMController) GetStats(c *gin.Context) {
 	stats, err := sc.sdmService.GetStats()
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to get stats", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil statistik", err.Error())
 		return
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, "Statistics retrieved", stats)
 }
 
-// ImportExcel imports SDM data from Excel file
+// ImportExcel mengimpor data SDM dari file Excel
 func (sc *SDMController) ImportExcel(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "File required", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "File wajib diisi", err.Error())
 		return
 	}
 
-	// SECURITY: Hard limit the uploaded file size to 15MB
+	// KEAMANAN: Batasi ukuran file yang diunggah menjadi 15MB
 	if file.Size > 15*1024*1024 {
 		utils.ErrorResponse(c, http.StatusBadRequest, "File terlalu besar", "Maksimal ukuran file adalah 15MB")
 		return
@@ -225,14 +225,14 @@ func (sc *SDMController) ImportExcel(c *gin.Context) {
 
 	filename := fmt.Sprintf("temp_%d%s", time.Now().UnixNano(), ext)
 	if err := c.SaveUploadedFile(file, filename); err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Save failed", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menyimpan", err.Error())
 		return
 	}
 	defer os.Remove(filename)
 
 	result, err := sc.importService.ImportExcel(filename)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Import failed", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Impor gagal", err.Error())
 		return
 	}
 

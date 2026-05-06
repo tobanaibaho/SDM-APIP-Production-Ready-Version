@@ -26,31 +26,31 @@ const (
 	ActionVerifyMember = "Verify membership"
 )
 
-// GroupController handles group management operations
+// GroupController menangani operasi manajemen grup
 type GroupController struct {
 	groupService services.IGroupService
 }
 
-// NewGroupController creates a new group controller with dependency injection
+// NewGroupController membuat controller grup baru dengan dependency injection
 func NewGroupController(gs services.IGroupService) *GroupController {
 	return &GroupController{
 		groupService: gs,
 	}
 }
 
-// mapServiceError maps service domain errors to gin responses
+// mapServiceError memetakan error domain service menjadi respons gin
 func (gc *GroupController) mapServiceError(c *gin.Context, err error, action string) {
 	switch err {
 	case services.ErrGroupNotFound:
-		utils.ErrorResponse(c, http.StatusNotFound, action, "Group not found")
+		utils.ErrorResponse(c, http.StatusNotFound, action, "Grup tidak ditemukan")
 	case services.ErrUserNotFound:
-		utils.ErrorResponse(c, http.StatusNotFound, action, "User not found")
+		utils.ErrorResponse(c, http.StatusNotFound, action, "Pengguna tidak ditemukan")
 	case services.ErrUserInactive:
 		utils.ErrorResponse(c, http.StatusForbidden, action, err.Error())
 	case services.ErrAccessDenied:
-		utils.ErrorResponse(c, http.StatusForbidden, action, "Access denied: you are not a member of this group")
+		utils.ErrorResponse(c, http.StatusForbidden, action, "Akses ditolak: Anda bukan anggota grup ini")
 	case services.ErrRelationNotFound:
-		utils.ErrorResponse(c, http.StatusNotFound, action, "Membership record not found")
+		utils.ErrorResponse(c, http.StatusNotFound, action, "Catatan keanggotaan tidak ditemukan")
 	case services.ErrGroupNameExists:
 		utils.ErrorResponse(c, http.StatusConflict, action, "Nama grup ini sudah digunakan. Silakan gunakan nama grup lain.")
 	case services.ErrInvalidGroupName:
@@ -64,15 +64,15 @@ func (gc *GroupController) mapServiceError(c *gin.Context, err error, action str
 	case services.ErrInternalServer:
 		utils.ErrorResponse(c, http.StatusInternalServerError, action, "Sistem mencatat anomali ini")
 	default:
-		// Generic fallback for safety
+		// Fallback umum untuk keamanan
 		utils.ErrorResponse(c, http.StatusInternalServerError, action, "Sistem mencatat anomali ini")
 	}
 }
 
-// GetAll returns all groups
+// GetAll mengembalikan semua grup
 // GET /api/admin/groups
 func (gc *GroupController) GetAll(c *gin.Context) {
-	// 1. Pagination Params
+	// 1. Parameter Paginasi
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	if page < 1 {
@@ -86,27 +86,27 @@ func (gc *GroupController) GetAll(c *gin.Context) {
 	}
 	offset := (page - 1) * limit
 
-	// 2. Sorting Params (Sanitization happens in Service)
+	// 2. Parameter Pengurutan (Sanitasi dilakukan di Service)
 	sortBy := c.DefaultQuery("sort_by", "name")
 	order := strings.ToLower(c.DefaultQuery("order", "asc"))
 
-	// 2.5 Filters
+	// 2.5 Filter
 	includeArchived := c.Query("include_archived") == "true"
 
-	// 3. Service Call
+	// 3. Pemanggilan Service
 	groups, total, err := gc.groupService.GetAllGroups(sortBy, order, limit, offset, includeArchived)
 	if err != nil {
 		gc.mapServiceError(c, err, ActionFetchGroups)
 		return
 	}
 
-	// 4. Response Mapping
+	// 4. Pemetaan Respons
 	response := make([]models.GroupResponse, len(groups))
 	for i, g := range groups {
 		response[i] = g.ToResponse(g.UserCount, "")
 	}
 
-	// 5. Paginated Response
+	// 5. Respons dengan Paginasi
 	totalPages := int(math.Ceil(float64(total) / float64(limit)))
 
 	utils.PaginatedSuccessResponse(c, http.StatusOK, "Groups retrieved successfully", response, utils.Pagination{
@@ -117,13 +117,13 @@ func (gc *GroupController) GetAll(c *gin.Context) {
 	})
 }
 
-// GetByID returns a single group with its members
+// GetByID mengembalikan satu grup beserta anggotanya
 // GET /api/admin/groups/:id
 func (gc *GroupController) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, ActionGetGroup, "Invalid group ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, ActionGetGroup, "ID grup tidak valid")
 		return
 	}
 
@@ -141,13 +141,13 @@ func (gc *GroupController) GetByID(c *gin.Context) {
 	})
 }
 
-// Create creates a new group
+// Create membuat grup baru
 // POST /api/admin/groups
 func (gc *GroupController) Create(c *gin.Context) {
 	var req models.CreateGroupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.Warn("[GroupController] Create binding error: %v", err)
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
@@ -160,20 +160,20 @@ func (gc *GroupController) Create(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusCreated, "Group created successfully", group.ToResponse(0, ""))
 }
 
-// Update updates a group
+// Update memperbarui grup
 // PUT /api/admin/groups/:id
 func (gc *GroupController) Update(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, ActionUpdateGroup, "Invalid group ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, ActionUpdateGroup, "ID grup tidak valid")
 		return
 	}
 
 	var req models.UpdateGroupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.Warn("[GroupController] Update binding error: %v", err)
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
@@ -186,13 +186,13 @@ func (gc *GroupController) Update(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Group updated successfully", group.ToResponse(0, ""))
 }
 
-// Delete deletes a group
+// Delete menghapus grup
 // DELETE /api/super-admin/groups/:id
 func (gc *GroupController) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, ActionDeleteGroup, "Invalid group ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, ActionDeleteGroup, "ID grup tidak valid")
 		return
 	}
 
@@ -204,20 +204,20 @@ func (gc *GroupController) Delete(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Group deleted successfully", nil)
 }
 
-// AssignUser assigns a user to a group
+// AssignUser menugaskan pengguna ke grup
 // POST /api/super-admin/groups/:id/users
 func (gc *GroupController) AssignUser(c *gin.Context) {
 	idStr := c.Param("id")
 	groupID, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, ActionAssignUser, "Invalid group ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, ActionAssignUser, "ID grup tidak valid")
 		return
 	}
 
 	var req models.AssignUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.Warn("[GroupController] AssignUser binding error: %v", err)
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
@@ -230,20 +230,20 @@ func (gc *GroupController) AssignUser(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "User assigned to group successfully", nil)
 }
 
-// RemoveUser removes a user from a group
+// RemoveUser menghapus pengguna dari grup
 // DELETE /api/admin/groups/:id/users/:userId
 func (gc *GroupController) RemoveUser(c *gin.Context) {
 	idStr := c.Param("id")
 	groupID, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, ActionRemoveUser, "Invalid group ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, ActionRemoveUser, "ID grup tidak valid")
 		return
 	}
 
 	userIDStr := c.Param("userId")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, ActionRemoveUser, "Invalid user ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, ActionRemoveUser, "ID pengguna tidak valid")
 		return
 	}
 
@@ -255,12 +255,12 @@ func (gc *GroupController) RemoveUser(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "User removed from group successfully", nil)
 }
 
-// MoveUser moves a user from one group to another
+// MoveUser memindahkan pengguna dari satu grup ke grup lain
 // POST /api/admin/groups/move-user
 func (gc *GroupController) MoveUser(c *gin.Context) {
 	var req models.MoveUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
@@ -273,14 +273,14 @@ func (gc *GroupController) MoveUser(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "User moved successfully", nil)
 }
 
-// --- User Facing Methods ---
+// --- Metode untuk Pengguna ---
 
-// GetMyGroups returns groups for the current user
+// GetMyGroups mengembalikan grup untuk pengguna saat ini
 // GET /api/my-groups
 func (gc *GroupController) GetMyGroups(c *gin.Context) {
 	userID := middleware.GetUserIDFromContext(c)
 	if userID == 0 {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized", "Invalid user session")
+		utils.ErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan", "Sesi pengguna tidak valid")
 		return
 	}
 
@@ -293,19 +293,19 @@ func (gc *GroupController) GetMyGroups(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "My groups retrieved", groups)
 }
 
-// GetGroupDetailForUser returns detail of a group if user is member
+// GetGroupDetailForUser mengembalikan detail grup jika pengguna adalah anggotanya
 // GET /api/groups/:id
 func (gc *GroupController) GetGroupDetailForUser(c *gin.Context) {
 	idStr := c.Param("id")
 	groupID, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, ActionGetGroup, "Invalid group ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, ActionGetGroup, "ID grup tidak valid")
 		return
 	}
 
 	userID := middleware.GetUserIDFromContext(c)
 
-	// Consolidated membership and detail retrieval
+	// Pengambilan keanggotaan dan detail yang tergabung
 	group, members, err := gc.groupService.GetGroupDetailIfMember(userID, uint(groupID))
 	if err != nil {
 		gc.mapServiceError(c, err, ActionGetGroup)

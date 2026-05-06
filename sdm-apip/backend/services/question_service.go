@@ -51,7 +51,7 @@ func (s *QuestionService) UpdateQuestion(id uint, req models.UpdateQuestionReque
 	var question models.Question
 	if err := s.db.First(&question, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("question not found")
+			return nil, errors.New("Pertanyaan tidak ditemukan")
 		}
 		return nil, err
 	}
@@ -80,11 +80,11 @@ func (s *QuestionService) DeleteQuestion(id uint) error {
 	var question models.Question
 	if err := s.db.First(&question, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("question not found")
+			return errors.New("Pertanyaan tidak ditemukan")
 		}
 		return err
 	}
-	// Use soft delete
+	// Gunakan penghapusan sementara (soft delete)
 	return s.db.Delete(&question).Error
 }
 
@@ -107,7 +107,7 @@ func (s *QuestionService) BulkImportQuestions(rows []models.CreateQuestionReques
 	}
 
 	if len(toInsert) == 0 {
-		return 0, errors.New("tidak ada baris yang valid untuk diimport")
+		return 0, errors.New("Tidak ada baris yang valid untuk diimpor")
 	}
 
 	if err := s.db.Create(&toInsert).Error; err != nil {

@@ -20,9 +20,9 @@ var (
 	mu      sync.Mutex
 )
 
-// RateLimiter implements a simple memory-based rate limiter
+// RateLimiter mengimplementasikan pembatas kecepatan (rate limiter) sederhana berbasis memori
 func RateLimiter(limit int, window time.Duration) gin.HandlerFunc {
-	// Cleanup routine
+	// Rutinitas pembersihan (cleanup)
 	go func() {
 		for {
 			time.Sleep(window)
@@ -55,7 +55,7 @@ func RateLimiter(limit int, window time.Duration) gin.HandlerFunc {
 		}
 
 		if clients[ip].count >= limit {
-			utils.ErrorResponse(c, http.StatusTooManyRequests, "Too many requests", "Rate limit exceeded. Please try again later.")
+			utils.ErrorResponse(c, http.StatusTooManyRequests, "Terlalu banyak permintaan", "Batas tingkat terlampaui. Harap coba lagi nanti.")
 			c.Abort()
 			return
 		}

@@ -23,18 +23,18 @@ func NewAssessmentController(as services.IAssessmentService) *AssessmentControll
 	}
 }
 
-// --- Admin Endpoints ---
+// --- Endpoint Admin ---
 
 func (ac *AssessmentController) CreatePeriod(c *gin.Context) {
 	var req models.CreatePeriodRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
 	period, err := ac.assessmentService.CreatePeriod(req)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create period", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat periode", err.Error())
 		return
 	}
 
@@ -44,7 +44,7 @@ func (ac *AssessmentController) CreatePeriod(c *gin.Context) {
 func (ac *AssessmentController) GetAllPeriods(c *gin.Context) {
 	periods, err := ac.assessmentService.GetAllPeriods()
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch periods", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil periode", err.Error())
 		return
 	}
 	utils.SuccessResponse(c, http.StatusOK, "Periods retrieved", periods)
@@ -55,13 +55,13 @@ func (ac *AssessmentController) UpdatePeriod(c *gin.Context) {
 	id, _ := strconv.ParseUint(idStr, 10, 32)
 	var req models.UpdatePeriodRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
 	err := ac.assessmentService.UpdatePeriod(uint(id), req)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to update period", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui periode", err.Error())
 		return
 	}
 
@@ -76,17 +76,17 @@ func (ac *AssessmentController) UpdatePeriodStatus(c *gin.Context) {
 		IsActive bool `json:"is_active"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
 	err := ac.assessmentService.UpdatePeriodStatus(uint(id), req.IsActive)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "Failed to update period", err.Error())
+		utils.ErrorResponse(c, http.StatusNotFound, "Gagal memperbarui periode", err.Error())
 		return
 	}
 
-	// Audit Log
+	// Log Audit
 	adminID := middleware.GetUserIDFromContext(c)
 	details := fmt.Sprintf("Admin manually updated period ID %d status to active=%v", id, req.IsActive)
 	models.CreateAuditLog(config.DB, &adminID, models.AuditActionPeriodUpdate, models.AuditStatusSuccess,
@@ -102,28 +102,28 @@ func (ac *AssessmentController) DeletePeriod(c *gin.Context) {
 	err := ac.assessmentService.DeletePeriod(uint(id))
 	if err != nil {
 		if err == services.ErrPeriodNotFound {
-			utils.ErrorResponse(c, http.StatusNotFound, "Failed to delete period", "Period not found")
+			utils.ErrorResponse(c, http.StatusNotFound, "Gagal menghapus periode", "Periode tidak ditemukan")
 			return
 		}
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete period", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus periode", err.Error())
 		return
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, "Assessment period deleted successfully", nil)
 }
 
-// --- Relation Management (Admin) ---
+// --- Manajemen Relasi (Admin) ---
 
 func (ac *AssessmentController) CreateRelation(c *gin.Context) {
 	var req models.CreateRelationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
 	err := ac.assessmentService.CreateAssessmentRelation(req)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create relation", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat relasi", err.Error())
 		return
 	}
 
@@ -133,13 +133,13 @@ func (ac *AssessmentController) CreateRelation(c *gin.Context) {
 func (ac *AssessmentController) CreateGroupRelations(c *gin.Context) {
 	var req models.BulkCreateRelationsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
 	err := ac.assessmentService.CreateGroupRelations(req)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create group relations", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat relasi grup", err.Error())
 		return
 	}
 
@@ -153,13 +153,13 @@ func (ac *AssessmentController) GetGroupRelations(c *gin.Context) {
 	periodID, _ := strconv.ParseUint(periodIDStr, 10, 32)
 
 	if groupID == 0 || periodID == 0 {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Missing group_id or period_id", "Please provide valid IDs")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID grup atau ID periode tidak ada", "Harap berikan ID yang valid")
 		return
 	}
 
 	relations, err := ac.assessmentService.GetGroupRelations(uint(groupID), uint(periodID))
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch group relations", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil relasi grup", err.Error())
 		return
 	}
 
@@ -171,13 +171,13 @@ func (ac *AssessmentController) GetCrossGroupRelations(c *gin.Context) {
 	periodID, _ := strconv.ParseUint(periodIDStr, 10, 32)
 
 	if periodID == 0 {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Missing period_id", "Please provide a valid period_id")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID periode tidak ada", "Harap berikan ID periode yang valid")
 		return
 	}
 
 	relations, err := ac.assessmentService.GetCrossGroupRelations(uint(periodID))
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch cross-group relations", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil relasi lintas grup", err.Error())
 		return
 	}
 
@@ -189,12 +189,12 @@ func (ac *AssessmentController) DeleteRelation(c *gin.Context) {
 	id, _ := strconv.ParseUint(idStr, 10, 32)
 
 	if id == 0 {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid relation ID", "")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID relasi tidak valid", "")
 		return
 	}
 
 	if err := ac.assessmentService.DeleteAssessmentRelation(uint(id)); err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "Failed to delete relation", err.Error())
+		utils.ErrorResponse(c, http.StatusNotFound, "Gagal menghapus relasi", err.Error())
 		return
 	}
 
@@ -207,13 +207,13 @@ func (ac *AssessmentController) GetTargets(c *gin.Context) {
 	periodID, _ := strconv.ParseUint(periodIDStr, 10, 32)
 
 	if periodID == 0 {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Missing period_id", "Please provide a valid period_id")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID periode tidak ada", "Harap berikan ID periode yang valid")
 		return
 	}
 
 	targets, err := ac.assessmentService.GetAssessmentTargets(evaluatorID, uint(periodID))
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch targets", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil target", err.Error())
 		return
 	}
 
@@ -225,13 +225,13 @@ func (ac *AssessmentController) GetMatrix(c *gin.Context) {
 	periodID, _ := strconv.ParseUint(periodIDStr, 10, 32)
 
 	if periodID == 0 {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Missing period_id", "Please provide a valid period_id")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID periode tidak ada", "Harap berikan ID periode yang valid")
 		return
 	}
 
-	matrix, err := ac.assessmentService.GetAssessmentMatrix(uint(periodID), 0) // Admin always 0
+	matrix, err := ac.assessmentService.GetAssessmentMatrix(uint(periodID), 0) // Admin selalu 0
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch matrix", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil matriks", err.Error())
 		return
 	}
 
@@ -244,13 +244,13 @@ func (ac *AssessmentController) GetMatrixFnForUser(c *gin.Context) {
 	periodID, _ := strconv.ParseUint(periodIDStr, 10, 32)
 
 	if periodID == 0 {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Missing period_id", "Please provide a valid period_id")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID periode tidak ada", "Harap berikan ID periode yang valid")
 		return
 	}
 
 	matrix, err := ac.assessmentService.GetAssessmentMatrix(uint(periodID), userID)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch matrix", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil matriks", err.Error())
 		return
 	}
 
@@ -264,26 +264,26 @@ func (ac *AssessmentController) GetDetail(c *gin.Context) {
 	periodID, _ := strconv.ParseUint(periodIDStr, 10, 32)
 
 	if periodID == 0 {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Missing period_id", "Please provide a valid period_id")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID periode tidak ada", "Harap berikan ID periode yang valid")
 		return
 	}
 
 	detail, err := ac.assessmentService.GetAssessmentDetail(uint(userID), uint(periodID))
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch detail", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil detail", err.Error())
 		return
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, "Assessment detail retrieved", detail)
 }
 
-// --- User Endpoints ---
+// --- Endpoint Pengguna ---
 
 func (ac *AssessmentController) SubmitAssessment(c *gin.Context) {
 	evaluatorID := middleware.GetUserIDFromContext(c)
 	var req models.SubmitAssessmentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
@@ -296,23 +296,23 @@ func (ac *AssessmentController) SubmitAssessment(c *gin.Context) {
 		case services.ErrPeriodNotFound:
 			status = http.StatusNotFound
 		case services.ErrAdminCannotAssess:
-			utils.ErrorResponse(c, http.StatusForbidden, "Assessment failed", "Administrator tidak diperbolehkan melakukan penilaian")
+			utils.ErrorResponse(c, http.StatusForbidden, "Penilaian gagal", "Administrator tidak diperbolehkan melakukan penilaian")
 			return
 		}
 
-		// Audit Log for failure
+		// Log Audit untuk kegagalan
 		models.CreateAuditLog(config.DB, &evaluatorID, models.AuditActionAssessmentSubmit, models.AuditStatusFailed,
 			c.ClientIP(), c.GetHeader("User-Agent"), fmt.Sprintf("Assessment submission failed: %v", err.Error()), &req.TargetUserID)
 
-		// Catch string errors from service
+		// Tangkap error string dari service
 		if err.Error() == "you are not assigned to assess this user in this period" {
 			status = http.StatusForbidden
 		}
-		utils.ErrorResponse(c, status, "Assessment failed", err.Error())
+		utils.ErrorResponse(c, status, "Penilaian gagal", err.Error())
 		return
 	}
 
-	// Audit Log for success
+	// Log Audit untuk keberhasilan
 	models.CreateAuditLog(config.DB, &evaluatorID, models.AuditActionAssessmentSubmit, models.AuditStatusSuccess,
 		c.ClientIP(), c.GetHeader("User-Agent"), fmt.Sprintf("User submitted assessment for target ID %d", req.TargetUserID), &req.TargetUserID)
 
@@ -325,13 +325,13 @@ func (ac *AssessmentController) GetMyResults(c *gin.Context) {
 	periodID, _ := strconv.ParseUint(periodIDStr, 10, 32)
 
 	if periodID == 0 {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Missing period_id", "Please provide a valid period_id")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID periode tidak ada", "Harap berikan ID periode yang valid")
 		return
 	}
 
 	summary, err := ac.assessmentService.GetAssessmentSummary(userID, uint(periodID))
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch results", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil hasil", err.Error())
 		return
 	}
 
@@ -352,7 +352,7 @@ func (ac *AssessmentController) GetMyAssessmentsGiven(c *gin.Context) {
 
 	assessments, err := ac.assessmentService.GetGivenAssessments(userID, uint(periodID))
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch assessments", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil penilaian", err.Error())
 		return
 	}
 
@@ -362,7 +362,7 @@ func (ac *AssessmentController) GetMyAssessmentsGiven(c *gin.Context) {
 func (ac *AssessmentController) GetActivePeriod(c *gin.Context) {
 	period, err := ac.assessmentService.GetActivePeriod()
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Kesalahan server internal", err.Error())
 		return
 	}
 
@@ -374,22 +374,22 @@ func (ac *AssessmentController) GetActivePeriod(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Active period retrieved", period)
 }
 
-// GetAssessmentReference returns Peer+Bawahan aggregated scores for a target user.
-// Only accessible to the Atasan evaluator assigned for that target in the given period.
+// GetAssessmentReference mengembalikan skor agregat Peer+Bawahan untuk pengguna target.
+// Hanya dapat diakses oleh penilai Atasan yang ditugaskan untuk target tersebut pada periode yang diberikan.
 func (ac *AssessmentController) GetAssessmentReference(c *gin.Context) {
 	evaluatorID := middleware.GetUserIDFromContext(c)
 
 	targetIDStr := c.Param("targetUserID")
 	targetID, parseErr := strconv.ParseUint(targetIDStr, 10, 32)
 	if parseErr != nil || targetID == 0 {
-		utils.ErrorResponse(c, 400, "Invalid target user ID", "Please provide a valid target_user_id")
+		utils.ErrorResponse(c, 400, "ID pengguna target tidak valid", "Harap berikan ID pengguna target yang valid")
 		return
 	}
 
 	periodIDStr := c.Query("period_id")
 	periodID, parseErr2 := strconv.ParseUint(periodIDStr, 10, 32)
 	if parseErr2 != nil || periodID == 0 {
-		utils.ErrorResponse(c, 400, "Missing period_id", "Please provide a valid period_id")
+		utils.ErrorResponse(c, 400, "ID periode tidak ada", "Harap berikan ID periode yang valid")
 		return
 	}
 

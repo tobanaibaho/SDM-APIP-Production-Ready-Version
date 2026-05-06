@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Question represents a dynamic question belonging to a specific BerAKHLAK indicator
+// Question merepresentasikan pertanyaan dinamis yang termasuk dalam indikator BerAKHLAK tertentu
 type Question struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	Indicator string         `gorm:"type:varchar(100);not null;index" json:"indicator"` // e.g., "Berorientasi Pelayanan", "Akuntabel", dll.
@@ -21,7 +21,7 @@ func (Question) TableName() string {
 	return "questions"
 }
 
-// AssessmentAnswer records the specific score given to a specific Question within a PeerAssessment submission
+// AssessmentAnswer merekam skor spesifik yang diberikan untuk Pertanyaan spesifik di dalam pengumpulan PeerAssessment
 type AssessmentAnswer struct {
 	ID               uint           `gorm:"primaryKey" json:"id"`
 	PeerAssessmentID uint           `gorm:"not null;index;constraint:OnDelete:CASCADE" json:"peer_assessment_id"`
@@ -35,7 +35,7 @@ func (AssessmentAnswer) TableName() string {
 	return "assessment_answers"
 }
 
-// --- DTOs for Admin Questions ---
+// --- DTO untuk Pertanyaan Admin ---
 
 type CreateQuestionRequest struct {
 	Indicator string `json:"indicator" binding:"required,oneof='Berorientasi Pelayanan' Akuntabel Kompeten Harmonis Loyal Adaptif Kolaboratif"`

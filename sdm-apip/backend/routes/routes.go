@@ -7,13 +7,13 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine) {
-	// Global middleware
+	// Middleware global
 	router.Use(middleware.CORSMiddleware())
 	router.Use(middleware.SecurityHeaders())
 
 	api := router.Group("/api")
 	{
-		// Health check
+		// Pengecekan status (Health check)
 		api.GET("/health", HealthCheck)
 		api.GET("/health/email", TestEmailConnection)
 

@@ -15,8 +15,8 @@ export default {
                     500: '#0ea5e9',
                     600: '#0284c7',
                     700: '#0369a1',
-                    800: '#075985', // Kemenko Blue Base
-                    900: '#0c4a6e', // Darker Kemenko
+                    800: '#075985', // Warna Dasar Biru Kemenko
+                    900: '#0c4a6e', // Kemenko Lebih Gelap
                     950: '#082f49',
                 },
                 accent: {
@@ -25,7 +25,7 @@ export default {
                     200: '#fde68a',
                     300: '#fcd34d',
                     400: '#fbbf24',
-                    500: '#f59e0b', // Base Accent (Gold)
+                    500: '#f59e0b', // Aksen Dasar (Emas)
                     600: '#d97706',
                     700: '#b45309',
                     800: '#92400e',

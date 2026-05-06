@@ -12,18 +12,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SuperAdminForgotPassword sends an admin password reset token via email.
+// SuperAdminForgotPassword mengirimkan token reset kata sandi admin via email.
 // POST /api/auth/super-admin/forgot-password
 func (ac *AuthController) SuperAdminForgotPassword(c *gin.Context) {
 	var req models.AdminForgotPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
 	var user models.User
 	if err := config.DB.Where("username = ? AND role_id = ?", req.Username, models.RoleSuperAdmin).First(&user).Error; err != nil {
-		// Avoid user enumeration — always return 200
+		// Hindari enumerasi pengguna — selalu kembalikan 200
 		utils.SuccessResponse(c, http.StatusOK, "Jika akun ditemukan, instruksi reset telah dikirim ke email Admin", nil)
 		return
 	}
@@ -55,12 +55,12 @@ func (ac *AuthController) SuperAdminForgotPassword(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Instruksi reset password telah dikirim ke email Admin", nil)
 }
 
-// SuperAdminResetToDefault completes admin password reset via token.
+// SuperAdminResetToDefault menyelesaikan reset kata sandi admin via token.
 // POST /api/auth/super-admin/reset-to-default
 func (ac *AuthController) SuperAdminResetToDefault(c *gin.Context) {
 	var req models.AdminResetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
@@ -115,12 +115,12 @@ func (ac *AuthController) SuperAdminResetToDefault(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Password Administrator berhasil direset. Semua sesi aktif telah dicabut.", nil)
 }
 
-// SecureAdminResetRequest initiates secure admin password reset (JWT + MFA).
+// SecureAdminResetRequest memulai reset kata sandi admin yang aman (JWT + MFA).
 // POST /api/admin/secure-reset/request
 func (ac *AuthController) SecureAdminResetRequest(c *gin.Context) {
 	var req models.SecureAdminResetRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	callerID := c.MustGet("user_id").(uint)
@@ -131,13 +131,13 @@ func (ac *AuthController) SecureAdminResetRequest(c *gin.Context) {
 		First(&target).Error; err != nil {
 		models.CreateAuditLog(config.DB, &callerID, models.AuditActionAdminReset, models.AuditStatusFailed, ip, ua,
 			fmt.Sprintf("Target user not found: %s", req.TargetUsername), nil)
-		utils.ErrorResponse(c, http.StatusNotFound, "Admin reset failed", "Target admin user not found")
+		utils.ErrorResponse(c, http.StatusNotFound, "Reset admin gagal", "Pengguna admin target tidak ditemukan")
 		return
 	}
 
 	otp, err := utils.GenerateOTP(6)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to generate OTP", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat OTP", err.Error())
 		return
 	}
 	config.DB.Where("user_id = ? AND token_type = ?", target.ID, "secure_admin_reset").Delete(&models.VerificationToken{})
@@ -147,7 +147,7 @@ func (ac *AuthController) SecureAdminResetRequest(c *gin.Context) {
 		TokenType: "secure_admin_reset", OTP: otp,
 		ExpiresAt: time.Now().Add(15 * time.Minute),
 	}).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create reset token", "")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat token reset", "")
 		return
 	}
 
@@ -163,12 +163,12 @@ func (ac *AuthController) SecureAdminResetRequest(c *gin.Context) {
 	})
 }
 
-// SecureAdminResetConfirm confirms admin password reset with OTP.
+// SecureAdminResetConfirm mengkonfirmasi reset kata sandi admin dengan OTP.
 // POST /api/admin/secure-reset/confirm
 func (ac *AuthController) SecureAdminResetConfirm(c *gin.Context) {
 	var req models.SecureAdminResetConfirmRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	callerID := c.MustGet("user_id").(uint)
@@ -177,7 +177,7 @@ func (ac *AuthController) SecureAdminResetConfirm(c *gin.Context) {
 	var target models.User
 	if err := config.DB.Where("username = ? AND role_id = ?", req.TargetUsername, models.RoleSuperAdmin).
 		First(&target).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusNotFound, "Admin reset failed", "Target admin user not found")
+		utils.ErrorResponse(c, http.StatusNotFound, "Reset admin gagal", "Pengguna admin target tidak ditemukan")
 		return
 	}
 
@@ -185,44 +185,44 @@ func (ac *AuthController) SecureAdminResetConfirm(c *gin.Context) {
 	if err := config.DB.Where("user_id = ? AND token_type = ?", target.ID, "secure_admin_reset").
 		Order("created_at DESC").First(&token).Error; err != nil {
 		models.CreateAuditLog(config.DB, &callerID, models.AuditActionAdminReset, models.AuditStatusFailed, ip, ua, "No active reset token found", &target.ID)
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid or expired reset session", "")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Sesi reset tidak valid atau kedaluwarsa", "")
 		return
 	}
 	if token.IsExpired() || token.IsUsed() {
 		models.CreateAuditLog(config.DB, &callerID, models.AuditActionAdminReset, models.AuditStatusFailed, ip, ua, "Token expired or already used", &target.ID)
-		utils.ErrorResponse(c, http.StatusBadRequest, "Reset session expired or already used", "")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Sesi reset kedaluwarsa atau sudah digunakan", "")
 		return
 	}
 	if token.OTP != req.OTP {
 		models.CreateAuditLog(config.DB, &callerID, models.AuditActionAdminReset, models.AuditStatusFailed, ip, ua, "Invalid OTP provided", &target.ID)
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid OTP code", "")
+		utils.ErrorResponse(c, http.StatusBadRequest, "Kode OTP tidak valid", "")
 		return
 	}
 	if valid, msg := utils.ValidatePassword(req.NewPassword); !valid {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid password", msg)
+		utils.ErrorResponse(c, http.StatusBadRequest, "Password tidak valid", msg)
 		return
 	}
 	hashed, err := utils.HashPassword(req.NewPassword)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to hash password", "")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal melakukan hash password", "")
 		return
 	}
 
 	tx := config.DB.Begin()
 	if err := tx.Model(&models.User{}).Where("id = ?", target.ID).Update("password", hashed).Error; err != nil {
 		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to reset password", "")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mereset password", "")
 		return
 	}
 	if err := token.MarkUsed(tx); err != nil {
 		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to mark token used", "")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menandai token sebagai digunakan", "")
 		return
 	}
 	models.CreateAuditLog(tx, &callerID, models.AuditActionAdminReset, models.AuditStatusSuccess, ip, ua,
 		fmt.Sprintf("Admin password reset successful for %s", *target.Username), &target.ID)
 	if err := tx.Commit().Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Transaction failed", "")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Transaksi gagal", "")
 		return
 	}
 
@@ -232,19 +232,19 @@ func (ac *AuthController) SecureAdminResetConfirm(c *gin.Context) {
 	})
 }
 
-// SetupMFA initiates MFA registration.
+// SetupMFA memulai pendaftaran MFA.
 // GET /api/auth/mfa/setup
 func (ac *AuthController) SetupMFA(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 	secret, qrURL, err := ac.authService.GenerateMFASecret(userID)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to setup MFA", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengatur MFA", err.Error())
 		return
 	}
 	utils.SuccessResponse(c, http.StatusOK, "MFA Setup initiated", gin.H{"secret": secret, "qr_url": qrURL})
 }
 
-// EnableMFA completes MFA registration.
+// EnableMFA menyelesaikan pendaftaran MFA.
 // POST /api/auth/mfa/enable
 func (ac *AuthController) EnableMFA(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
@@ -252,38 +252,38 @@ func (ac *AuthController) EnableMFA(c *gin.Context) {
 		OTP string `json:"otp" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 	if err := ac.authService.EnableMFA(userID, req.OTP); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Failed to enable MFA", err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Gagal mengaktifkan MFA", err.Error())
 		return
 	}
 	utils.SuccessResponse(c, http.StatusOK, "MFA enabled successfully", nil)
 }
 
-// DisableMFA disables MFA for the current user.
+// DisableMFA menonaktifkan MFA untuk pengguna saat ini.
 // POST /api/auth/mfa/disable
 func (ac *AuthController) DisableMFA(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 	if err := ac.authService.DisableMFA(userID); err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to disable MFA", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menonaktifkan MFA", err.Error())
 		return
 	}
 	utils.SuccessResponse(c, http.StatusOK, "MFA disabled successfully", nil)
 }
 
-// AdminDisableMFA allows admin to force-disable MFA for any user.
+// AdminDisableMFA memungkinkan admin untuk menonaktifkan paksa MFA pengguna manapun.
 // POST /api/admin/users/:id/mfa/disable
 func (ac *AuthController) AdminDisableMFA(c *gin.Context) {
 	var userID uint
 	fmt.Sscanf(c.Param("id"), "%d", &userID)
 	if userID == 0 {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid user ID", "")
+		utils.ErrorResponse(c, http.StatusBadRequest, "ID pengguna tidak valid", "")
 		return
 	}
 	if err := ac.authService.DisableMFA(userID); err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to disable MFA", err.Error())
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal menonaktifkan MFA", err.Error())
 		return
 	}
 	utils.SuccessResponse(c, http.StatusOK, "User MFA disabled successfully", nil)

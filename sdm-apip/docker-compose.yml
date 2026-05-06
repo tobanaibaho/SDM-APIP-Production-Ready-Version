@@ -32,8 +32,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-sdm_secure_password_2024}
       - DB_NAME=${DB_NAME:-sdm_apip_db}
       - GIN_MODE=release
-      # CRITICAL: JWT_SECRET MUST be set in environment before deploying.
-      # No default — server will reject startup if missing in release mode.
+      # KRITIS: JWT_SECRET WAJIB diatur di environment sebelum deployment.
+      # Tidak ada default — server akan menolak untuk menyala jika hilang di mode rilis.
       - JWT_SECRET=${JWT_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - SERVER_PORT=8080
@@ -45,9 +45,27 @@ services:
       - SMTP_FROM_NAME=${SMTP_FROM_NAME:-SDM APIP System}
       - FRONTEND_URL=${FRONTEND_URL}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost,http://localhost:80}
-      # Admin bootstrap password — must be set before first run in production
+      # Password bootstrap admin — wajib diatur sebelum dijalankan pertama kali di production
       - ADMIN_DEFAULT_PASSWORD=${ADMIN_DEFAULT_PASSWORD}
       - LOG_FILE_PATH=logs/app.log
+      # Konfigurasi SSO
+      - SSO_ENABLED=${SSO_ENABLED:-false}
+      - SSO_CLIENT_ID=${SSO_CLIENT_ID}
+      - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET}
+      - SSO_ISSUER_URL=${SSO_ISSUER_URL}
+      - SSO_REDIRECT_URL=${SSO_REDIRECT_URL}
+      # SSO Google
+      - GOOGLE_SSO_ENABLED=${GOOGLE_SSO_ENABLED:-false}
+      - GOOGLE_SSO_CLIENT_ID=${GOOGLE_SSO_CLIENT_ID}
+      - GOOGLE_SSO_CLIENT_SECRET=${GOOGLE_SSO_CLIENT_SECRET}
+      - GOOGLE_SSO_ISSUER_URL=${GOOGLE_SSO_ISSUER_URL}
+      - GOOGLE_SSO_REDIRECT_URL=${GOOGLE_SSO_REDIRECT_URL}
+      # SSO Microsoft
+      - MICROSOFT_SSO_ENABLED=${MICROSOFT_SSO_ENABLED:-false}
+      - MICROSOFT_SSO_CLIENT_ID=${MICROSOFT_SSO_CLIENT_ID}
+      - MICROSOFT_SSO_CLIENT_SECRET=${MICROSOFT_SSO_CLIENT_SECRET}
+      - MICROSOFT_SSO_ISSUER_URL=${MICROSOFT_SSO_ISSUER_URL}
+      - MICROSOFT_SSO_REDIRECT_URL=${MICROSOFT_SSO_REDIRECT_URL}
     ports:
       - "8080:8080"
     volumes:

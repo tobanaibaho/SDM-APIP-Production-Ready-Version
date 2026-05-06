@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, BarChart, Bar, LabelList,
-    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, Legend
 } from 'recharts';
 import {
     TrendingUp, Users, Award, Filter, Search,
     ChevronLeft, ChevronRight, FileText, FileSpreadsheet,
-    Star, UserCheck, Eye, X, History, ClipboardCheck
+    Star, UserCheck, X, History, ClipboardCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -15,11 +16,12 @@ import assessmentService, { AssessmentPeriod } from '../services/assessmentServi
 import { toast } from 'react-hot-toast';
 import Layout from '../components/Layout';
 import RoleBadge from '../components/RoleBadge';
+import useEscapeKey from '../hooks/useEscapeKey';
 
-// Indonesian month names
+// Nama bulan bahasa Indonesia
 const BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-// Get the frequency max months for a period
+// Dapatkan frekuensi bulan maksimum untuk satu periode
 const frequencyMonths = (frequency: string): number => {
     switch (frequency) {
         case 'monthly': return 1;
@@ -30,20 +32,20 @@ const frequencyMonths = (frequency: string): number => {
     }
 };
 
-// Given a period's start_date and an assessment_month (1-based relative),
-// return the real calendar month name in Bahasa Indonesia.
-// We parse the date string directly (YYYY-MM-DD) to avoid JS Date UTC↔local timezone pitfalls.
+// Diberikan start_date periode dan assessment_month (relatif berbasis 1),
+// kembalikan nama bulan kalender asli dalam Bahasa Indonesia.
+// Kita mengurai string tanggal secara langsung (YYYY-MM-DD) untuk menghindari masalah zona waktu lokal↔UTC Date JS.
 const resolveMonthName = (period: AssessmentPeriod, assessmentMonth: number): string => {
-    // Extract month from "YYYY-MM-DD..." — always 0-indexed
+    // Ekstrak bulan dari "YYYY-MM-DD..." — selalu berindeks 0
     const startMonthIndex = parseInt(period.start_date.substring(5, 7), 10) - 1;
     const realMonthIndex = (startMonthIndex + (assessmentMonth - 1)) % 12;
     return BULAN_ID[realMonthIndex];
 };
 
-// Build deduplicated list of { label, value } for dropdown from all periods
+// Bangun daftar { label, value } tanpa duplikat untuk dropdown dari semua periode
 interface MonthOption {
-    label: string;      // e.g. "April (Triwulan 1)"
-    value: number;      // assessment_month integer sent to backend
+    label: string;      // misal "April (Triwulan 1)"
+    value: number;      // bilangan bulat assessment_month yang dikirim ke backend
     periodId: number;
 }
 const buildMonthOptions = (periods: AssessmentPeriod[]): MonthOption[] => {
@@ -92,14 +94,17 @@ const AdminReportDashboard: React.FC = () => {
     });
     const [showFilters, setShowFilters] = useState(false);
 
-    // User Detail Selection
+    // Pemilihan Detail Pengguna
     const [selectedUser, setSelectedUser] = useState<UserReportRow | null>(null);
     const [selectedUserDetails, setSelectedUserDetails] = useState<{ received: AssessmentDetailRow[] }>({
         received: []
     });
     const [detailLoading, setDetailLoading] = useState(false);
 
-    // Load all periods once on mount to build month name options
+    // Tutup modal detail pegawai dengan tombol Esc
+    useEscapeKey(!!selectedUser, () => setSelectedUser(null));
+
+    // Muat semua periode sekali saat dimuat untuk membangun opsi nama bulan
     useEffect(() => {
         assessmentService.getAllPeriods()
             .then(data => {
@@ -184,7 +189,7 @@ const AdminReportDashboard: React.FC = () => {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/70 backdrop-blur-3xl rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/60 flex items-center gap-4"
+            className="bg-white/70 backdrop-blur-3xl rounded-lg p-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/60 flex items-center gap-4"
         >
             <div className={`p-4 rounded-2xl ${color} bg-opacity-10`}>
                 <Icon size={24} />
@@ -204,18 +209,18 @@ const AdminReportDashboard: React.FC = () => {
             <div className="space-y-8">
 
                 {/* Tab Switcher & Header Actions */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/70 backdrop-blur-xl p-5 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/70 backdrop-blur-xl p-5 rounded-lg border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
                     <div className="flex bg-slate-100 p-1.5 rounded-2xl w-fit">
                         <button
                             onClick={() => setActiveTab('users')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             <Users size={18} />
                             Monitor Pegawai
                         </button>
                         <button
                             onClick={() => setActiveTab('analytics')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'analytics' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'analytics' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             <TrendingUp size={18} />
                             Analisis Statistik
@@ -265,7 +270,7 @@ const AdminReportDashboard: React.FC = () => {
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="bg-white/70 backdrop-blur-xl rounded-[2rem] p-6 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden"
+                            className="bg-white/70 backdrop-blur-xl rounded-lg p-4 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden"
                         >
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div className="space-y-2">
@@ -349,16 +354,16 @@ const AdminReportDashboard: React.FC = () => {
                         {/* Charts Row 1 — Trend + Radar */}
                         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                             {/* Area Chart — Tren Performa */}
-                            <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl p-7 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                            <div className="lg:col-span-3 bg-white/70 backdrop-blur-3xl p-7 rounded-lg border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
                                 <div className="flex items-center justify-between mb-6">
                                     <div>
                                         <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                                             <TrendingUp className="text-primary-500" size={18} />
                                             Tren Performa
                                         </h3>
-                                        <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Rata-rata skor 6 bulan terakhir</p>
+                                        <p className="text-xs text-slate-500 mt-0.5 font-medium">Rata-rata skor 6 bulan terakhir</p>
                                     </div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest bg-primary-50 text-primary-600 px-3 py-1.5 rounded-full border border-primary-100">Live Data</span>
+                                    <span className="text-xs font-black uppercase tracking-widest bg-primary-50 text-primary-600 px-3 py-1.5 rounded-full border border-primary-100">Live Data</span>
                                 </div>
                                 <ResponsiveContainer width="100%" height={260}>
                                     <AreaChart data={dashboardData?.performance_trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -382,57 +387,56 @@ const AdminReportDashboard: React.FC = () => {
                             </div>
 
                             {/* Radar Chart — BerAKHLAK */}
-                            <div className="lg:col-span-2 bg-white/70 backdrop-blur-3xl p-7 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col">
+                            <div className="lg:col-span-2 bg-white/70 backdrop-blur-3xl p-7 rounded-lg border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col">
                                 <div className="mb-4">
                                     <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                                         <Star className="text-amber-500" size={18} />
                                         Analisis BerAKHLAK
                                     </h3>
-                                    <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Skor rata-rata per indikator (0–100)</p>
+                                    <p className="text-xs text-slate-500 mt-0.5 font-medium">Skor rata-rata per indikator (0–100)</p>
                                 </div>
                                 <ResponsiveContainer width="100%" height={320}>
-                                    <BarChart
-                                        layout="vertical"
-                                        data={dashboardData?.category_breakdown}
-                                        margin={{ top: 10, right: 35, left: 10, bottom: 10 }}
-                                    >
-                                        <defs>
-                                            <linearGradient id="berakhlakGrad" x1="0" y1="0" x2="1" y2="0">
-                                                <stop offset="0%" stopColor="#c084fc" />
-                                                <stop offset="100%" stopColor="#db2777" />
-                                            </linearGradient>
-                                        </defs>
-                                        <XAxis type="number" domain={[0, 100]} hide />
-                                        <YAxis 
-                                            dataKey="category" 
-                                            type="category" 
-                                            axisLine={false} 
-                                            tickLine={false} 
-                                            tick={{ fill: '#1e293b', fontSize: 11, fontWeight: 800 }} 
-                                            width={150}
-                                        />
-                                        <Tooltip
-                                            cursor={{ fill: 'rgba(219, 39, 119, 0.05)' }}
-                                            contentStyle={{ background: 'rgba(15,23,42,0.95)', border: 'none', borderRadius: '16px', color: '#fff', fontSize: 13, fontWeight: 700, padding: '12px 18px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}
-                                            itemStyle={{ color: '#fbcfe8' }}
-                                            formatter={(v: any) => [`${Number(v).toFixed(2)}`, 'Skor Rata-rata']}
-                                        />
-                                        <Bar 
-                                            dataKey="average" 
-                                            fill="url(#berakhlakGrad)" 
-                                            radius={[0, 12, 12, 0]} 
-                                            maxBarSize={24}
-                                            background={{ fill: '#f1f5f9', radius: 12 }}
+                                    <PieChart>
+                                        <Pie
+                                            data={dashboardData?.category_breakdown}
+                                            cx="50%"
+                                            cy="45%"
+                                            innerRadius={70}
+                                            outerRadius={110}
+                                            paddingAngle={3}
+                                            dataKey="average"
+                                            nameKey="category"
                                             animationDuration={1500}
+                                            labelLine={false}
+                                            label={({ cx, cy, midAngle, innerRadius, outerRadius, value }: any) => {
+                                                const RADIAN = Math.PI / 180;
+                                                const angle = midAngle || 0;
+                                                const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                                                const x = cx + radius * Math.cos(-angle * RADIAN);
+                                                const y = cy + radius * Math.sin(-angle * RADIAN);
+                                                return (
+                                                    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={800} style={{ textShadow: '0px 1px 2px rgba(0,0,0,0.5)' }}>
+                                                        {Number(value).toFixed(1)}
+                                                    </text>
+                                                );
+                                            }}
                                         >
-                                            <LabelList 
-                                                dataKey="average" 
-                                                position="right" 
-                                                formatter={(v: any) => Number(v).toFixed(1)} 
-                                                style={{ fill: '#db2777', fontSize: 12, fontWeight: 900 }} 
-                                            />
-                                        </Bar>
-                                    </BarChart>
+                                            {dashboardData?.category_breakdown?.map((_: any, index: number) => {
+                                                const COLORS = ['#2563eb', '#3b82f6', '#60a5fa', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+                                                return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />;
+                                            })}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{ background: 'rgba(15,23,42,0.95)', border: 'none', borderRadius: '16px', color: '#fff', fontSize: 13, fontWeight: 700, padding: '12px 18px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}
+                                            formatter={(value: any, name: any) => [`${Number(value).toFixed(2)}`, name]}
+                                        />
+                                        <Legend 
+                                            verticalAlign="bottom" 
+                                            height={40} 
+                                            iconType="circle"
+                                            wrapperStyle={{ fontSize: '11px', fontWeight: 600, paddingTop: '10px' }}
+                                        />
+                                    </PieChart>
                                 </ResponsiveContainer>
                             </div>
                         </div>
@@ -440,21 +444,21 @@ const AdminReportDashboard: React.FC = () => {
                         {/* Charts Row 2 — Top & Low BarCharts side by side */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* TOP Performers Bar */}
-                            <div className="bg-white/70 backdrop-blur-3xl p-7 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                            <div className="bg-white/70 backdrop-blur-3xl p-7 rounded-lg border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
                                 <div className="flex items-center gap-2 mb-6">
                                     <div className="h-8 w-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
                                         <Award size={16} />
                                     </div>
                                     <div>
                                         <h3 className="text-sm font-black text-slate-900">🏆 Top 5 Performa Terbaik</h3>
-                                        <p className="text-[10px] text-slate-500 font-medium">Pegawai dengan skor tertinggi</p>
+                                        <p className="text-xs text-slate-500 font-medium">Pegawai dengan skor tertinggi</p>
                                     </div>
                                 </div>
                                 <ResponsiveContainer width="100%" height={220}>
                                     <BarChart
                                         layout="vertical"
                                         data={(dashboardData?.top_performers || []).map((p, i) => ({ name: p.name.split(' ').slice(0, 2).join(' '), score: Number(p.score.toFixed(1)), rank: i + 1 }))}
-                                        margin={{ top: 0, right: 60, left: 0, bottom: 0 }}
+                                        margin={{ top: 0, right: 60, left: 10, bottom: 0 }}
                                     >
                                         <defs>
                                             <linearGradient id="topGrad" x1="0" y1="0" x2="1" y2="0">
@@ -463,7 +467,7 @@ const AdminReportDashboard: React.FC = () => {
                                             </linearGradient>
                                         </defs>
                                         <XAxis type="number" domain={[0, 120]} tickCount={5} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                                        <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#334155', fontSize: 11, fontWeight: 700 }} width={90} />
+                                        <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#334155', fontSize: 11, fontWeight: 700 }} width={140} />
                                         <Tooltip
                                             contentStyle={{ background: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(12px)', border: 'none', borderRadius: '14px', color: '#fff', fontSize: 12, fontWeight: 700 }}
                                             formatter={(v: any) => [`${v}`, 'Skor']}
@@ -477,21 +481,21 @@ const AdminReportDashboard: React.FC = () => {
                             </div>
 
                             {/* LOW Performers Bar */}
-                            <div className="bg-white/70 backdrop-blur-3xl p-7 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                            <div className="bg-white/70 backdrop-blur-3xl p-7 rounded-lg border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
                                 <div className="flex items-center gap-2 mb-6">
                                     <div className="h-8 w-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
                                         <TrendingUp size={16} className="rotate-180" />
                                     </div>
                                     <div>
                                         <h3 className="text-sm font-black text-slate-900">⚡ Perlu Perhatian Khusus</h3>
-                                        <p className="text-[10px] text-slate-500 font-medium">Pegawai dengan skor terendah</p>
+                                        <p className="text-xs text-slate-500 font-medium">Pegawai dengan skor terendah</p>
                                     </div>
                                 </div>
                                 <ResponsiveContainer width="100%" height={220}>
                                     <BarChart
                                         layout="vertical"
                                         data={(dashboardData?.low_performers || []).map((p, i) => ({ name: p.name.split(' ').slice(0, 2).join(' '), score: Number(p.score.toFixed(1)), rank: i + 1 }))}
-                                        margin={{ top: 0, right: 60, left: 0, bottom: 0 }}
+                                        margin={{ top: 0, right: 60, left: 10, bottom: 0 }}
                                     >
                                         <defs>
                                             <linearGradient id="lowGrad" x1="0" y1="0" x2="1" y2="0">
@@ -500,7 +504,7 @@ const AdminReportDashboard: React.FC = () => {
                                             </linearGradient>
                                         </defs>
                                         <XAxis type="number" domain={[0, 120]} tickCount={5} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                                        <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#334155', fontSize: 11, fontWeight: 700 }} width={90} />
+                                        <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#334155', fontSize: 11, fontWeight: 700 }} width={140} />
                                         <Tooltip
                                             contentStyle={{ background: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(12px)', border: 'none', borderRadius: '14px', color: '#fff', fontSize: 12, fontWeight: 700 }}
                                             formatter={(v: any) => [`${v}`, 'Skor']}
@@ -515,8 +519,8 @@ const AdminReportDashboard: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-white/70 backdrop-blur-3xl rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden animate-fade-in">
-                        <div className="p-6 border-b border-slate-100 bg-slate-50/30">
+                    <div className="bg-white/70 backdrop-blur-3xl rounded-lg border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden animate-fade-in">
+                        <div className="p-4 border-b border-slate-100 bg-slate-50/30">
                             <div className="space-y-6">
                                 {/* Title + counter */}
                                 <div className="flex items-start justify-between">
@@ -533,7 +537,7 @@ const AdminReportDashboard: React.FC = () => {
 
                                 {/* Predicate Legend (FULL WIDTH ROW) */}
                                 <div>
-                                    <p className="text-[10px] font-black text-slate-500 mb-3 uppercase tracking-widest">Panduan Range Predikat</p>
+                                    <p className="text-xs font-black text-slate-500 mb-3 uppercase tracking-widest">Panduan Range Predikat</p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-sm font-black">
                                         <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-primary-200 transition-colors w-full">
                                             <span className="bg-emerald-50 text-emerald-700 w-28 py-2.5 text-center shrink-0 border-r border-slate-100 font-mono tracking-tighter shadow-inner text-sm font-black">&ge; 110</span>
@@ -561,95 +565,89 @@ const AdminReportDashboard: React.FC = () => {
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-slate-50/80 text-slate-600 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
+                                <thead className="bg-slate-50/80 text-slate-600 text-xs font-black uppercase tracking-widest border-b border-slate-100">
                                     <tr>
-                                        <th className="px-8 py-4">Pegawai (NIP)</th>
-                                        <th className="px-8 py-4">Peran</th>
-                                        <th className="px-8 py-4 text-center">Nilai Akhir & Predikat</th>
-                                        <th className="px-8 py-4 text-center">Dinilai</th>
-                                        <th className="px-8 py-4 text-center">Menilai</th>
-                                        <th className="px-8 py-4 text-right">Aksi</th>
+                                        <th className="px-5 py-4">Pegawai (NIP)</th>
+                                        <th className="px-5 py-4">Peran</th>
+                                        <th className="px-5 py-4 text-center">Nilai Akhir & Predikat</th>
+                                        <th className="px-5 py-4 text-center">Dinilai</th>
+                                        <th className="px-5 py-4 text-center">Menilai</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {userReports.map((user) => (
-                                        <tr key={user.user_id} className="group hover:bg-slate-50/50 transition-colors">
-                                            <td className="px-8 py-5">
+                                        <tr key={user.user_id} className="group hover:bg-slate-100/50 transition-colors">
+                                            <td className="px-5 py-5">
                                                 <button
                                                     onClick={() => handleUserClick(user)}
-                                                    className="text-left font-bold text-slate-900 hover:text-primary-600 transition-colors"
+                                                    className="group/name text-left flex flex-col items-start focus:outline-none"
+                                                    title={`Lihat detail performa ${user.name}`}
                                                 >
-                                                    {user.name}
-                                                    <p className="text-[10px] text-slate-500 font-mono mt-0.5">{user.nip}</p>
+                                                    <span className="font-bold text-slate-900 group-hover/name:text-primary-600 group-hover/name:underline decoration-2 underline-offset-4 transition-all">
+                                                        {user.name}
+                                                    </span>
+                                                    <p className="text-xs text-slate-500 font-mono mt-0.5 group-hover/name:text-primary-400 transition-colors">{user.nip}</p>
                                                 </button>
                                             </td>
-                                            <td className="px-8 py-5">
+                                            <td className="px-5 py-5">
                                                 {(() => {
                                                     const role = user.jabatan?.toLowerCase().includes('inspektur') ? 'Inspektur' : (user.group_role || 'Anggota');
                                                     return <RoleBadge role={role} />;
                                                 })()}
                                             </td>
-                                            <td className="px-8 py-5 text-center">
+                                            <td className="px-5 py-5 text-center">
                                                 <div className="flex flex-col items-center gap-1.5">
                                                     <div className="text-sm font-black text-slate-900">{user.average_score.toFixed(2)}</div>
                                                     {user.average_score > 0 ? (
-                                                        <span className={`inline-flex px-2.5 py-1 rounded text-[10px] font-black border tracking-wider shadow-sm uppercase ${getPredikat(user.average_score).bg} ${getPredikat(user.average_score).color}`}>
+                                                        <span className={`inline-flex px-2.5 py-1 rounded text-xs font-black border tracking-wider shadow-sm uppercase ${getPredikat(user.average_score).bg} ${getPredikat(user.average_score).color}`}>
                                                             {getPredikat(user.average_score).label}
                                                         </span>
                                                     ) : (
-                                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">N/A</span>
+                                                        <span className="text-xs font-black text-slate-300 uppercase tracking-widest">N/A</span>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-5 text-center">
+                                            <td className="px-5 py-5 text-center">
                                                 <div className="flex flex-col items-center gap-1">
-                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold ${user.assessments_received >= user.received_needed && user.received_needed > 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-50 text-slate-500'}`}>
+                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold ${user.assessments_received >= user.received_needed && user.received_needed > 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-50 text-slate-500'}`}>
                                                         <ClipboardCheck size={14} /> {user.assessments_received}/{user.received_needed}
                                                     </span>
                                                     {user.received_needed > 0 && (
-                                                        <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden mt-1">
+                                                        <div className="w-16 h-1 bg-slate-200 rounded-full overflow-hidden mt-1">
                                                             <div 
                                                                 className="h-full bg-blue-500 transition-all" 
                                                                 style={{ width: `${Math.min(100, (user.assessments_received / user.received_needed) * 100)}%` }}
                                                             />
                                                         </div>
                                                     )}
-                                                    <span className="text-[9px] font-black text-slate-400">
+                                                    <span className="text-xs font-black text-slate-400">
                                                         {user.received_needed > 0 ? Math.round((user.assessments_received / user.received_needed) * 100) : 0}%
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-5 text-center">
+                                            <td className="px-5 py-5 text-center">
                                                 <div className="flex flex-col items-center gap-1">
-                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold ${user.assessments_given >= user.given_needed && user.given_needed > 0 ? 'bg-primary-50 text-primary-700' : 'bg-slate-50 text-slate-500'}`}>
+                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold ${user.assessments_given >= user.given_needed && user.given_needed > 0 ? 'bg-primary-50 text-primary-700' : 'bg-slate-50 text-slate-500'}`}>
                                                         <UserCheck size={14} /> {user.assessments_given}/{user.given_needed}
                                                     </span>
                                                     {user.given_needed > 0 && (
-                                                        <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden mt-1">
+                                                        <div className="w-16 h-1 bg-slate-200 rounded-full overflow-hidden mt-1">
                                                             <div 
                                                                 className="h-full bg-primary-500 transition-all" 
                                                                 style={{ width: `${Math.min(100, (user.assessments_given / user.given_needed) * 100)}%` }}
                                                             />
                                                         </div>
                                                     )}
-                                                    <span className="text-[9px] font-black text-slate-400">
+                                                    <span className="text-xs font-black text-slate-400">
                                                         {user.given_needed > 0 ? Math.round((user.assessments_given / user.given_needed) * 100) : 0}%
                                                     </span>
                                                 </div>
-                                            </td>
-                                            <td className="px-8 py-5 text-right">
-                                                    <button
-                                                        onClick={() => handleUserClick(user)}
-                                                        className="p-2 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-primary-600 group-hover:text-white transition-all shadow-sm"
-                                                    >
-                                                    <Eye size={18} />
-                                                </button>
                                             </td>
                                         </tr>
                                     ))}
                                     {userReports.length === 0 && (
                                         <tr>
-                                            <td colSpan={6} className="px-8 py-20 text-center">
+                                            <td colSpan={5} className="px-5 py-8 text-center">
                                                 <Users size={48} className="mx-auto text-slate-200 mb-4" />
                                                 <p className="text-slate-400 font-bold">Data pegawai tidak ditemukan.</p>
                                             </td>
@@ -660,11 +658,11 @@ const AdminReportDashboard: React.FC = () => {
                         </div>
 
                         {/* User List Pagination */}
-                        <div className="p-8 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
+                        <div className="p-5 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
                             <button
                                 onClick={() => handlePageChange(page - 1)}
                                 disabled={page === 1}
-                                className={`flex items-center gap-2 px-6 py-2.5 bg-white border rounded-xl text-sm font-bold transition-all shadow-sm ${page === 1 ? 'border-slate-100 text-slate-300' : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95'}`}
+                                className={`flex items-center gap-2 px-4 py-2.5 bg-white border rounded-xl text-sm font-bold transition-all shadow-sm ${page === 1 ? 'border-slate-100 text-slate-300' : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95'}`}
                             >
                                 <ChevronLeft size={18} /> Sebelumnya
                             </button>
@@ -676,7 +674,7 @@ const AdminReportDashboard: React.FC = () => {
                             <button
                                 onClick={() => handlePageChange(page + 1)}
                                 disabled={page >= Math.ceil(total / (filter.page_size || 10))}
-                                className={`flex items-center gap-2 px-6 py-2.5 bg-white border rounded-xl text-sm font-bold transition-all shadow-sm ${page >= Math.ceil(total / (filter.page_size || 10)) ? 'border-slate-100 text-slate-300' : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95'}`}
+                                className={`flex items-center gap-2 px-4 py-2.5 bg-white border rounded-xl text-sm font-bold transition-all shadow-sm ${page >= Math.ceil(total / (filter.page_size || 10)) ? 'border-slate-100 text-slate-300' : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95'}`}
                             >
                                 Selanjutnya <ChevronRight size={18} />
                             </button>
@@ -698,9 +696,9 @@ const AdminReportDashboard: React.FC = () => {
                                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                    className="bg-white rounded-[2rem] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+                                    className="bg-white rounded-lg w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
                                 >
-                                    <div className="px-10 py-8 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
+                                    <div className="px-4 py-8 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
                                         <div className="flex items-center gap-6">
                                             <div className="h-16 w-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg">
                                                 {selectedUser.name.charAt(0)}
@@ -725,7 +723,7 @@ const AdminReportDashboard: React.FC = () => {
                                         </button>
                                     </div>
 
-                                    <div className="flex-1 overflow-y-auto p-10 space-y-8">
+                                    <div className="flex-1 overflow-y-auto p-4 space-y-8">
                                         {detailLoading ? (
                                             <div className="flex flex-col items-center justify-center h-64">
                                                 <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary-600 mb-4"></div>
@@ -735,9 +733,9 @@ const AdminReportDashboard: React.FC = () => {
                                             <>
                                                 {/* Summary for Modal */}
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                    <div className="bg-primary-50/50 p-6 rounded-3xl border border-primary-100 flex flex-col items-center text-center">
-                                                        <p className="text-[10px] font-black text-primary-600 uppercase tracking-widest mb-2">Skor Rerata Keseluruhan</p>
-                                                        <div className="text-4xl font-black text-primary-900 leading-none">{selectedUser.average_score.toFixed(2)}</div>
+                                                    <div className="bg-primary-50/50 p-4 rounded-3xl border border-primary-100 flex flex-col items-center text-center">
+                                                        <p className="text-xs font-black text-primary-600 uppercase tracking-widest mb-2">Skor Rerata Keseluruhan</p>
+                                                        <div className="text-2xl font-black text-primary-900 leading-none">{selectedUser.average_score.toFixed(2)}</div>
                                                         {selectedUser.average_score > 0 ? (
                                                             <div className={`mt-3 inline-flex px-4 py-1.5 rounded-xl text-xs font-black border tracking-wider shadow-sm ${getPredikat(selectedUser.average_score).bg} ${getPredikat(selectedUser.average_score).color}`}>
                                                                 {getPredikat(selectedUser.average_score).label}
@@ -748,13 +746,13 @@ const AdminReportDashboard: React.FC = () => {
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100">
-                                                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Penilaian Diberikan</p>
-                                                        <div className="text-3xl font-black text-emerald-900">{selectedUser.assessments_given}</div>
+                                                    <div className="bg-emerald-50/50 p-4 rounded-3xl border border-emerald-100">
+                                                        <p className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-1">Penilaian Diberikan</p>
+                                                        <div className="text-xl font-black text-emerald-900">{selectedUser.assessments_given}</div>
                                                     </div>
-                                                    <div className="bg-amber-50/50 p-6 rounded-3xl border border-amber-100">
-                                                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Penilaian Diterima</p>
-                                                        <div className="text-3xl font-black text-amber-900">{selectedUser.assessments_received}</div>
+                                                    <div className="bg-amber-50/50 p-4 rounded-3xl border border-amber-100">
+                                                        <p className="text-xs font-black text-amber-600 uppercase tracking-widest mb-1">Penilaian Diterima</p>
+                                                        <div className="text-xl font-black text-amber-900">{selectedUser.assessments_received}</div>
                                                     </div>
                                                 </div>
 
@@ -776,7 +774,7 @@ const AdminReportDashboard: React.FC = () => {
                                                                     animate={{ opacity: 1, x: 0 }}
                                                                     className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                                                                 >
-                                                                    <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                                                                    <div className="px-4 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                                                                         <div className="flex items-center gap-3">
                                                                             <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
                                                                                 <UserCheck size={20} />
@@ -784,9 +782,9 @@ const AdminReportDashboard: React.FC = () => {
                                                                             <div>
                                                                                 <p className="text-sm font-bold text-slate-900">Penilai: {row.evaluator_name}</p>
                                                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                                                    <span className="text-[9px] font-black uppercase text-primary-500 bg-primary-50 px-2 py-0.5 rounded border border-primary-100">
+                                                                                    <span className="text-xs font-black uppercase text-primary-500 bg-primary-50 px-2 py-0.5 rounded border border-primary-100">
                                                                                         {(() => {
-                                                                                            // Resolve real calendar month using period_id from assessment row
+                                                                                            // Selesaikan bulan kalender asli menggunakan period_id dari baris penilaian
                                                                                             const period = periods.find(p => p.id === row.period_id);
                                                                                             if (period) {
                                                                                                 return resolveMonthName(period, row.assessment_month);
@@ -795,16 +793,16 @@ const AdminReportDashboard: React.FC = () => {
                                                                                             return BULAN_ID[(row.assessment_month - 1) % 12];
                                                                                         })()}
                                                                                     </span>
-                                                                                    <p className="text-[10px] text-slate-400 font-medium">{new Date(row.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                                                                    <p className="text-xs text-slate-400 font-medium">{new Date(row.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                         <div className="text-right">
-                                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Rerata Skor</span>
+                                                                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1">Rerata Skor</span>
                                                                             <span className="text-lg font-black text-primary-600 bg-primary-50 px-3 py-1 rounded-xl">{row.average_score.toFixed(2)}</span>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="p-6">
+                                                                    <div className="p-4">
                                                                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
                                                                             {[
                                                                                 { label: 'Berorientasi Pelayanan', value: row.berorientasi_pelayanan },
@@ -815,8 +813,8 @@ const AdminReportDashboard: React.FC = () => {
                                                                                 { label: 'Adaptif', value: row.adaptif },
                                                                                 { label: 'Kolaboratif', value: row.kolaboratif },
                                                                             ].map((indicator, idx) => (
-                                                                                <div key={idx} className="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50/50 border border-slate-100">
-                                                                                    <p className="text-[9px] font-bold text-slate-400 uppercase leading-tight h-8 flex items-center justify-center mb-2 px-1">
+                                                                                <div key={idx} className="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-100/50 border border-slate-100">
+                                                                                    <p className="text-xs font-bold text-slate-400 uppercase leading-tight h-8 flex items-center justify-center mb-2 px-1">
                                                                                         {indicator.label}
                                                                                     </p>
                                                                                     <div className="flex gap-0.5 mb-1.5">
@@ -837,7 +835,7 @@ const AdminReportDashboard: React.FC = () => {
                                                                         </div>
 
                                                                         <div className="p-4 rounded-2xl bg-primary-50/30 border border-primary-100/50">
-                                                                            <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                                                            <p className="text-xs font-black text-primary-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                                                                 <ClipboardCheck size={12} /> Komentar & Feedback
                                                                             </p>
                                                                             <p className="text-sm text-slate-600 italic leading-relaxed">
@@ -849,7 +847,7 @@ const AdminReportDashboard: React.FC = () => {
                                                             ))}
 
                                                         {selectedUserDetails.received.length === 0 && (
-                                                            <div className="py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                                                            <div className="py-8 text-center bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
                                                                 <History size={48} className="mx-auto text-slate-200 mb-4" />
                                                                 <h5 className="text-lg font-bold text-slate-400">Belum Ada Riwayat</h5>
                                                                 <p className="text-sm text-slate-400">User ini belum menerima penilaian dari rekan manapun.</p>
@@ -859,7 +857,7 @@ const AdminReportDashboard: React.FC = () => {
                                                 </div>
                                                 
                                                 {/* Range Guide in Modal */}
-                                                <div className="mt-6 p-8 bg-slate-50/50 rounded-[2rem] border border-slate-100">
+                                                <div className="mt-6 p-5 bg-slate-100/50 rounded-lg border border-slate-100">
                                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                                         <div>
                                                             <h5 className="text-lg font-black text-slate-900">Panduan Range Predikat</h5>

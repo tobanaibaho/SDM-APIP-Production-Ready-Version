@@ -6,10 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// UserStatus type for compile-time safety
+// Tipe UserStatus untuk keamanan pada saat kompilasi (compile-time safety)
 type UserStatus string
 
-// User represents registered users
+// User merepresentasikan pengguna yang terdaftar
 type User struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	NIP       *string        `gorm:"column:nip;size:18;unique" json:"nip"`
@@ -24,28 +24,28 @@ type User struct {
 	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
-	// Security Fields
+	// Field Keamanan
 	LoginAttempts int        `gorm:"column:login_attempts;default:0" json:"-"`
 	LockoutUntil  *time.Time `gorm:"column:lockout_until" json:"-"`
 	MFASecret     *string    `gorm:"column:mfa_secret;size:100" json:"-"`
 	MFAEnabled    bool       `gorm:"column:mfa_enabled;default:false" json:"mfa_enabled"`
 
-	// Activity Tracking
+	// Pelacakan Aktivitas
 	LastLoginAt    *time.Time `gorm:"column:last_login_at" json:"last_login_at"`
 	LastActivityAt *time.Time `gorm:"column:last_activity_at" json:"last_activity_at"`
 	LastIP         string     `gorm:"column:last_ip;size:50" json:"-"`
 
-	// Dynamic fields from SDM APIP table (populated via Join in services)
-	Name    string `gorm:"<-:false" json:"name"`    // Read-only (calculated/joined)
-	Foto    string `gorm:"<-:false" json:"foto"`    // Read-only (calculated/joined)
-	Jabatan string `gorm:"<-:false" json:"jabatan"` // Read-only (calculated/joined)
+	// Field dinamis dari tabel SDM APIP (diisi melalui Join pada services)
+	Name    string `gorm:"<-:false" json:"name"`    // Hanya-baca (dihitung/digabungkan)
+	Foto    string `gorm:"<-:false" json:"foto"`    // Hanya-baca (dihitung/digabungkan)
+	Jabatan string `gorm:"<-:false" json:"jabatan"` // Hanya-baca (dihitung/digabungkan)
 }
 
 func (User) TableName() string {
 	return "users"
 }
 
-// User status constants
+// Konstanta status pengguna
 const (
 	StatusPendingVerification UserStatus = "pending_verification"
 	StatusEmailVerified       UserStatus = "email_verified"
@@ -53,51 +53,51 @@ const (
 	StatusInactive            UserStatus = "inactive"
 )
 
-// LoginRequest for user login (NIP based)
+// LoginRequest untuk login pengguna (berbasis NIP)
 type LoginRequest struct {
 	NIP      string `json:"nip" binding:"required"`
 	Password string `json:"password" binding:"required"`
-	TOTP     string `json:"totp"` // Optional, required if MFA enabled
+	TOTP     string `json:"totp"` // Opsional, wajib diisi jika MFA diaktifkan
 }
 
-// AdminLoginRequest for super admin login (Username based)
+// AdminLoginRequest untuk login super admin (berbasis Username)
 type AdminLoginRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
-	TOTP     string `json:"totp"` // Optional, required if MFA enabled
+	TOTP     string `json:"totp"` // Opsional, wajib diisi jika MFA diaktifkan
 }
 
-// AdminForgotPasswordRequest for admin password reset
+// AdminForgotPasswordRequest untuk reset password admin
 type AdminForgotPasswordRequest struct {
 	Username string `json:"username" binding:"required"`
 }
 
-// AdminResetPasswordRequest for admin password reset via email token
+// AdminResetPasswordRequest untuk reset password admin melalui token email
 type AdminResetPasswordRequest struct {
 	Token           string `json:"token" binding:"required"`
 	NewPassword     string `json:"new_password" binding:"required,min=8"`
 	ConfirmPassword string `json:"confirm_password" binding:"required"`
 }
 
-// SecureAdminResetRequest for initiating secure admin reset with MFA
+// SecureAdminResetRequest untuk memulai reset admin aman dengan MFA
 type SecureAdminResetRequest struct {
 	TargetUsername string `json:"target_username" binding:"required"`
 }
 
-// SecureAdminResetConfirmRequest for confirming admin reset with OTP
+// SecureAdminResetConfirmRequest untuk mengkonfirmasi reset admin dengan OTP
 type SecureAdminResetConfirmRequest struct {
 	TargetUsername string `json:"target_username" binding:"required"`
 	OTP            string `json:"otp" binding:"required,len=6"`
 	NewPassword    string `json:"new_password" binding:"required,min=8"`
 }
 
-// RegisterRequest for user registration
+// RegisterRequest untuk pendaftaran pengguna
 type RegisterRequest struct {
 	NIP   string `json:"nip" binding:"required,len=18"`
 	Email string `json:"email" binding:"required,email"`
 }
 
-// SetPasswordRequest for setting password after email verification
+// SetPasswordRequest untuk mengatur password setelah verifikasi email
 type SetPasswordRequest struct {
 	Token           string `json:"token" binding:"required"`
 	OTP             string `json:"otp" binding:"required,len=6"`
@@ -105,18 +105,18 @@ type SetPasswordRequest struct {
 	ConfirmPassword string `json:"confirm_password" binding:"required"`
 }
 
-// VerifyEmailRequest for email verification
+// VerifyEmailRequest untuk verifikasi email
 type VerifyEmailRequest struct {
 	Token string `json:"token" binding:"required"`
 	OTP   string `json:"otp" binding:"required,len=6"`
 }
 
-// ForgotPasswordRequest for initiating user password recovery
+// ForgotPasswordRequest untuk memulai pemulihan password pengguna
 type ForgotPasswordRequest struct {
 	Email string `json:"email" binding:"required,email"`
 }
 
-// ResetPasswordRequest for completing user password recovery
+// ResetPasswordRequest untuk menyelesaikan pemulihan password pengguna
 type ResetPasswordRequest struct {
 	Token           string `json:"token" binding:"required"`
 	OTP             string `json:"otp" binding:"required,len=6"`
@@ -124,7 +124,7 @@ type ResetPasswordRequest struct {
 	ConfirmPassword string `json:"confirm_password" binding:"required"`
 }
 
-// UserResponse for API response
+// UserResponse untuk respon API
 type UserResponse struct {
 	ID             uint   `json:"id"`
 	NIP            string `json:"nip"`
@@ -141,7 +141,7 @@ type UserResponse struct {
 	UpdatedAt      string `json:"updated_at"`
 }
 
-// AfterFind hook to ensure Name is populated even if join fails
+// Hook AfterFind untuk memastikan Name terisi meskipun proses join gagal
 func (u *User) AfterFind(tx *gorm.DB) (err error) {
 	if u.Name == "" {
 		if u.Username != nil && *u.Username != "" {

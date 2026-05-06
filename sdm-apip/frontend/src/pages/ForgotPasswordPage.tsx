@@ -30,16 +30,16 @@ const ForgotPasswordPage: React.FC = () => {
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
                 <div className="absolute top-0 -left-4 w-72 h-72 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
                 <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-accent-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
                 <div className="w-full max-w-md z-10 animate-fade-in text-center">
-                    <div className="glass rounded-3xl p-10 shadow-2xl border border-white/10 space-y-6">
+                    <div className="glass rounded-3xl p-4 shadow-2xl border border-white/10 space-y-6">
                         <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-500/50 mb-4">
                             <CheckCircle2 size={48} className="text-emerald-500" />
                         </div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight">Email Terkirim!</h1>
+                        <h1 className="text-xl font-bold text-white tracking-tight">Email Terkirim!</h1>
                         <p className="text-slate-400 text-lg leading-relaxed">
                             Kami telah mengirimkan instruksi pemulihan kata sandi ke <span className="text-primary-400 font-bold">{email}</span>.
                         </p>
@@ -58,13 +58,13 @@ const ForgotPasswordPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
             <div className="absolute top-0 -left-4 w-72 h-72 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
             <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-accent-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
             <div className="w-full max-w-md z-10 animate-fade-in">
                 <div className="glass rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-950 p-8 text-center border-b border-white/5">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-950 p-5 text-center border-b border-white/5">
                         <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md mb-4 shadow-xl border border-white/20">
                             <Building2 size={32} className="text-primary-400" />
                         </div>
@@ -72,7 +72,7 @@ const ForgotPasswordPage: React.FC = () => {
                         <p className="text-slate-400 text-sm mt-1 uppercase tracking-widest font-semibold opacity-80">Pemulihan Akses Akun</p>
                     </div>
 
-                    <div className="p-8">
+                    <div className="p-5">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="p-4 bg-primary-500/5 border border-primary-500/20 rounded-xl mb-4">
                                 <p className="text-slate-300 text-sm leading-relaxed text-center">

@@ -12,9 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
-// IAssessmentService defines the contract for all assessment operations.
+// IAssessmentService mendefinisikan kontrak untuk semua operasi penilaian (assessment).
 type IAssessmentService interface {
-	// Period Management
+	// Manajemen Periode
 	CreatePeriod(req models.CreatePeriodRequest) (*models.AssessmentPeriod, error)
 	GetAllPeriods() ([]models.AssessmentPeriod, error)
 	UpdatePeriod(id uint, req models.UpdatePeriodRequest) error
@@ -22,25 +22,25 @@ type IAssessmentService interface {
 	DeletePeriod(id uint) error
 	GetActivePeriod() (*models.AssessmentPeriod, error)
 
-	// Relation Management
+	// Manajemen Relasi
 	CreateAssessmentRelation(req models.CreateRelationRequest) error
 	CreateGroupRelations(req models.BulkCreateRelationsRequest) error
 	GetGroupRelations(groupID uint, periodID uint) ([]models.AssessmentRelation, error)
 	GetCrossGroupRelations(periodID uint) ([]models.AssessmentRelation, error)
 	DeleteAssessmentRelation(id uint) error
 
-	// Assessment Queries
+	// Kueri Penilaian
 	GetAssessmentTargets(evaluatorID uint, periodID uint) ([]models.AssessmentTarget, error)
 	GetAssessmentMatrix(periodID uint, viewerID uint) ([]map[string]interface{}, error)
 	GetAssessmentDetail(targetUserID uint, periodID uint) (*map[string]interface{}, error)
 
-	// Assessment Actions (User)
+	// Aksi Penilaian (Pengguna)
 	SubmitAssessment(evaluatorID uint, req models.SubmitAssessmentRequest) error
 	GetReceivedAssessments(userID uint, periodID uint) ([]models.PeerAssessment, error)
 	GetGivenAssessments(userID uint, periodID uint) ([]models.PeerAssessment, error)
 	GetAssessmentSummary(userID uint, periodID uint) (*models.AssessmentSummary, error)
 
-	// Inspektur Reference (Atasan only)
+	// Referensi Inspektur (Hanya untuk atasan)
 	GetAssessmentReferenceForEvaluator(evaluatorID, targetUserID, periodID uint) (*models.AssessmentReference, error)
 }
 
@@ -52,7 +52,7 @@ func NewAssessmentService() IAssessmentService {
 	return &AssessmentService{db: config.DB}
 }
 
-// ── Core Assessment Logic ──────────────────────────────────────────────────
+// ── Logika Utama Penilaian ──────────────────────────────────────────────────
 
 func (s *AssessmentService) GetAssessmentTargets(evaluatorID uint, periodID uint) ([]models.AssessmentTarget, error) {
 	var period models.AssessmentPeriod
@@ -75,7 +75,7 @@ func (s *AssessmentService) GetAssessmentTargets(evaluatorID uint, periodID uint
 		return []models.AssessmentTarget{}, nil
 	}
 
-	// Batch-fetch submitted months (avoids N+1)
+	// Mengambil data bulan yang sudah dikumpulkan secara massal (menghindari masalah N+1)
 	targetIDs := make([]uint, len(relations))
 	for i, r := range relations {
 		targetIDs[i] = r.TargetUserID
@@ -105,7 +105,7 @@ func (s *AssessmentService) GetAssessmentTargets(evaluatorID uint, periodID uint
 		for m := range submitted[r.TargetUserID] {
 			done = append(done, m)
 		}
-		// simple insertion sort for small slices
+		// Pengurutan sederhana (insertion sort) untuk data array berukuran kecil
 		for i := 1; i < len(done); i++ {
 			for j := i; j > 0 && done[j] < done[j-1]; j-- {
 				done[j], done[j-1] = done[j-1], done[j]
@@ -268,7 +268,7 @@ func (s *AssessmentService) GetAssessmentDetail(targetUserID uint, periodID uint
 		Joins("Left Join sdm_apip as sdm ON sdm.nip = users.nip").
 		Where("users.id = ?", targetUserID).
 		First(&user).Error; err != nil {
-		return nil, errors.New("user not found")
+		return nil, errors.New("Pengguna tidak ditemukan")
 	}
 
 	var period models.AssessmentPeriod
@@ -382,14 +382,14 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 		tx.Rollback()
 		return ErrPeriodInactive
 	}
-	// Double-guard: tolak submission jika end_date sudah lewat
+	// Pertahanan ganda: tolak pengiriman data jika tanggal berakhir (end_date) sudah lewat
 	if time.Now().After(period.EndDate) {
-		// Auto-nonaktifkan di DB sekaligus
+		// Nonaktifkan secara otomatis di database sekaligus
 		tx.Model(&period).Update("is_active", false)
-		
-		// Audit Log (System Event)
+
+		// Catatan Audit (Peristiwa Sistem)
 		details := fmt.Sprintf("System auto-locked period '%s' (ID %d) during submission attempt because end_date passed", period.Name, period.ID)
-		models.CreateAuditLog(tx, nil, models.AuditActionPeriodLock, models.AuditStatusSuccess, 
+		models.CreateAuditLog(tx, nil, models.AuditActionPeriodLock, models.AuditStatusSuccess,
 			"SYSTEM", "SUBMISSION_GUARD", details, nil)
 
 		tx.Rollback()
@@ -402,7 +402,7 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 	if err != nil {
 		tx.Rollback()
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("you are not assigned to assess this user in this period")
+			return errors.New("Anda tidak ditugaskan untuk menilai pengguna ini pada periode ini")
 		}
 		return ErrInternalServer
 	}
@@ -414,10 +414,10 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 		Count(&dup)
 	if dup > 0 {
 		tx.Rollback()
-		return errors.New("you have already assessed this user for this month")
+		return errors.New("Anda sudah menilai pengguna ini untuk bulan ini")
 	}
 
-	// --- Dynamic Scoring Logic ---
+	// --- Logika Penilaian Dinamis ---
 	qIDs := make([]uint, len(req.Answers))
 	for i, a := range req.Answers {
 		qIDs[i] = a.QuestionID
@@ -431,13 +431,13 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 		}
 	}
 
-	// Map question ID to Indicator
+	// Buat tabel pencarian (map) untuk mencocokkan ID Pertanyaan dengan Indikatornya
 	qMap := make(map[uint]string)
 	for _, q := range questions {
 		qMap[q.ID] = q.Indicator
 	}
 
-	// Calculate Averages per Indicator
+	// Hitung Rata-rata per Indikator
 	indicatorSums := map[string]int{}
 	indicatorCounts := map[string]int{}
 	var validAnswers []models.AssessmentAnswer
@@ -446,7 +446,7 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 		ind, ok := qMap[a.QuestionID]
 		if !ok {
 			tx.Rollback()
-			return fmt.Errorf("invalid question_id %d in answers", a.QuestionID)
+			return fmt.Errorf("ID pertanyaan %d tidak valid dalam jawaban", a.QuestionID)
 		}
 		indicatorSums[ind] += a.Score
 		indicatorCounts[ind]++
@@ -479,19 +479,19 @@ func (s *AssessmentService) SubmitAssessment(evaluatorID uint, req models.Submit
 	}
 
 	if err := tx.Create(&assessment).Error; err != nil {
-		logger.Error("Failed to save peer assessment: %v", err)
+		logger.Error("Gagal menyimpan data penilaian sejawat: %v", err)
 		tx.Rollback()
 		return ErrInternalServer
 	}
 
-	// Insert all specific answers
+	// Masukkan semua jawaban spesifik ke database
 	for i := range validAnswers {
 		validAnswers[i].PeerAssessmentID = assessment.ID
 	}
 
 	if len(validAnswers) > 0 {
 		if err := tx.Create(&validAnswers).Error; err != nil {
-			logger.Error("Failed to save assessment answers: %v", err)
+			logger.Error("Gagal menyimpan jawaban penilaian: %v", err)
 			tx.Rollback()
 			return ErrInternalServer
 		}
@@ -510,7 +510,7 @@ func (s *AssessmentService) GetReceivedAssessments(userID uint, periodID uint) (
 	if err := q.Find(&assessments).Error; err != nil {
 		return nil, ErrInternalServer
 	}
-	// Anonymise evaluator identity (360° privacy)
+	// Rahasiakan identitas penilai (Privasi 360 derajat)
 	for i := range assessments {
 		assessments[i].EvaluatorID = 0
 		assessments[i].Evaluator = models.User{}
@@ -595,7 +595,7 @@ func (s *AssessmentService) GetAssessmentReferenceForEvaluator(evaluatorID, targ
 		evaluatorID, targetUserID, periodID, "Atasan").First(&relation).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("akses ditolak: Anda bukan penilai Atasan untuk user ini pada periode ini")
+			return nil, errors.New("Akses ditolak: Anda bukan penilai Atasan untuk pengguna ini pada periode ini")
 		}
 		return nil, ErrInternalServer
 	}
@@ -703,7 +703,7 @@ func (s *AssessmentService) GetAssessmentReferenceForEvaluator(evaluatorID, targ
 	warning := ""
 	if !isReady {
 		remaining := (reqPeer - int64(actualPeer)) + (reqBawahan - int64(actualBawahan))
-		warning = fmt.Sprintf("Masih ada %d penilai (Peer/Bawahan) yang belum menyelesaikan penilaian.", remaining)
+		warning = fmt.Sprintf("Masih ada %d penilai yang belum menyelesaikan penilaian.", remaining)
 	}
 
 	ref := &models.AssessmentReference{PeriodName: period.Name, Indicators: indRef, IsReady: isReady, Warning: warning}
@@ -718,7 +718,7 @@ func (s *AssessmentService) GetAssessmentReferenceForEvaluator(evaluatorID, targ
 	return ref, nil
 }
 
-// calculateWeightsByPresence returns (wAtasan, wPeer, wBawahan, status 1-7).
+// calculateWeightsByPresence mengembalikan nilai bobot (wAtasan, wPeer, wBawahan) dan status skenario (1-7).
 func calculateWeightsByPresence(hasA, hasP, hasB bool) (float64, float64, float64, int) {
 	switch {
 	case hasA && hasP && hasB:

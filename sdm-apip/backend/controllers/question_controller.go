@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"sdm-apip-backend/config"
+	"sdm-apip-backend/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
 )
@@ -21,14 +23,14 @@ func NewQuestionController(questionService services.IQuestionService) *QuestionC
 	return &QuestionController{questionService: questionService}
 }
 
-// GetQuestions allows fetching all questions. If the user is admin, they can see inactive ones using query param `all=true`.
+// GetQuestions memungkinkan pengambilan semua pertanyaan. Jika pengguna adalah admin, mereka dapat melihat yang tidak aktif menggunakan parameter kueri `all=true`.
 func (c *QuestionController) GetQuestions(ctx *gin.Context) {
-	// Assume anyone authenticated can fetch active questions. Admin can pass ?all=true
+	// Asumsikan siapa pun yang terautentikasi dapat mengambil pertanyaan aktif. Admin dapat menambahkan ?all=true
 	includeInactive := ctx.Query("all") == "true"
 	
 	questions, err := c.questionService.GetAllQuestions(includeInactive)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusInternalServerError, "Failed to fetch questions", err.Error())
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "Gagal mengambil pertanyaan", err.Error())
 		return
 	}
 
@@ -38,15 +40,21 @@ func (c *QuestionController) GetQuestions(ctx *gin.Context) {
 func (c *QuestionController) CreateQuestion(ctx *gin.Context) {
 	var req models.CreateQuestionRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(ctx, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
 	question, err := c.questionService.CreateQuestion(req)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusInternalServerError, "Failed to create question", err.Error())
+		utils.ErrorResponse(ctx, http.StatusInternalServerError, "Gagal membuat pertanyaan", err.Error())
 		return
 	}
+
+	// Log Audit
+	userID := middleware.GetUserIDFromContext(ctx)
+	models.CreateAuditLog(config.DB, &userID, models.AuditActionQuestionCreate, models.AuditStatusSuccess, 
+		ctx.ClientIP(), ctx.GetHeader("User-Agent"), 
+		fmt.Sprintf("Created question for indicator: %s", question.Indicator), nil)
 
 	utils.SuccessResponse(ctx, http.StatusCreated, "Question created successfully", question)
 }
@@ -55,25 +63,31 @@ func (c *QuestionController) UpdateQuestion(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, "Invalid question ID", err.Error())
+		utils.ErrorResponse(ctx, http.StatusBadRequest, "ID pertanyaan tidak valid", err.Error())
 		return
 	}
 
 	var req models.UpdateQuestionRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, "Invalid request", err.Error())
+		utils.ErrorResponse(ctx, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
 		return
 	}
 
 	question, err := c.questionService.UpdateQuestion(uint(id), req)
 	if err != nil {
 		if err.Error() == "question not found" {
-			utils.ErrorResponse(ctx, http.StatusNotFound, "Question not found", err.Error())
+			utils.ErrorResponse(ctx, http.StatusNotFound, "Pertanyaan tidak ditemukan", err.Error())
 		} else {
-			utils.ErrorResponse(ctx, http.StatusInternalServerError, "Failed to update question", err.Error())
+			utils.ErrorResponse(ctx, http.StatusInternalServerError, "Gagal memperbarui pertanyaan", err.Error())
 		}
 		return
 	}
+
+	// Log Audit
+	userID := middleware.GetUserIDFromContext(ctx)
+	models.CreateAuditLog(config.DB, &userID, models.AuditActionQuestionUpdate, models.AuditStatusSuccess, 
+		ctx.ClientIP(), ctx.GetHeader("User-Agent"), 
+		fmt.Sprintf("Updated question ID: %d", id), nil)
 
 	utils.SuccessResponse(ctx, http.StatusOK, "Question updated successfully", question)
 }
@@ -82,18 +96,24 @@ func (c *QuestionController) DeleteQuestion(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, "Invalid question ID", err.Error())
+		utils.ErrorResponse(ctx, http.StatusBadRequest, "ID pertanyaan tidak valid", err.Error())
 		return
 	}
 
 	if err := c.questionService.DeleteQuestion(uint(id)); err != nil {
 		if err.Error() == "question not found" {
-			utils.ErrorResponse(ctx, http.StatusNotFound, "Question not found", err.Error())
+			utils.ErrorResponse(ctx, http.StatusNotFound, "Pertanyaan tidak ditemukan", err.Error())
 		} else {
-			utils.ErrorResponse(ctx, http.StatusInternalServerError, "Failed to delete question", err.Error())
+			utils.ErrorResponse(ctx, http.StatusInternalServerError, "Gagal menghapus pertanyaan", err.Error())
 		}
 		return
 	}
+
+	// Log Audit
+	userID := middleware.GetUserIDFromContext(ctx)
+	models.CreateAuditLog(config.DB, &userID, models.AuditActionQuestionDelete, models.AuditStatusSuccess, 
+		ctx.ClientIP(), ctx.GetHeader("User-Agent"), 
+		fmt.Sprintf("Deleted question ID: %d", id), nil)
 
 	utils.SuccessResponse(ctx, http.StatusOK, "Question deleted successfully", nil)
 }
@@ -105,9 +125,9 @@ func (c *QuestionController) ImportQuestionsExcel(ctx *gin.Context) {
 		return
 	}
 
-	// Validate extension
+	// Validasi ekstensi
 	if len(file.Filename) < 5 || (file.Filename[len(file.Filename)-5:] != ".xlsx" && file.Filename[len(file.Filename)-4:] != ".xls") {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, "Format file harus .xlsx atau .xls", "invalid file extension")
+		utils.ErrorResponse(ctx, http.StatusBadRequest, "Format file harus .xlsx atau .xls", "Ekstensi file tidak valid")
 		return
 	}
 
@@ -125,10 +145,10 @@ func (c *QuestionController) ImportQuestionsExcel(ctx *gin.Context) {
 	}
 	defer f.Close()
 
-	// Read first sheet
+	// Baca sheet pertama
 	sheets := f.GetSheetList()
 	if len(sheets) == 0 {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, "File Excel kosong atau tidak memiliki sheet", "no sheets found")
+		utils.ErrorResponse(ctx, http.StatusBadRequest, "File Excel kosong atau tidak memiliki sheet", "Tidak ada sheet yang ditemukan")
 		return
 	}
 
@@ -140,7 +160,7 @@ func (c *QuestionController) ImportQuestionsExcel(ctx *gin.Context) {
 
 	var importRows []models.CreateQuestionRequest
 	for i, row := range rows {
-		// Skip header row
+		// Lewati baris header
 		if i == 0 {
 			continue
 		}
@@ -163,6 +183,12 @@ func (c *QuestionController) ImportQuestionsExcel(ctx *gin.Context) {
 		utils.ErrorResponse(ctx, http.StatusUnprocessableEntity, "Import gagal: "+err.Error(), err.Error())
 		return
 	}
+
+	// Log Audit
+	userID := middleware.GetUserIDFromContext(ctx)
+	models.CreateAuditLog(config.DB, &userID, models.AuditActionQuestionCreate, models.AuditStatusSuccess, 
+		ctx.ClientIP(), ctx.GetHeader("User-Agent"), 
+		fmt.Sprintf("Bulk imported %d questions via Excel", count), nil)
 
 	utils.SuccessResponse(ctx, http.StatusCreated, fmt.Sprintf("%d pertanyaan berhasil diimport", count), map[string]int{"imported": count})
 }
