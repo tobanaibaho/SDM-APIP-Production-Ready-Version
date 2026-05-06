@@ -21,7 +21,6 @@ const SDMManagement = lazy(() => import('./pages/SDMManagement'));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
 const UserDashboard = lazy(() => import('./pages/UserDashboard'));
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
-const AdminResetPage = lazy(() => import('./pages/AdminResetPage'));
 
 const GroupManagement = lazy(() => import('./pages/GroupManagement'));
 const AssessmentPeriodManagement = lazy(() => import('./pages/AssessmentPeriodManagement'));
@@ -102,7 +101,6 @@ const AppRoutes: React.FC = () => {
                     </PublicRoute>
                 }
             />
-            <Route path="/super-admin/reset-password" element={<AdminResetPage />} />
 
 
             {/* Rute Super Admin */}

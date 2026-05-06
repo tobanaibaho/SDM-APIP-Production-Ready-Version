@@ -55,65 +55,7 @@ func (ac *AuthController) SuperAdminForgotPassword(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Instruksi reset password telah dikirim ke email Admin", nil)
 }
 
-// SuperAdminResetToDefault menyelesaikan reset kata sandi admin via token.
-// POST /api/auth/super-admin/reset-to-default
-func (ac *AuthController) SuperAdminResetToDefault(c *gin.Context) {
-	var req models.AdminResetPasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
-		return
-	}
 
-	if req.NewPassword == "" {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Password baru wajib diisi", "")
-		return
-	}
-	if valid, msg := utils.ValidatePassword(req.NewPassword); !valid {
-		utils.ErrorResponse(c, http.StatusBadRequest, msg, "")
-		return
-	}
-	if req.NewPassword != req.ConfirmPassword {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Konfirmasi password tidak cocok", "")
-		return
-	}
-
-	var token models.VerificationToken
-	if err := config.DB.Where("token_hash = ? AND token_type = ?", utils.HashToken(req.Token), "admin_reset").
-		First(&token).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Token tidak valid atau sudah kadaluwarsa", "")
-		return
-	}
-	if token.IsExpired() || token.IsUsed() {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Token sudah kadaluwarsa atau sudah digunakan", "")
-		return
-	}
-
-	hashed, err := utils.HashPassword(req.NewPassword)
-	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal memproses password", "")
-		return
-	}
-
-	tx := config.DB.Begin()
-	if err := tx.Model(&models.User{}).Where("id = ?", token.UserID).Update("password", hashed).Error; err != nil {
-		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mereset password", "")
-		return
-	}
-	if err := token.MarkUsed(tx); err != nil {
-		tx.Rollback()
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal memvalidasi token", "")
-		return
-	}
-	// Cabut semua sesi aktif admin untuk keamanan
-	tx.Model(&models.RefreshToken{}).Where("user_id = ?", token.UserID).Update("revoked_at", time.Now())
-	if err := tx.Commit().Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Transaksi gagal", "")
-		return
-	}
-
-	utils.SuccessResponse(c, http.StatusOK, "Password Administrator berhasil direset. Semua sesi aktif telah dicabut.", nil)
-}
 
 // SecureAdminResetRequest memulai reset kata sandi admin yang aman (JWT + MFA).
 // POST /api/admin/secure-reset/request

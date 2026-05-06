@@ -33,7 +33,6 @@ func RegisterAuthRoutes(api *gin.RouterGroup) {
 		{
 			superAdmin.POST("/login", loginLimit, authController.SuperAdminLogin)
 			superAdmin.POST("/forgot-password", loginLimit, authController.SuperAdminForgotPassword)
-			superAdmin.POST("/reset-to-default", loginLimit, authController.SuperAdminResetToDefault)
 		}
 
 		// Rute MFA yang dilindungi
