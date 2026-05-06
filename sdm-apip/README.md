@@ -27,12 +27,13 @@ Sistem ini didesain sebagai arsitektur *decoupled* yang dideploy secara *contain
 - **Dynamic Frontend Monitoring**: Pemetaan rekap penilaian interaktif yang mengkalkulasi tenggat waktu dan menyajikannya dalam pengingat cerdas (Visual Hitung Mundur & Warning H-3).
 
 ## 🛡️ Standar Keamanan & Autentikasi Aplikasi (v2.0)
-Infrastruktur keamanan telah diaudit dan diperkuat dengan standar modern (Skor Audit 94%):
+Infrastruktur keamanan telah diaudit dan diperkuat dengan standar modern (Skor Audit 98%):
+- **Single Sign-On (SSO) Terpusat**: Seluruh pengguna (Pegawai/Auditor) diwajibkan menggunakan autentikasi SSO (Kemenko, Google Workspace, atau Microsoft 365) via protokol OIDC/OAuth2. Formulir pendaftaran manual dan fitur lupa kata sandi konvensional telah dicabut sepenuhnya demi mencegah *account takeover*.
+- **Admin Independent Login**: Jalur akses Administrator (*Super Admin*) dipisah (terisolasi) dari jalur SSO umum, lengkap dengan pengaman *Multi-Factor Authentication (MFA)* dan mekanisme reset mandiri yang mutlak membutuhkan verifikasi tautan email (mencegah manipulasi *default password*).
 - **Transport Security (SSL/TLS & HSTS)**: Semua traffic komunikasi wajib menggunakan HTTPS terenkripsi.
-- **HttpOnly Secure Cookies**: Penyimpanan kredensial *Refresh Token* dilakukan di memori *Cookie* terproteksi demi menutup celah manipulasi script (XSS).
-- **Rate Limiting & Anti-Brute-Force**: Akses berulang ke titik-titik rentan (Login, Token Refresh, Lupa Password) diawasi dan dibatasi ketat per alamat IP.
-- **System-Level Audit Logging**: Pencatatan aktivitas reaktif tak terbantahkan (Immutable); merekam segala tindakan kunci mulai dari penguncian periode otomatis oleh sistem, percobaan login gagal, hingga perbaruan data krusial dengan cap waktu zona WIB.
-- **Parameterized Queries**: Seluruh kueri basis data memanfaatkan *Object Relational Mapping* (GORM) guna meredam celah *SQL Injection*.
+- **HttpOnly Secure Cookies**: Penyimpanan kredensial *Refresh Token* dan token SSO *State* dilakukan di memori *Cookie* terproteksi demi menutup celah manipulasi script (XSS) dan mencegah pemalsuan *Cross-Site Request Forgery* (CSRF).
+- **System-Level Audit Logging**: Pencatatan aktivitas reaktif tak terbantahkan (Immutable); merekam segala tindakan krusial dengan cap waktu zona WIB.
+- **Zero-Backdoor Policy**: Seluruh *script* alat bantu CLI (*Command Line Interface*) untuk mereset kata sandi pegawai secara paksa telah dihapus permanen dari repositori demi memenuhi standar keamanan *Enterprise*.
 
 ## 💻 Tech Stack
 - **Frontend Layer**: React 18, TypeScript, Vite, React Router, TailwindCSS.
@@ -56,7 +57,7 @@ Siklus *deployment* terbaik adalah dengan mengunci *dependencies* melalui *Docke
    git clone <repository-url> sdm-apip
    cd sdm-apip
    cp .env.example .env
-   # Wajib isi: JWT_SECRET, JWT_REFRESH_SECRET, SMTP credentials, ADMIN_DEFAULT_PASSWORD
+   # Wajib isi: JWT_SECRET, Kredensial SSO (GOOGLE_SSO_CLIENT_ID, dll), serta SMTP untuk email Admin
    ```
 
 2. **Jalankan Kontainer Lokal**
