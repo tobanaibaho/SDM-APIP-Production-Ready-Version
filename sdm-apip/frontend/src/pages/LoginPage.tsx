@@ -85,7 +85,7 @@ const LoginPage: React.FC = () => {
                                 <ShieldCheck size={16} className="text-white" />
                             </div>
                             <span className="text-[11px] font-bold text-slate-700 leading-none">Instansi</span>
-                            <span className="text-[9px] text-slate-400 mt-0.5">SSO Kemenko</span>
+                            <span className="text-[9px] text-slate-400 mt-0.5">SSO Kemenko Infra</span>
                         </button>
 
                         {/* Google */}

@@ -8,7 +8,7 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
   
-  # Anda dapat menyesuaikan tag ini dengan registry Gitlab lokal Kementerian Anda
+  # Anda dapat menyesuaikan tag ini dengan registry Gitlab lokal Instansi Anda
   BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA
   FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
 

@@ -24,13 +24,8 @@ func RegisterAuthRoutes(api *gin.RouterGroup) {
 		auth.GET("/sso/oidc-callback", authController.SSOOIDCCallback)      // Callback OIDC Bawaan
 		auth.GET("/sso/callback/:provider", authController.SSOOIDCCallback) // Callback Multi-penyedia
 		auth.POST("/sso/callback", loginLimit, authController.SSOCallback)  // Mock SSO (Hanya untuk tahap pengembangan/Dev)
-		auth.POST("/register", loginLimit, authController.Register)
-		auth.POST("/resend-verification", loginLimit, authController.ResendVerification)
-		auth.POST("/verify-email", loginLimit, authController.VerifyEmail)
-		auth.POST("/set-password", loginLimit, authController.SetPassword)
+
 		auth.POST("/refresh-token", loginLimit, authController.RefreshToken)
-		auth.POST("/forgot-password", loginLimit, authController.ForgotPassword)
-		auth.POST("/reset-password", loginLimit, authController.ResetPassword)
 		auth.POST("/logout", authController.Logout)
 
 		// Autentikasi Super Admin

@@ -15,17 +15,13 @@ const PageLoader = () => (
 
 // Halaman Lazy Load
 const LoginPage = lazy(() => import('./pages/LoginPage'));
-const RegisterPage = lazy(() => import('./pages/RegisterPage'));
-const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
-const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
-const SetPasswordPage = lazy(() => import('./pages/SetPasswordPage'));
+
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SDMManagement = lazy(() => import('./pages/SDMManagement'));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
 const UserDashboard = lazy(() => import('./pages/UserDashboard'));
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
-const AdminResetPage = lazy(() => import('./pages/AdminResetPage'));
+
 const GroupManagement = lazy(() => import('./pages/GroupManagement'));
 const AssessmentPeriodManagement = lazy(() => import('./pages/AssessmentPeriodManagement'));
 const MyGroupsPage = lazy(() => import('./pages/MyGroupsPage'));
@@ -96,14 +92,7 @@ const AppRoutes: React.FC = () => {
                     </PublicRoute>
                 }
             />
-            <Route
-                path="/register"
-                element={
-                    <PublicRoute>
-                        <RegisterPage />
-                    </PublicRoute>
-                }
-            />
+
             <Route
                 path="/super-admin/login"
                 element={
@@ -112,11 +101,7 @@ const AppRoutes: React.FC = () => {
                     </PublicRoute>
                 }
             />
-            <Route path="/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/set-password" element={<SetPasswordPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/super-admin/reset-password" element={<AdminResetPage />} />
+
 
             {/* Rute Super Admin */}
             <Route
