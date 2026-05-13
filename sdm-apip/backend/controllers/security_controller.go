@@ -31,7 +31,7 @@ func (ac *AuthController) SuperAdminForgotPassword(c *gin.Context) {
 	// Hapus token lama yang belum dipakai
 	config.DB.Where("user_id = ? AND token_type = ?", user.ID, "admin_reset").Delete(&models.VerificationToken{})
 
-	// Buat token reset baru (berlaku 1 jam)
+	// Buat token reset baru (berlaku 5 menit)
 	tokenString, err := utils.GenerateRandomToken(32)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat token reset", "")
@@ -41,7 +41,7 @@ func (ac *AuthController) SuperAdminForgotPassword(c *gin.Context) {
 		UserID:    user.ID,
 		TokenHash: utils.HashToken(tokenString),
 		TokenType: "admin_reset",
-		ExpiresAt: time.Now().Add(1 * time.Hour),
+		ExpiresAt: time.Now().Add(5 * time.Minute),
 	})
 
 	// Kirim email reset ke Admin
@@ -53,6 +53,66 @@ func (ac *AuthController) SuperAdminForgotPassword(c *gin.Context) {
 	ac.emailService.AsyncSendAdminPasswordResetEmail(user.Email, adminName, resetURL)
 
 	utils.SuccessResponse(c, http.StatusOK, "Instruksi reset password telah dikirim ke email Admin", nil)
+}
+
+// SuperAdminResetPassword menyelesaikan alur reset kata sandi admin menggunakan token tautan tanpa OTP.
+// POST /api/auth/super-admin/reset-password
+func (ac *AuthController) SuperAdminResetPassword(c *gin.Context) {
+	var req struct {
+		Token           string `json:"token" binding:"required"`
+		NewPassword     string `json:"new_password" binding:"required"`
+		ConfirmPassword string `json:"confirm_password" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Permintaan tidak valid", err.Error())
+		return
+	}
+	if req.NewPassword != req.ConfirmPassword {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Password tidak cocok", "Konfirmasi password tidak sama.")
+		return
+	}
+	if valid, msg := utils.ValidatePassword(req.NewPassword); !valid {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Password tidak valid", msg)
+		return
+	}
+
+	var token models.VerificationToken
+	if err := config.DB.Where("token_hash = ? AND token_type = ?", utils.HashToken(req.Token), "admin_reset").First(&token).Error; err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Tautan reset tidak valid atau sudah kedaluwarsa", "Token tidak ditemukan")
+		return
+	}
+	if token.IsExpired() || token.IsUsed() {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Tautan reset telah kedaluwarsa atau sudah pernah digunakan", "")
+		return
+	}
+
+	hashed, _ := utils.HashPassword(req.NewPassword)
+	tx := config.DB.Begin()
+	
+	// Update password
+	if err := tx.Model(&models.User{}).Where("id = ?", token.UserID).Update("password", hashed).Error; err != nil {
+		tx.Rollback()
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mereset kata sandi", "")
+		return
+	}
+	
+	// Tandai token terpakai
+	if err := token.MarkUsed(tx); err != nil {
+		tx.Rollback()
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengakhiri sesi reset", "")
+		return
+	}
+
+	// Cabut semua sesi aktif (keamanan)
+	tx.Model(&models.RefreshToken{}).Where("user_id = ?", token.UserID).Update("revoked_at", time.Now())
+	
+	// Catat audit log
+	ip, ua := c.ClientIP(), c.GetHeader("User-Agent")
+	models.CreateAuditLog(tx, &token.UserID, models.AuditActionAdminReset, models.AuditStatusSuccess, ip, ua, "Admin berhasil mereset password via tautan email", &token.UserID)
+
+	tx.Commit()
+
+	utils.SuccessResponse(c, http.StatusOK, "Kata sandi Admin berhasil direset. Silakan login menggunakan kata sandi baru.", nil)
 }
 
 

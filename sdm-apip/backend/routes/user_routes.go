@@ -1,9 +1,12 @@
 package routes
 
 import (
+	"net/http"
+
 	"sdm-apip-backend/controllers"
 	"sdm-apip-backend/middleware"
 	"sdm-apip-backend/services"
+	"sdm-apip-backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,19 +29,26 @@ func RegisterUserRoutes(api *gin.RouterGroup) {
 	{
 		user.GET("/profile", authController.GetProfile)
 		user.PUT("/profile", authController.UpdateProfile)
-		user.POST("/change-password", authController.ChangePassword)
+
+		// Pengguna SSO tidak memiliki password — endpoint ini dinonaktifkan
+		user.POST("/change-password", func(c *gin.Context) {
+			utils.ErrorResponse(c, http.StatusForbidden,
+				"Operasi tidak tersedia",
+				"Akun SSO tidak menggunakan password. Kelola akses melalui portal Google/Microsoft Workspace Anda.",
+			)
+		})
+
 		user.GET("/my-groups", groupController.GetMyGroups)
 		user.GET("/groups/:id", groupController.GetGroupDetailForUser)
 
 		// ===== PENILAIAN SEJAWAT (PEER ASSESSMENT) =====
 		user.POST("/assessments", assessmentController.SubmitAssessment)
-		user.GET("/assessments/my-results", assessmentController.GetMyResults) // Pengguna sekarang dapat melihat skor mereka sendiri
+		user.GET("/assessments/my-results", assessmentController.GetMyResults)
 		user.GET("/assessments/given", assessmentController.GetMyAssessmentsGiven)
-		user.GET("/assessments/targets", assessmentController.GetTargets) // Baru: Dapatkan daftar orang yang harus dinilai
+		user.GET("/assessments/targets", assessmentController.GetTargets)
 		user.GET("/assessments/matrix", assessmentController.GetMatrixFnForUser)
 		user.GET("/assessments/active-period", assessmentController.GetActivePeriod)
 		user.GET("/periods", assessmentController.GetAllPeriods)
-		// Panel Referensi Inspektur — skor agregat (keseluruhan) Peer+Bawahan untuk target pengguna
 		user.GET("/assessments/reference/:targetUserID", assessmentController.GetAssessmentReference)
 		user.GET("/questions", questionController.GetQuestions)
 	}

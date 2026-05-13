@@ -47,23 +47,12 @@ type Config struct {
 
 	AdminDefaultPassword string // Dimuat dari variabel lingkungan ADMIN_DEFAULT_PASSWORD
 
+	// SSO Internal Instansi (Kemenko Infra)
 	SSOEnabled      bool
 	SSOClientID     string
 	SSOClientSecret string
 	SSOIssuerURL    string
 	SSORedirectURL  string
-
-	GoogleSSOEnabled      bool
-	GoogleSSOClientID     string
-	GoogleSSOClientSecret string
-	GoogleSSOIssuerURL    string
-	GoogleSSORedirectURL  string
-
-	MicrosoftSSOEnabled      bool
-	MicrosoftSSOClientID     string
-	MicrosoftSSOClientSecret string
-	MicrosoftSSOIssuerURL    string
-	MicrosoftSSORedirectURL  string
 }
 
 var AppConfig *Config
@@ -122,23 +111,12 @@ func LoadConfig() error {
 
 		AdminDefaultPassword: getEnv("ADMIN_DEFAULT_PASSWORD", ""),
 
+		// SSO Internal Instansi
 		SSOEnabled:      getEnv("SSO_ENABLED", "false") == "true",
 		SSOClientID:     getEnv("SSO_CLIENT_ID", ""),
 		SSOClientSecret: getEnv("SSO_CLIENT_SECRET", ""),
 		SSOIssuerURL:    getEnv("SSO_ISSUER_URL", ""),
-		SSORedirectURL:  getEnv("SSO_REDIRECT_URL", "http://localhost:5173/api/auth/sso/callback"),
-
-		GoogleSSOEnabled:      getEnv("GOOGLE_SSO_ENABLED", "false") == "true",
-		GoogleSSOClientID:     getEnv("GOOGLE_SSO_CLIENT_ID", ""),
-		GoogleSSOClientSecret: getEnv("GOOGLE_SSO_CLIENT_SECRET", ""),
-		GoogleSSOIssuerURL:    getEnv("GOOGLE_SSO_ISSUER_URL", "https://accounts.google.com"),
-		GoogleSSORedirectURL:  getEnv("GOOGLE_SSO_REDIRECT_URL", "http://localhost:5173/api/auth/sso/callback/google"),
-
-		MicrosoftSSOEnabled:      getEnv("MICROSOFT_SSO_ENABLED", "false") == "true",
-		MicrosoftSSOClientID:     getEnv("MICROSOFT_SSO_CLIENT_ID", ""),
-		MicrosoftSSOClientSecret: getEnv("MICROSOFT_SSO_CLIENT_SECRET", ""),
-		MicrosoftSSOIssuerURL:    getEnv("MICROSOFT_SSO_ISSUER_URL", "https://login.microsoftonline.com/common/v2.0"),
-		MicrosoftSSORedirectURL:  getEnv("MICROSOFT_SSO_REDIRECT_URL", "http://localhost:5173/api/auth/sso/callback/microsoft"),
+		SSORedirectURL:  getEnv("SSO_REDIRECT_URL", "http://localhost:5173/api/auth/sso/oidc-callback"),
 	}
 
 	// Validasi konfigurasi terpusat

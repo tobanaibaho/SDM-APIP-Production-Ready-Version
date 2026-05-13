@@ -196,50 +196,51 @@ func GetPasswordResetEmailTemplate(userName, resetURL, otp string) EmailTemplate
 // GetAdminPasswordResetEmailTemplate mengembalikan template untuk reset kata sandi admin
 func GetAdminPasswordResetEmailTemplate(adminName, resetURL string) EmailTemplate {
 	return EmailTemplate{
-		Subject: "⚠️ Reset Password Administrator - SDM APIP System",
+		Subject: "Reset Password Administrator - SDM APIP System",
 		Body: fmt.Sprintf(`
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 12px; overflow: hidden; border: 1px solid #334155; }
-        .header { background: linear-gradient(135deg, #7f1d1d 0%%, #991b1b 100%%); padding: 30px; text-align: center; }
-        .header h1 { color: #fef2f2; margin: 0; font-size: 22px; letter-spacing: 1px; }
-        .header p { color: #fca5a5; margin: 8px 0 0; font-size: 13px; }
-        .badge { display: inline-block; background: #7f1d1d; border: 1px solid #ef4444; color: #fca5a5; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
-        .content { padding: 36px 32px; color: #cbd5e1; }
-        .content h2 { color: #f1f5f9; margin-top: 0; font-size: 18px; }
+        body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .header { background: #ffffff; padding: 30px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+        .header h1 { color: #0f172a; margin: 0; font-size: 22px; letter-spacing: 0.5px; }
+        .header p { color: #64748b; margin: 8px 0 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        .badge { display: inline-block; background: #eff6ff; border: 1px solid #bfdbfe; color: #2563eb; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
+        .content { padding: 36px 32px; color: #334155; }
+        .content h2 { color: #0f172a; margin-top: 0; font-size: 18px; }
         .content p { line-height: 1.7; font-size: 14px; }
-        .button-wrap { text-align: center; margin: 28px 0; }
-        .button { display: inline-block; background: linear-gradient(135deg, #b91c1c 0%%, #dc2626 100%%); color: #fff !important; padding: 14px 44px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; }
-        .url-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px 16px; margin: 16px 0; word-break: break-all; color: #94a3b8; font-size: 12px; font-family: monospace; }
-        .warning-box { background: #451a03; border: 1px solid #f97316; border-radius: 8px; padding: 16px; margin-top: 20px; }
-        .warning-box p { color: #fdba74; margin: 0; font-size: 13px; }
-        .footer { background: #0f172a; padding: 20px 32px; text-align: center; color: #475569; font-size: 12px; border-top: 1px solid #1e293b; }
+        .button-wrap { text-align: center; margin: 32px 0; }
+        .button { display: inline-block; background: linear-gradient(135deg, #1d4ed8 0%%, #2563eb 100%%); color: #ffffff !important; padding: 14px 44px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
+        .button:hover { opacity: 0.95; transform: translateY(-1px); }
+        .url-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin: 16px 0; word-break: break-all; color: #475569; font-size: 12px; font-family: monospace; }
+        .warning-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px; margin-top: 24px; }
+        .warning-box p { color: #b45309; margin: 0; font-size: 13px; font-weight: 500; }
+        .footer { background: #f8fafc; padding: 20px 32px; text-align: center; color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="badge">🔐 Keamanan Sistem</div>
-            <h1>Reset Password Administrator</h1>
-            <p>Sistem Informasi SDM APIP — Kemenko Infra</p>
+            <div class="badge">🛡️ Keamanan Sistem</div>
+            <h1>Reset Password Admin</h1>
+            <p>SDM APIP — Kemenko Infra</p>
         </div>
         <div class="content">
             <h2>Halo, %s!</h2>
-            <p>Kami menerima permintaan untuk mereset password akun <strong>Administrator</strong> Anda. Klik tombol di bawah untuk membuat password baru:</p>
+            <p>Kami menerima permintaan untuk mengatur ulang password akun <strong>Administrator</strong> Anda. Silakan klik tombol di bawah untuk membuat password baru yang aman:</p>
 
             <div class="button-wrap">
-                <a href="%s" class="button">🔑 Reset Password Sekarang</a>
+                <a href="%s" class="button">Atur Ulang Password</a>
             </div>
 
             <p style="font-size: 13px; color: #64748b;">Atau salin link berikut ke browser:</p>
             <div class="url-box">%s</div>
 
             <div class="warning-box">
-                <p>⚠️ <strong>Penting:</strong> Link ini berlaku selama <strong>1 jam</strong> dan hanya bisa digunakan <strong>sekali</strong>. Jika Anda tidak meminta reset password ini, abaikan email ini dan segera hubungi tim IT.</p>
+                <p>⚠️ <strong>Penting:</strong> Link ini berlaku selama <strong>5 menit</strong> dan hanya bisa digunakan <strong>sekali</strong>. Jika Anda tidak meminta reset password ini, abaikan email ini dan segera hubungi tim IT.</p>
             </div>
         </div>
         <div class="footer">

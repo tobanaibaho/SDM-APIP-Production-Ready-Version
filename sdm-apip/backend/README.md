@@ -1,71 +1,39 @@
-# 🏢 SDM APIP Backend System
+# Panduan Backend SDM APIP
 
-Sistem Backend API untuk Manajemen SDM APIP (Aparatur Pengawas Internal Pemerintah) yang dibangun menggunakan **Go (Golang)** dengan **Gin Web Framework** dan **GORM**.
-
-## ✨ Fitur Utama
-- **Autentikasi Robust**: JWT (JSON Web Token) dengan Access & Refresh Token.
-- **Manajemen User & SDM**: Integrasi data profil pegawai dengan akun sistem.
-- **Sistem Grup**: Manajemen unit kerja dan kolaborasi tim.
-- **Penilaian 360**: Sistem penilaian kinerja antar pegawai (Peer Assessment).
-- **Notifikasi Email**: Verifikasi akun dan reset password via Gmail SMTP.
-- **Logging**: Sistem pencatatan log terpusat (Console & File).
-
-## 🛠️ Persyaratan Sistem
-- **Go**: v1.21 ke atas
-- **Docker & Docker Compose**: Untuk containerization database dan aplikasi.
-- **PostgreSQL**: v15 (Opsional jika tidak menggunakan Docker).
-
-## 🚀 Memulai Cepat
-
-### 1. Persiapan Database
-Pastikan Docker sudah berjalan, lalu jalankan:
-```bash
-docker-compose up -d postgres
-```
-
-### 2. Konfigurasi Environment
-Salin file `.env.example` menjadi `.env` dan sesuaikan nilainya:
-```bash
-cp .env.example .env
-```
-*Pastikan mengisi `SMTP_PASSWORD` dengan App Password Gmail yang valid.*
-
-### 3. Menjalankan Aplikasi
-```bash
-cd backend
-go mod download
-go run main.go
-```
-Aplikasi akan berjalan di `http://localhost:8080`.
-
-## 📚 Struktur API (Endpoint)
-
-### 🔐 Autentikasi (Public)
-| Method | Endpoint | Deskripsi |
-| :--- | :--- | :--- |
-| POST | `/api/login` | Login user (NIP) |
-| POST | `/api/super-admin/login` | Login khusus Super Admin |
-| POST | `/api/register` | Registrasi awal user |
-| POST | `/api/verify-email` | Verifikasi akun via OTP |
-| POST | `/api/set-password` | Set password setelah verifikasi |
-| POST | `/api/forgot-password` | Request reset password |
-| POST | `/api/reset-password` | Reset password dengan OTP |
-
-### 👤 User & Profile (Protected)
-- `GET /api/profile` - Mengambil profil user aktif.
-- `PUT /api/profile` - Update data profil (foto, HP, dll).
-
-### 🛡️ Super Admin (Protected)
-- **Manajemen SDM**: CRUD data pegawai (`/api/super-admin/sdm`).
-- **Kelola Pengguna**: Aktivasi & Role management (`/api/super-admin/users`).
-- **Grup & Unit**: Manajemen struktur organisasi (`/api/super-admin/groups`).
-- **Periode Penilaian**: Setting jadwal penilaian 360 (`/api/super-admin/periods`).
-
-## 🐳 Deployment (Docker)
-Untuk menjalankan seluruh sistem (Frontend & Backend):
-```bash
-docker-compose up -d --build
-```
+Dokumen ringkas untuk panduan rilis (deployment) Backend ke server instansi.
 
 ---
-© 2024 SDM APIP System - Inspektorat Infrastruktur
+
+## 1. Persiapan File .env
+Sebelum server dinyalakan, wajib isi dan ubah file `.env`:
+
+1. Kunci Keamanan:
+   - `JWT_SECRET` & `JWT_REFRESH_SECRET`: Isi dengan teks acak panjang (minimal 64 karakter).
+2. Akun Admin Utama:
+   - `ADMIN_DEFAULT_PASSWORD`: Ganti password awal admin.
+3. Koneksi Login SSO (Wajib):
+   - `SSO_ISSUER_URL`: Link resmi SSO kementerian.
+   - `SSO_CLIENT_ID` & `SSO_CLIENT_SECRET`: ID dan Password aplikasi dari tim IT pusat.
+4. Email Sistem (Untuk Lupa Sandi):
+   - `SMTP_USERNAME`: Email resmi instansi.
+   - `SMTP_PASSWORD`: Password email tersebut.
+
+---
+
+## 2. Cara Menyalakan Server
+
+Buka Terminal atau Command Prompt di server instansi pada folder aplikasi ini, lalu jalankan perintah:
+
+```bash
+docker compose up -d --build
+```
+
+Jika berhasil:
+- Database, Backend, dan Website akan langsung menyala bersamaan.
+- Akun Admin Utama otomatis dibuat dengan email `unerojamu@gmail.com`.
+
+---
+
+## 3. Catatan Penting
+- Login Pegawai: Semua pegawai wajib login via SSO kementerian menggunakan Email. Pastikan ejaan email di SSO pusat sama dengan email di menu Master SDM.
+- Lupa Sandi Admin: Tautan pemulihan akun akan dikirim ke `unerojamu@gmail.com` dan hanya aktif selama 5 menit.

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthContextType, AssessmentPeriod } from '../types';
-import { login as authLogin, superAdminLogin as authSuperAdminLogin, ssoLogin as authSsoLogin } from '../services/authService';
+import { superAdminLogin as authSuperAdminLogin, ssoLogin as authSsoLogin } from '../services/authService';
 import assessmentService from '../services/assessmentService';
 import toast from 'react-hot-toast';
 
@@ -29,14 +29,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const storedToken = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
 
-        // Tangani pengalihan SSO dari penyedia OIDC asli (Mode Produksi)
+        // Tangani pengalihan SSO dari penyedia OIDC (token sementara via URL)
         const urlParams = new URLSearchParams(window.location.search);
         const ssoToken = urlParams.get('sso_token');
         if (ssoToken) {
+            // Simpan token, bersihkan URL segera (hindari token muncul di history)
             localStorage.setItem('token', ssoToken);
             setToken(ssoToken);
-            // Bersihkan token dari URL tanpa memuat ulang
             window.history.replaceState({}, document.title, window.location.pathname);
+
+            // Ambil profil untuk mendapatkan data user
             import('../services/authService').then(({ getProfile }) => {
                 getProfile().then(data => {
                     if (data.user) {
@@ -44,7 +46,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         localStorage.setItem('user', JSON.stringify(data.user));
                         toast.success('Login SSO berhasil!', { id: 'auth-toast' });
                     }
-                }).catch(() => {});
+                }).catch(() => {
+                    // Token tidak valid, bersihkan
+                    localStorage.removeItem('token');
+                    setToken(null);
+                    toast.error('Sesi SSO tidak valid. Silakan login ulang.', { id: 'auth-toast' });
+                });
             });
             setLoading(false);
             return;
@@ -85,30 +92,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    const login = async (nip: string, password: string, totp?: string) => {
-        try {
-            const response = await authLogin({ nip, password, totp });
-
-            if (response.requires_mfa) {
-                return response;
-            }
-
-            // Simpan token dan pengguna (Refresh token sekarang diamankan via Cookie HttpOnly)
-            if (response.token && response.user) {
-                localStorage.setItem('token', response.token);
-                localStorage.setItem('user', JSON.stringify(response.user));
-
-                setToken(response.token);
-                setUser(response.user);
-                toast.success('Login berhasil!', { id: 'auth-toast' });
-            }
-
-            return response;
-        } catch (error: any) {
-            const message = error.response?.data?.error || 'Login gagal';
-            toast.error(message, { id: 'auth-toast' });
-            throw error;
-        }
+    const login = async (_nip: string, _password: string, _totp?: string) => {
+        // Login manual dinonaktifkan — sistem hanya menggunakan SSO
+        // Endpoint /auth/login sudah ditutup di backend
+        toast.error('Login manual tidak tersedia. Gunakan tombol SSO.', { id: 'auth-toast' });
+        throw new Error('MANUAL_LOGIN_DISABLED');
     };
 
     const superAdminLogin = async (username: string, password: string, totp?: string) => {
@@ -155,9 +143,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(updatedUser));
     };
 
-    const ssoLogin = async (nip: string) => {
+    const ssoLogin = async (email: string) => {
         try {
-            const response = await authSsoLogin(nip);
+            const response = await authSsoLogin(email);
 
             if (response.token && response.user) {
                 localStorage.setItem('token', response.token);
@@ -170,7 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
             return response;
         } catch (error: any) {
-            const message = error.response?.data?.error || 'Login SSO gagal. Pastikan NIP terdaftar.';
+            const message = error.response?.data?.error || 'Login SSO gagal. Pastikan email terdaftar.';
             toast.error(message, { id: 'auth-toast' });
             throw error;
         }

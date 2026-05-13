@@ -18,6 +18,8 @@ import {
     ArrowUpDown,
     Mail,
     Phone,
+    ShieldCheck,
+    KeyRound,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useEscapeKey from '../hooks/useEscapeKey';
@@ -232,6 +234,32 @@ const SDMManagement: React.FC = () => {
                     </motion.div>
                 </div>
 
+                {/* ─── Banner Informasi SSO ─────────────────────────────────── */}
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="flex items-start gap-4 p-5 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm"
+                >
+                    <div className="h-10 w-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0 mt-0.5">
+                        <ShieldCheck size={20} className="text-amber-600" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm font-black text-amber-900 tracking-tight">
+                            Kebijakan Akses SSO — Email adalah Kunci Masuk Sistem
+                        </p>
+                        <p className="text-xs text-amber-700 font-medium mt-1 leading-relaxed">
+                            Kolom <span className="font-black">Email</span> berfungsi sebagai syarat verifikasi login SSO.
+                            Email yang didaftarkan di sini <span className="font-black">harus sama persis</span> dengan akun SSO resmi pegawai.
+                            Pastikan setiap data email selalu akurat dan terkini.
+                        </p>
+                    </div>
+                    <div className="shrink-0 hidden md:flex items-center gap-2 bg-amber-100 border border-amber-200 rounded-xl px-3 py-2">
+                        <KeyRound size={14} className="text-amber-600" strokeWidth={2.5} />
+                        <span className="text-xs font-black text-amber-700 uppercase tracking-widest">SSO Permission</span>
+                    </div>
+                </motion.div>
+
                 {/* Toolbar Glass Bento */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center bg-white/70 backdrop-blur-3xl p-5 rounded-[2.2rem] border border-white/60 shadow-[0_10px_40px_rgb(0,0,0,0.05)]">
                     <div className="relative flex-1 group">
@@ -277,7 +305,7 @@ const SDMManagement: React.FC = () => {
                                         <div className="flex items-center justify-between">Nama Lengkap <ArrowUpDown size={12} className="opacity-50" /></div>
                                     </th>
                                     <th className="px-4 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('pangkat_golongan')}>
-                                        <div className="flex items-center justify-between">Kepangkatan <ArrowUpDown size={12} className="opacity-50" /></div>
+                                        <div className="flex items-center justify-between">Pendidikan <ArrowUpDown size={12} className="opacity-50" /></div>
                                     </th>
                                     <th className="px-4 py-6 text-xs font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer hover:text-primary-600 transition-colors" onClick={() => handleSort('jabatan')}>
                                         <div className="flex items-center justify-between">Jabatan & Unit <ArrowUpDown size={12} className="opacity-50" /></div>
@@ -313,9 +341,16 @@ const SDMManagement: React.FC = () => {
                                         </td>
                                         <td className="px-4 py-6">
                                             <div className="space-y-1.5">
-                                                <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600">
+                                                <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
                                                     <Mail size={12} className="text-primary-400 shrink-0" strokeWidth={3} />
-                                                    <span className="truncate max-w-[140px] italic">{sdm.email}</span>
+                                                    <span className="truncate max-w-[130px] italic">{sdm.email}</span>
+                                                    <span
+                                                        title="Email ini digunakan sebagai kunci verifikasi login SSO"
+                                                        className="shrink-0 inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-600 rounded-md px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider cursor-help"
+                                                    >
+                                                        <KeyRound size={9} strokeWidth={3} />
+                                                        SSO
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600">
                                                     <Phone size={12} className="text-primary-400 shrink-0" strokeWidth={3} />
@@ -400,7 +435,7 @@ const SDMManagement: React.FC = () => {
                                     <Plus size={100} />
                                 </div>
                                 <div className="relative z-10">
-                                    <h3 className="text-xl font-black italic tracking-tight">{editingSDM ? 'Edit Profil Pegawai' : 'Registrasi Personil'}</h3>
+                                    <h3 className="text-xl font-black tracking-tight">{editingSDM ? 'Edit Profil Pegawai' : 'Registrasi Personil'}</h3>
                                     <p className="text-primary-400 text-xs font-black uppercase tracking-[0.3em] mt-2">Sinkronisasi Basis Data Master APIP</p>
                                 </div>
                                 <button onClick={() => setShowModal(false)} className="relative z-10 h-14 w-14 flex items-center justify-center rounded-md bg-white/10 text-white hover:bg-rose-500 transition-all active:scale-90">
@@ -479,15 +514,25 @@ const SDMManagement: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-3 md:col-span-2">
-                                    <label className="text-xs font-black text-slate-900 uppercase tracking-widest block pl-1">E-Mail Resmi Kedinasan</label>
+                                    <div className="flex items-center justify-between pl-1">
+                                        <label className="text-xs font-black text-slate-900 uppercase tracking-widest">E-Mail Resmi Kedinasan</label>
+                                        <span className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest">
+                                            <KeyRound size={10} strokeWidth={3} />
+                                            Kunci Akses SSO
+                                        </span>
+                                    </div>
                                     <input
                                         type="email"
-                                        className="w-full bg-slate-50 border-2 border-slate-50 focus:border-primary-500 focus:bg-white rounded-2xl px-4 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
-                                        placeholder="account@domain.com"
+                                        className="w-full bg-amber-50/50 border-2 border-amber-200 focus:border-amber-500 focus:bg-white rounded-2xl px-4 py-4 text-sm font-black text-slate-800 transition-all outline-none shadow-inner"
+                                        placeholder="pegawai@kemenko-infra.go.id"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     />
-                                    {formErrors.email && <p className="text-xs text-rose-500 font-black uppercase tracking-widest mt-1.5 pl-1 italic">{formErrors.email}</p>}
+                                    <p className="text-[11px] text-amber-700 font-semibold pl-1 flex items-start gap-1.5">
+                                        <ShieldCheck size={13} className="shrink-0 mt-0.5" strokeWidth={2.5} />
+                                        Harus sama persis dengan akun Google / Microsoft resmi pegawai. Email ini menjadi syarat login SSO.
+                                    </p>
+                                    {formErrors.email && <p className="text-xs text-rose-500 font-black uppercase tracking-widest mt-1 pl-1 italic">{formErrors.email}</p>}
                                 </div>
                             </div>
 

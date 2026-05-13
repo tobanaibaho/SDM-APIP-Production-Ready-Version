@@ -211,15 +211,18 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                             ${showSettingsMenu ? 'opacity-100 scale-100 translate-x-0' : 'opacity-0 scale-95 -translate-x-4 pointer-events-none'}
                         `}>
                             <div className="p-1.5 flex flex-col gap-1">
-                                <button
-                                    onClick={() => { setShowChangePassword(true); setShowSettingsMenu(false); }}
-                                    className="flex w-full items-center gap-3 px-3 py-2.5 text-xs font-semibold text-slate-300 rounded-lg transition-colors hover:bg-slate-700/50 hover:text-white"
-                                >
-                                    <div className="h-6 w-6 rounded-md bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                                        <KeyRound size={12} className="text-blue-400" />
-                                    </div>
-                                    Ganti Password
-                                </button>
+                                {/* Ganti Password hanya untuk Super Admin — user SSO tidak punya password */}
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => { setShowChangePassword(true); setShowSettingsMenu(false); }}
+                                        className="flex w-full items-center gap-3 px-3 py-2.5 text-xs font-semibold text-slate-300 rounded-lg transition-colors hover:bg-slate-700/50 hover:text-white"
+                                    >
+                                        <div className="h-6 w-6 rounded-md bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                            <KeyRound size={12} className="text-blue-400" />
+                                        </div>
+                                        Ganti Password
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => { handleLogout(); setShowSettingsMenu(false); }}
                                     className="flex w-full items-center gap-3 px-3 py-2.5 text-xs font-semibold text-slate-300 rounded-lg transition-colors hover:bg-red-500/10 hover:text-red-400"
@@ -316,8 +319,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => {
                 </button>
             </div>
 
-            {/* Modal Ganti Password */}
-            {showChangePassword && (
+            {/* Modal Ganti Password — hanya untuk Super Admin */}
+            {isAdmin && showChangePassword && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
                     <div className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in">
                         <div className="flex items-center justify-between p-4 border-b border-slate-700">

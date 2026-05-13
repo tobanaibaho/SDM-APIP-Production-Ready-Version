@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS sdm_apip (
     id SERIAL PRIMARY KEY,
     nip VARCHAR(18) UNIQUE NOT NULL,
     nama VARCHAR(255) NOT NULL,
+    -- Email digunakan sebagai syarat permission login SSO:
+    -- Email dari IdP (Google/Microsoft) HARUS cocok dengan email ini
+    -- agar akses diberikan. Pastikan email selalu diisi dengan benar.
     email VARCHAR(255) NOT NULL,
     jabatan VARCHAR(255),
     pangkat_golongan VARCHAR(255),
@@ -30,6 +33,8 @@ CREATE TABLE IF NOT EXISTS sdm_apip (
 );
 CREATE INDEX IF NOT EXISTS idx_sdm_apip_nip ON sdm_apip(nip);
 CREATE INDEX IF NOT EXISTS idx_sdm_apip_deleted_at ON sdm_apip(deleted_at);
+-- Index email untuk mendukung query verifikasi SSO (case-insensitive)
+CREATE INDEX IF NOT EXISTS idx_sdm_apip_email ON sdm_apip(LOWER(email));
 
 -- =============================================
 -- 2. PENGGUNA & AUTENTIKASI

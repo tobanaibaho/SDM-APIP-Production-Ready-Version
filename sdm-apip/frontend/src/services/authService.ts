@@ -16,8 +16,8 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
 };
 
 // SSO Login (Mock)
-export const ssoLogin = async (nip: string): Promise<LoginResponse> => {
-    const response = await api.post<ApiResponse<LoginResponse>>('/auth/sso/callback', { nip });
+export const ssoLogin = async (email: string): Promise<LoginResponse> => {
+    const response = await api.post<ApiResponse<LoginResponse>>('/auth/sso/callback', { email });
     return response.data.data!;
 };
 
@@ -44,13 +44,13 @@ export const superAdminForgotPassword = async (username: string): Promise<string
     return response.data.data?.debug_token;
 };
 
-// Reset Kata Sandi Admin via Token (dengan kata sandi baru pilihan admin)
-export const superAdminResetToDefault = async (
+// Reset Kata Sandi Admin via Token (Tautan Langsung Tanpa OTP)
+export const superAdminResetPassword = async (
     token: string,
     newPassword: string,
     confirmPassword: string
 ): Promise<void> => {
-    await api.post<ApiResponse<null>>('/auth/super-admin/reset-to-default', {
+    await api.post<ApiResponse<null>>('/auth/super-admin/reset-password', {
         token,
         new_password: newPassword,
         confirm_password: confirmPassword,

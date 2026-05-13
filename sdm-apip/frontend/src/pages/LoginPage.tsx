@@ -1,9 +1,34 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Logo from '../assets/logo.png';
-import { ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, ArrowRight, Lock } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const LoginPage: React.FC = () => {
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const error = params.get('error');
+        if (error) {
+            let errorMsg = 'Terjadi kesalahan saat login SSO.';
+            switch (error) {
+                case 'invalid_state': errorMsg = 'Sesi SSO tidak valid atau telah kedaluwarsa. Silakan coba lagi.'; break;
+                case 'provider_disabled': errorMsg = 'Layanan SSO saat ini dinonaktifkan.'; break;
+                case 'sso_unavailable': errorMsg = 'Server SSO sedang tidak dapat dihubungi.'; break;
+                case 'token_exchange_failed': errorMsg = 'Gagal menukarkan kode akses SSO.'; break;
+                case 'no_id_token': errorMsg = 'Token identitas tidak ditemukan dari SSO.'; break;
+                case 'token_invalid': errorMsg = 'Token identitas tidak valid.'; break;
+                case 'claims_failed': errorMsg = 'Gagal membaca data identitas dari profil SSO Anda.'; break;
+                case 'identity_not_found': errorMsg = 'Identitas (Email/NIP) tidak dikirimkan oleh server SSO.'; break;
+                case 'access_denied': errorMsg = 'Akses Ditolak. Email SSO Anda tidak terdaftar sebagai Pegawai di Sistem (Master Data).'; break;
+            }
+            toast.error(errorMsg, { duration: 5000, id: 'sso-error' });
+            
+            // Bersihkan URL agar error tidak muncul terus saat direfresh
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, [location]);
 
     return (
         <div className="min-h-screen flex font-sans bg-white">
@@ -18,7 +43,7 @@ const LoginPage: React.FC = () => {
                     <img src={Logo} alt="Logo Kemenko" className="h-28 w-28 drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]" />
                     <div>
                         <h2 className="text-white font-black text-2xl tracking-widest uppercase">INSPEKTORAT</h2>
-                        <p className="text-primary-200 text-sm font-medium tracking-wider mt-1">Kementerian Koordinator Bidang Infrastruktur & Pembangunan Kewilayahan</p>
+                        <p className="text-primary-200 text-sm font-medium tracking-wider mt-1">Kementerian Koordinator Bidang Infrastruktur &amp; Pembangunan Kewilayahan</p>
                     </div>
                 </div>
 
@@ -71,55 +96,50 @@ const LoginPage: React.FC = () => {
                     {/* Heading */}
                     <div className="mb-10 text-center lg:text-left">
                         <h2 className="text-3xl font-black text-slate-900 mb-2">Selamat Datang</h2>
-                        <p className="text-slate-400 text-sm">Gunakan akun SSO instansi Anda untuk masuk.</p>
+                        <p className="text-slate-400 text-sm">Masuk menggunakan akun resmi instansi Kemenko Infra.</p>
                     </div>
 
-                    {/* SSO Buttons - 3 Kolom Sejajar */}
-                    <div className="flex gap-3">
-                        {/* Instansi / Kemenko */}
+                    {/* SSO Button — Single, Full Width */}
+                    <div className="flex flex-col gap-4">
+                        {/* Badge instansi resmi */}
+                        <div className="flex items-center gap-2 px-3 py-2 bg-primary-50 border border-primary-200 rounded-xl">
+                            <Lock size={13} className="text-primary-600 shrink-0" />
+                            <p className="text-[11px] font-semibold text-primary-700">
+                                Akses eksklusif untuk pegawai Kemenko Infra
+                            </p>
+                        </div>
+
+                        {/* Tombol SSO Utama */}
                         <button
+                            id="btn-sso-kemenko"
                             onClick={() => { window.location.href = `/api/auth/sso/login`; }}
-                            className="flex-1 flex flex-col items-center justify-center px-3 py-4 rounded-2xl bg-white border border-slate-200 hover:border-primary-300 hover:bg-primary-50 active:scale-[0.97] text-slate-700 transition-all shadow-sm group"
+                            className="w-full group relative flex items-center justify-between gap-4 px-6 py-5 rounded-2xl bg-primary-700 hover:bg-primary-800 active:scale-[0.98] text-white transition-all duration-200 shadow-lg hover:shadow-xl overflow-hidden"
                         >
-                            <div className="h-8 w-8 rounded-xl bg-primary-700 flex items-center justify-center mb-2 group-hover:bg-primary-800 transition-colors">
-                                <ShieldCheck size={16} className="text-white" />
+                            {/* Glow overlay on hover */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                            <div className="relative flex items-center gap-4">
+                                <div className="h-11 w-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0 group-hover:bg-white/25 transition-colors">
+                                    <ShieldCheck size={22} className="text-white" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-black tracking-wide leading-none">Login SSO Instansi</p>
+                                    <p className="text-xs text-primary-200 mt-1 font-medium">Kemenko Infrastruktur &amp; Pembangunan Kewilayahan</p>
+                                </div>
                             </div>
-                            <span className="text-[11px] font-bold text-slate-700 leading-none">Instansi</span>
-                            <span className="text-[9px] text-slate-400 mt-0.5">SSO Kemenko Infra</span>
+
+                            <ArrowRight
+                                size={18}
+                                className="relative text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0"
+                            />
                         </button>
 
-                        {/* Google */}
-                        <button
-                            onClick={() => { window.location.href = `/api/auth/sso/login/google`; }}
-                            className="flex-1 flex flex-col items-center justify-center px-3 py-4 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.97] text-slate-700 transition-all shadow-sm"
-                        >
-                            <svg className="h-8 w-8 mb-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.16v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.16C1.43 8.55 1 10.22 1 12s.43 3.45 1.16 4.93l3.68-2.84z" fill="#FBBC05" />
-                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.16 7.07l3.68 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                            </svg>
-                            <span className="text-[11px] font-bold leading-none">Google</span>
-                            <span className="text-[9px] text-slate-400 mt-0.5">Workspace</span>
-                        </button>
-
-                        {/* Microsoft */}
-                        <button
-                            onClick={() => { window.location.href = `/api/auth/sso/login/microsoft`; }}
-                            className="flex-1 flex flex-col items-center justify-center px-3 py-4 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.97] text-slate-700 transition-all shadow-sm"
-                        >
-                            <svg className="h-8 w-8 mb-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z" fill="#00a4ef" />
-                            </svg>
-                            <span className="text-[11px] font-bold leading-none">Microsoft</span>
-                            <span className="text-[9px] text-slate-400 mt-0.5">365</span>
-                        </button>
+                        {/* Keterangan */}
+                        <p className="text-center text-[11px] text-slate-400 leading-relaxed px-2">
+                            Sistem akan mengenali identitas Anda secara otomatis<br />
+                            melalui akun kedinasan yang telah terverifikasi.
+                        </p>
                     </div>
-
-                    {/* Divider info */}
-                    <p className="text-center text-[11px] text-slate-400 mt-6 leading-relaxed">
-                        Sistem akan mengenali identitas Anda secara otomatis<br />melalui akun yang terverifikasi.
-                    </p>
 
                     {/* Admin link */}
                     <div className="mt-12 pt-6 border-t border-slate-100 text-center">
