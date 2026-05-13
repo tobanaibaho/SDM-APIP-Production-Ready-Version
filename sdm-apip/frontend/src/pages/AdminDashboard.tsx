@@ -195,7 +195,7 @@ const AdminDashboard: React.FC = () => {
                             <UserPlus size={28} />
                             {(stats?.pending_users ?? 0) > 0 && <span className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-rose-500 rounded-full animate-pulse border-2 border-white shadow-sm" />}
                         </div>
-                        <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Verifikasi</h4></div>
+                        <div><h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Pengguna</h4></div>
                     </NavLink>
                     <NavLink to="/super-admin/groups" className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-lg p-4 hover:bg-white hover:scale-[1.03] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center text-center gap-4">
                         <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center text-blue-600 shadow-inner"><Users size={28} /></div>

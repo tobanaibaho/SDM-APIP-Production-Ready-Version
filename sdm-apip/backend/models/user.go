@@ -91,38 +91,9 @@ type SecureAdminResetConfirmRequest struct {
 	NewPassword    string `json:"new_password" binding:"required,min=8"`
 }
 
-// RegisterRequest untuk pendaftaran pengguna
-type RegisterRequest struct {
-	NIP   string `json:"nip" binding:"required,len=18"`
-	Email string `json:"email" binding:"required,email"`
-}
-
-// SetPasswordRequest untuk mengatur password setelah verifikasi email
-type SetPasswordRequest struct {
-	Token           string `json:"token" binding:"required"`
-	OTP             string `json:"otp" binding:"required,len=6"`
-	Password        string `json:"password" binding:"required,min=8"`
-	ConfirmPassword string `json:"confirm_password" binding:"required"`
-}
-
-// VerifyEmailRequest untuk verifikasi email
-type VerifyEmailRequest struct {
-	Token string `json:"token" binding:"required"`
-	OTP   string `json:"otp" binding:"required,len=6"`
-}
-
-// ForgotPasswordRequest untuk memulai pemulihan password pengguna
-type ForgotPasswordRequest struct {
-	Email string `json:"email" binding:"required,email"`
-}
-
-// ResetPasswordRequest untuk menyelesaikan pemulihan password pengguna
-type ResetPasswordRequest struct {
-	Token           string `json:"token" binding:"required"`
-	OTP             string `json:"otp" binding:"required,len=6"`
-	NewPassword     string `json:"new_password" binding:"required,min=8"`
-	ConfirmPassword string `json:"confirm_password" binding:"required"`
-}
+// Catatan: RegisterRequest, SetPasswordRequest, VerifyEmailRequest, ForgotPasswordRequest,
+// dan ResetPasswordRequest telah DIHAPUS.
+// Sistem hanya menggunakan SSO — tidak ada alur pendaftaran atau pemulihan password manual untuk pegawai.
 
 // UserResponse untuk respon API
 type UserResponse struct {
