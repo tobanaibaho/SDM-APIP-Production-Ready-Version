@@ -73,21 +73,47 @@ func main() {
 	}
 }
 
-// bootstrapAdmin memastikan setidaknya satu SuperAdmin ada.
-// Password dimuat dari variabel lingkungan ADMIN_DEFAULT_PASSWORD dan di-hash saat runtime.
+// bootstrapAdmin memastikan setidaknya satu SuperAdmin ada saat server pertama kali dijalankan.
+// Seluruh kredensial (username, email, password) WAJIB dimuat dari environment variable.
+// Tidak ada credential yang boleh di-hardcode di kode sumber atau file SQL.
 func bootstrapAdmin(db *gorm.DB) {
-	logger.Info("🛡️ Checking admin status...")
+	logger.Info("🛣️ Checking admin bootstrap status...")
 
-	// Muat password dari ENV — jangan pernah menyimpan kredensial di kode sumber
+	// Ambil seluruh konfigurasi admin dari ENV — tidak ada hardcode
 	plainPassword := config.AppConfig.AdminDefaultPassword
+	adminUsername := os.Getenv("ADMIN_USERNAME")
+	adminEmail := os.Getenv("ADMIN_EMAIL")
+
+	// Fallback username & email hanya untuk mode dev
+	if adminUsername == "" {
+		if config.AppConfig.GinMode == "release" {
+			logger.Warn("⚠️ SECURITY: ADMIN_USERNAME is not set. Admin bootstrap skipped for safety.")
+			return
+		}
+		adminUsername = "admin"
+		logger.Warn("⚠️ DEV MODE: ADMIN_USERNAME not set, using 'admin' as fallback.")
+	}
+	if adminEmail == "" {
+		if config.AppConfig.GinMode == "release" {
+			logger.Warn("⚠️ SECURITY: ADMIN_EMAIL is not set. Admin bootstrap skipped for safety.")
+			return
+		}
+		// Di dev mode, gunakan SMTP_FROM jika tersedia, jika tidak pakai placeholder
+		if config.AppConfig.SMTPFrom != "" {
+			adminEmail = config.AppConfig.SMTPFrom
+		} else {
+			adminEmail = "admin@sdm-apip.local"
+		}
+		logger.Warn("⚠️ DEV MODE: ADMIN_EMAIL not set, using '%s' as fallback.", adminEmail)
+	}
 	if plainPassword == "" {
 		if config.AppConfig.GinMode == "release" {
 			logger.Warn("⚠️ SECURITY: ADMIN_DEFAULT_PASSWORD is not set. Admin bootstrap skipped for safety.")
 			return
 		}
-		// Cadangan untuk pengembangan saja
+		// Cadangan untuk pengembangan saja — DILARANG di production
 		plainPassword = "admin123"
-		logger.Warn("⚠️ DEV MODE: Using default admin password 'admin123'. Set ADMIN_DEFAULT_PASSWORD in production!")
+		logger.Warn("⚠️ DEV MODE: Using default admin password 'admin123'. Set ADMIN_DEFAULT_PASSWORD in .env!")
 	}
 
 	// Hash password saat runtime (jangan simpan teks biasa atau hash yang di-hardcode)
@@ -99,33 +125,32 @@ func bootstrapAdmin(db *gorm.DB) {
 	hashedPassword := string(hashedBytes)
 
 	var admin models.User
-	err = db.Where("username = ? OR role_id = ?", "admin", models.RoleSuperAdmin).First(&admin).Error
+	err = db.Where("username = ? OR role_id = ?", adminUsername, models.RoleSuperAdmin).First(&admin).Error
 	if err != nil {
-		logger.Info("👤 Admin not found. Creating default SuperAdmin...")
-		username := "admin"
+		logger.Info("👤 Admin not found. Creating SuperAdmin from environment variables...")
 		admin = models.User{
-			Username: &username,
+			Username: &adminUsername,
+			Email:    adminEmail,
 			Password: hashedPassword,
 			RoleID:   models.RoleSuperAdmin,
 			Status:   models.StatusActive,
-			Email:    config.AppConfig.SMTPFrom,
 		}
 		if err := db.Create(&admin).Error; err != nil {
 			logger.Warn("⚠️ Failed to bootstrap admin: %v", err)
 		} else {
-			logger.Info("✅ Default admin created.")
+			logger.Info("✅ SuperAdmin '%s' created successfully.", adminUsername)
 		}
 	} else {
-		// Pastikan pengguna 'admin' aktif dan memiliki peran yang benar
+		// Admin sudah ada — hanya pastikan status & role benar
 		updates := map[string]interface{}{
 			"status":  models.StatusActive,
 			"role_id": models.RoleSuperAdmin,
 		}
-		// Perbarui password hanya jika kosong (misalnya DB baru)
+		// Isi password hanya jika kolom kosong (misalnya DB baru tanpa password)
 		if admin.Password == "" {
 			updates["password"] = hashedPassword
 		}
 		db.Model(&admin).Updates(updates)
-		logger.Info("✅ Admin status verified.")
+		logger.Info("✅ Admin status verified (username: %s).", adminUsername)
 	}
 }

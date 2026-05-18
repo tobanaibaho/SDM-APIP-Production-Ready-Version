@@ -247,13 +247,10 @@ ON CONFLICT (id) DO UPDATE SET
     name = EXCLUDED.name,
     description = EXCLUDED.description;
 
--- Administrator Awal
-INSERT INTO users (nip, username, email, password, role_id, status) VALUES 
-    (NULL, 'admin', 'unerojamu@gmail.com', '$2a$10$zTY21HR3m5wi6jkKN7UAOOrKtrxle16mdapoyzJ0//Rzow5XG/qTm', 1, 'active')
-ON CONFLICT (username) DO UPDATE SET 
-    password = EXCLUDED.password,
-    status = EXCLUDED.status,
-    role_id = EXCLUDED.role_id;
+-- ⚠️  Data admin awal TIDAK disimpan di sini.
+-- Admin SuperAdmin dibuat secara otomatis oleh Go saat server pertama kali dijalankan,
+-- menggunakan kredensial dari environment variable ADMIN_DEFAULT_PASSWORD, ADMIN_USERNAME, dan ADMIN_EMAIL.
+-- Lihat fungsi bootstrapAdmin() di backend/main.go untuk detailnya.
 
 
 
