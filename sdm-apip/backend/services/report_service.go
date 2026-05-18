@@ -271,80 +271,230 @@ func (s *ReportService) GetDetailedReports(filter models.ReportFilter) ([]models
 	return results, total, err
 }
 
+func bulanIndonesia(month int) string {
+	bulanID := []string{"Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"}
+	if month >= 1 && month <= 12 {
+		return bulanID[month-1]
+	}
+	return fmt.Sprintf("Bulan-%d", month)
+}
+
 func (s *ReportService) ExportToExcel(filter models.ReportFilter, adminID uint, ip, ua string) ([]byte, error) {
 	details, _, err := s.GetDetailedReports(filter)
 	if err != nil {
 		return nil, err
 	}
-
-	f := excelize.NewFile()
-	defer f.Close()
-
-	// Lembar 1: Ringkasan
-	f.SetSheetName("Sheet1", "Ringkasan")
 	dashData, err := s.GetDashboardData(filter)
 	if err != nil {
 		return nil, fmt.Errorf("Gagal mengambil data dashboard: %v", err)
 	}
 
-	f.SetCellValue("Ringkasan", "A1", "LAPORAN PENILAIAN PEER ASSESSMENT")
+	f := excelize.NewFile()
+	defer f.Close()
+
+	// ── STYLES ──────────────────────────────────────────────────
+	titleStyle, _ := f.NewStyle(&excelize.Style{
+		Font:      &excelize.Font{Bold: true, Size: 14, Color: "1E3A5F"},
+		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center"},
+	})
+	headerStyle, _ := f.NewStyle(&excelize.Style{
+		Font:      &excelize.Font{Bold: true, Color: "FFFFFF", Size: 9},
+		Fill:      excelize.Fill{Type: "pattern", Color: []string{"1E3A5F"}, Pattern: 1},
+		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+		Border:    []excelize.Border{{Type: "left", Color: "FFFFFF", Style: 1}, {Type: "right", Color: "FFFFFF", Style: 1}, {Type: "top", Color: "FFFFFF", Style: 1}, {Type: "bottom", Color: "FFFFFF", Style: 1}},
+	})
+	subHeaderStyle, _ := f.NewStyle(&excelize.Style{
+		Font:      &excelize.Font{Bold: true, Size: 10, Color: "1E3A5F"},
+		Fill:      excelize.Fill{Type: "pattern", Color: []string{"D9E1F2"}, Pattern: 1},
+		Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center"},
+		Border:    []excelize.Border{{Type: "left", Color: "1E3A5F", Style: 1}, {Type: "bottom", Color: "1E3A5F", Style: 1}},
+	})
+	dataStyle, _ := f.NewStyle(&excelize.Style{
+		Font:      &excelize.Font{Size: 9},
+		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+		Border:    []excelize.Border{{Type: "left", Color: "CCCCCC", Style: 1}, {Type: "right", Color: "CCCCCC", Style: 1}, {Type: "top", Color: "CCCCCC", Style: 1}, {Type: "bottom", Color: "CCCCCC", Style: 1}},
+	})
+	avgRowStyle, _ := f.NewStyle(&excelize.Style{
+		Font:      &excelize.Font{Bold: true, Size: 9, Color: "FFFFFF"},
+		Fill:      excelize.Fill{Type: "pattern", Color: []string{"2E75B6"}, Pattern: 1},
+		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center"},
+		Border:    []excelize.Border{{Type: "left", Color: "FFFFFF", Style: 1}, {Type: "right", Color: "FFFFFF", Style: 1}, {Type: "top", Color: "FFFFFF", Style: 1}, {Type: "bottom", Color: "FFFFFF", Style: 1}},
+	})
+
+	// ── SHEET 1: RINGKASAN ──────────────────────────────────────
+	f.SetSheetName("Sheet1", "Ringkasan")
+	f.SetCellValue("Ringkasan", "A1", "LAPORAN PENILAIAN KINERJA PEGAWAI APIP — BerAKHLAK")
 	f.MergeCell("Ringkasan", "A1", "D1")
+	f.SetCellStyle("Ringkasan", "A1", "D1", titleStyle)
+	f.SetRowHeight("Ringkasan", 1, 30)
+	f.SetCellValue("Ringkasan", "A2", fmt.Sprintf("Dicetak pada: %s", time.Now().Format("02 January 2006, 15:04 WIB")))
+	f.MergeCell("Ringkasan", "A2", "D2")
 
-	f.SetCellValue("Ringkasan", "A3", "Total Penilaian")
-	f.SetCellValue("Ringkasan", "B3", dashData.Summary.TotalAssessments)
-	f.SetCellValue("Ringkasan", "A4", "Rata-rata Nilai")
-	f.SetCellValue("Ringkasan", "B4", dashData.Summary.AverageScore)
-	f.SetCellValue("Ringkasan", "A5", "Total User Dinilai")
-	f.SetCellValue("Ringkasan", "B5", dashData.Summary.TotalUsers)
-
-	// Sheet 2: Detail Penilaian
-	index, _ := f.NewSheet("Detail Penilaian")
-	headers := []string{"ID", "Bulan Ke", "Tanggal", "Penilai", "Nama Pegawai", "NIP", "Grup", "Peran", "Unit Kerja", "Berorientasi Pelayanan", "Akuntabel", "Kompeten", "Harmonis", "Loyal", "Adaptif", "Kolaboratif", "Rata-rata", "Komentar"}
-	for i, head := range headers {
-		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
-		f.SetCellValue("Detail Penilaian", cell, head)
+	stats := [][]interface{}{
+		{"Total Sesi Penilaian", dashData.Summary.TotalAssessments},
+		{"Jumlah Pegawai Dinilai", dashData.Summary.TotalUsers},
+		{"Rata-rata Nilai Keseluruhan", fmt.Sprintf("%.2f", dashData.Summary.AverageScore)},
+		{"Nilai Tertinggi", fmt.Sprintf("%.2f", dashData.Summary.HighestScore)},
+		{"Nilai Terendah", fmt.Sprintf("%.2f", dashData.Summary.LowestScore)},
 	}
+	for i, row := range stats {
+		f.SetCellValue("Ringkasan", fmt.Sprintf("A%d", i+4), row[0])
+		f.SetCellValue("Ringkasan", fmt.Sprintf("B%d", i+4), row[1])
+		f.SetCellStyle("Ringkasan", fmt.Sprintf("A%d", i+4), fmt.Sprintf("A%d", i+4), subHeaderStyle)
+	}
+	f.SetCellValue("Ringkasan", "D3", "Rata-rata Per Indikator BerAKHLAK")
+	f.SetCellStyle("Ringkasan", "D3", "D3", subHeaderStyle)
+	for i, cat := range dashData.CategoryBreakdown {
+		f.SetCellValue("Ringkasan", fmt.Sprintf("D%d", i+4), cat.Category)
+		f.SetCellValue("Ringkasan", fmt.Sprintf("E%d", i+4), fmt.Sprintf("%.2f", cat.Average))
+	}
+	f.SetColWidth("Ringkasan", "A", "A", 32)
+	f.SetColWidth("Ringkasan", "B", "C", 15)
+	f.SetColWidth("Ringkasan", "D", "D", 30)
+	f.SetColWidth("Ringkasan", "E", "E", 12)
+
+	// ── SHEET 2: DETAIL PER SESI PENILAIAN ──────────────────────
+	f.NewSheet("Detail Penilaian")
+	f.SetCellValue("Detail Penilaian", "A1", "DETAIL PENILAIAN PER SESI")
+	f.MergeCell("Detail Penilaian", "A1", "M1")
+	f.SetCellStyle("Detail Penilaian", "A1", "M1", titleStyle)
+	f.SetRowHeight("Detail Penilaian", 1, 25)
+
+	headers2 := []string{"No", "Bulan", "Tanggal", "Nama Pegawai Dinilai", "Nama Penilai", "Ber. Pelayanan", "Akuntabel", "Kompeten", "Harmonis", "Loyal", "Adaptif", "Kolaboratif", "Rata-rata", "Komentar"}
+	colWidths2 := []float64{5, 12, 14, 28, 28, 12, 12, 12, 12, 12, 12, 12, 11, 40}
+	for i, head := range headers2 {
+		cell, _ := excelize.CoordinatesToCellName(i+1, 2)
+		f.SetCellValue("Detail Penilaian", cell, head)
+		f.SetCellStyle("Detail Penilaian", cell, cell, headerStyle)
+		if i < len(colWidths2) {
+			col, _ := excelize.ColumnNumberToName(i + 1)
+			f.SetColWidth("Detail Penilaian", col, col, colWidths2[i])
+		}
+	}
+	f.SetRowHeight("Detail Penilaian", 2, 38)
 
 	for i, row := range details {
-		rowIdx := i + 2
-		
-		bulanNama := fmt.Sprintf("Ke-%d", row.AssessmentMonth)
-		if row.AssessmentMonth >= 1 {
-			bulanID := []string{"Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"}
-			bulanNama = bulanID[(row.AssessmentMonth-1)%12]
+		rowIdx := i + 3
+		values := []interface{}{
+			i + 1, bulanIndonesia(row.AssessmentMonth), row.Date.Format("02-01-2006"),
+			row.TargetUserName, row.EvaluatorName,
+			row.BerorientasiPelayanan, row.Akuntabel, row.Kompeten,
+			row.Harmonis, row.Loyal, row.Adaptif, row.Kolaboratif,
+			fmt.Sprintf("%.2f", row.AverageScore), row.Comment,
+		}
+		for j, val := range values {
+			cell, _ := excelize.CoordinatesToCellName(j+1, rowIdx)
+			f.SetCellValue("Detail Penilaian", cell, val)
+			f.SetCellStyle("Detail Penilaian", cell, cell, dataStyle)
+		}
+	}
+
+	// ── SHEET 3: REKAP PER PEGAWAI (dikelompokkan) ──────────────
+	idx3, _ := f.NewSheet("Rekap Per Pegawai")
+
+	// Kelompokkan data berdasarkan pegawai yang dinilai
+	type userEntry struct {
+		name        string
+		assessments []models.AssessmentDetailRow
+	}
+	userMap := map[string]*userEntry{}
+	userOrder := []string{}
+	for _, row := range details {
+		if _, ok := userMap[row.TargetUserName]; !ok {
+			userMap[row.TargetUserName] = &userEntry{name: row.TargetUserName}
+			userOrder = append(userOrder, row.TargetUserName)
+		}
+		userMap[row.TargetUserName].assessments = append(userMap[row.TargetUserName].assessments, row)
+	}
+
+	f.SetCellValue("Rekap Per Pegawai", "A1", "REKAP PENILAIAN PER PEGAWAI — SEMUA PENILAI")
+	f.MergeCell("Rekap Per Pegawai", "A1", "M1")
+	f.SetCellStyle("Rekap Per Pegawai", "A1", "M1", titleStyle)
+	f.SetRowHeight("Rekap Per Pegawai", 1, 25)
+
+	colWidths3 := []float64{5, 12, 14, 28, 12, 12, 12, 12, 12, 12, 12, 11, 40}
+	subCols := []string{"No", "Bulan", "Tanggal", "Nama Penilai", "Ber. Pelayanan", "Akuntabel", "Kompeten", "Harmonis", "Loyal", "Adaptif", "Kolaboratif", "Rata-rata", "Komentar"}
+	for i, w := range colWidths3 {
+		col, _ := excelize.ColumnNumberToName(i + 1)
+		f.SetColWidth("Rekap Per Pegawai", col, col, w)
+	}
+
+	currentRow := 2
+	for _, key := range userOrder {
+		ue := userMap[key]
+
+		// Nama pegawai yang dinilai
+		nameCell, _ := excelize.CoordinatesToCellName(1, currentRow)
+		lastCell, _ := excelize.CoordinatesToCellName(13, currentRow)
+		f.SetCellValue("Rekap Per Pegawai", nameCell, fmt.Sprintf("Pegawai: %s", ue.name))
+		f.MergeCell("Rekap Per Pegawai", nameCell, lastCell)
+		f.SetCellStyle("Rekap Per Pegawai", nameCell, lastCell, subHeaderStyle)
+		f.SetRowHeight("Rekap Per Pegawai", currentRow, 18)
+		currentRow++
+
+		// Header kolom
+		for j, h := range subCols {
+			cell, _ := excelize.CoordinatesToCellName(j+1, currentRow)
+			f.SetCellValue("Rekap Per Pegawai", cell, h)
+			f.SetCellStyle("Rekap Per Pegawai", cell, cell, headerStyle)
+		}
+		f.SetRowHeight("Rekap Per Pegawai", currentRow, 30)
+		currentRow++
+
+		var tBer, tAku, tKom, tHar, tLoy, tAda, tKol, tAvg float64
+		n := float64(len(ue.assessments))
+		for i, a := range ue.assessments {
+			vals := []interface{}{
+				i + 1, bulanIndonesia(a.AssessmentMonth), a.Date.Format("02-01-2006"),
+				a.EvaluatorName,
+				a.BerorientasiPelayanan, a.Akuntabel, a.Kompeten,
+				a.Harmonis, a.Loyal, a.Adaptif, a.Kolaboratif,
+				fmt.Sprintf("%.2f", a.AverageScore), a.Comment,
+			}
+			for j, val := range vals {
+				cell, _ := excelize.CoordinatesToCellName(j+1, currentRow)
+				f.SetCellValue("Rekap Per Pegawai", cell, val)
+				f.SetCellStyle("Rekap Per Pegawai", cell, cell, dataStyle)
+			}
+			tBer += float64(a.BerorientasiPelayanan)
+			tAku += float64(a.Akuntabel)
+			tKom += float64(a.Kompeten)
+			tHar += float64(a.Harmonis)
+			tLoy += float64(a.Loyal)
+			tAda += float64(a.Adaptif)
+			tKol += float64(a.Kolaboratif)
+			tAvg += a.AverageScore
+			currentRow++
 		}
 
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("A%d", rowIdx), row.ID)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("B%d", rowIdx), bulanNama)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("C%d", rowIdx), row.Date.Format("2006-01-02"))
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("D%d", rowIdx), row.EvaluatorName)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("E%d", rowIdx), row.TargetUserName)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("F%d", rowIdx), row.TargetNIP)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("G%d", rowIdx), row.GroupName)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("H%d", rowIdx), row.GroupRole)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("I%d", rowIdx), row.UnitKerja)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("J%d", rowIdx), row.BerorientasiPelayanan)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("K%d", rowIdx), row.Akuntabel)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("L%d", rowIdx), row.Kompeten)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("M%d", rowIdx), row.Harmonis)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("N%d", rowIdx), row.Loyal)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("O%d", rowIdx), row.Adaptif)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("P%d", rowIdx), row.Kolaboratif)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("Q%d", rowIdx), row.AverageScore)
-		f.SetCellValue("Detail Penilaian", fmt.Sprintf("R%d", rowIdx), row.Comment)
+		// Baris rata-rata
+		if n > 0 {
+			avgVals := []interface{}{
+				"", "RATA-RATA", "", fmt.Sprintf("%d penilai", int(n)),
+				fmt.Sprintf("%.1f", tBer/n), fmt.Sprintf("%.1f", tAku/n), fmt.Sprintf("%.1f", tKom/n),
+				fmt.Sprintf("%.1f", tHar/n), fmt.Sprintf("%.1f", tLoy/n), fmt.Sprintf("%.1f", tAda/n),
+				fmt.Sprintf("%.1f", tKol/n), fmt.Sprintf("%.2f", tAvg/n), "",
+			}
+			for j, val := range avgVals {
+				cell, _ := excelize.CoordinatesToCellName(j+1, currentRow)
+				f.SetCellValue("Rekap Per Pegawai", cell, val)
+				f.SetCellStyle("Rekap Per Pegawai", cell, cell, avgRowStyle)
+			}
+			currentRow++
+		}
+		currentRow++ // Baris kosong antar pegawai
 	}
-	f.SetActiveSheet(index)
+	f.SetActiveSheet(idx3)
 
 	var buf bytes.Buffer
 	if err := f.Write(&buf); err != nil {
 		return nil, err
 	}
-
-	// Log Audit
-	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, "Export Excel Report", nil)
-
+	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, "Export Excel Report (Enhanced)", nil)
 	return buf.Bytes(), nil
 }
+
+
 
 func (s *ReportService) ExportToPDF(filter models.ReportFilter, adminID uint, ip, ua string) ([]byte, error) {
 	if filter.UserID != nil {
@@ -358,96 +508,194 @@ func (s *ReportService) generateGlobalPDF(filter models.ReportFilter, adminID ui
 	if err != nil {
 		return nil, fmt.Errorf("Gagal mengambil data dashboard: %v", err)
 	}
-
 	details, _, err := s.GetDetailedReports(filter)
 	if err != nil {
 		return nil, fmt.Errorf("Gagal mengambil detail laporan: %v", err)
 	}
 
+	// Kelompokkan data per pegawai yang dinilai
+	type evalRow struct {
+		EvaluatorName         string
+		Bulan                 string
+		Tanggal               string
+		BerorientasiPelayanan int
+		Akuntabel             int
+		Kompeten              int
+		Harmonis              int
+		Loyal                 int
+		Adaptif               int
+		Kolaboratif           int
+		AverageScore          float64
+		Comment               string
+	}
+	type empBlock struct {
+		Name string
+		Rows []evalRow
+	}
+	empMap := map[string]*empBlock{}
+	empOrder := []string{}
+	for _, d := range details {
+		if _, ok := empMap[d.TargetUserName]; !ok {
+			empMap[d.TargetUserName] = &empBlock{Name: d.TargetUserName}
+			empOrder = append(empOrder, d.TargetUserName)
+		}
+		empMap[d.TargetUserName].Rows = append(empMap[d.TargetUserName].Rows, evalRow{
+			EvaluatorName:         d.EvaluatorName,
+			Bulan:                 bulanIndonesia(d.AssessmentMonth),
+			Tanggal:               d.Date.Format("02-01-2006"),
+			BerorientasiPelayanan: d.BerorientasiPelayanan,
+			Akuntabel:             d.Akuntabel,
+			Kompeten:              d.Kompeten,
+			Harmonis:              d.Harmonis,
+			Loyal:                 d.Loyal,
+			Adaptif:               d.Adaptif,
+			Kolaboratif:           d.Kolaboratif,
+			AverageScore:          d.AverageScore,
+			Comment:               d.Comment,
+		})
+	}
+
 	pdf := gofpdf.New("L", "mm", "A4", "")
+	pdf.SetMargins(10, 12, 10)
 	pdf.AddPage()
 
-	// Header
-	pdf.SetFont("Arial", "B", 16)
-	pdf.Cell(0, 10, "LAPORAN RESMI PENILAIAN PERFORMA PEGAWAI")
-	pdf.Ln(8)
-	pdf.SetFont("Arial", "", 10)
-	pdf.Cell(0, 10, fmt.Sprintf("Dicetak pada: %s", time.Now().Format("02 Jan 2006 15:04")))
-	pdf.Ln(12)
+	// Header halaman pertama
+	pdf.SetFont("Arial", "B", 15)
+	pdf.CellFormat(0, 10, "LAPORAN REKAP PENILAIAN KINERJA PEGAWAI APIP", "", 1, "C", false, 0, "")
+	pdf.SetFont("Arial", "", 9)
+	pdf.CellFormat(0, 6, fmt.Sprintf("Dicetak pada: %s", time.Now().Format("02 January 2006, 15:04 WIB")), "", 1, "C", false, 0, "")
+	pdf.Ln(4)
 
-	// Kartu Ringkasan
-	pdf.SetFillColor(240, 240, 240)
-	pdf.SetFont("Arial", "B", 12)
-	pdf.CellFormat(50, 10, "Ringkasan Statistik", "1", 1, "C", true, 0, "")
-	pdf.SetFont("Arial", "", 10)
-	pdf.CellFormat(50, 8, fmt.Sprintf("Total Penilaian: %d", dashData.Summary.TotalAssessments), "1", 1, "L", false, 0, "")
-	pdf.CellFormat(50, 8, fmt.Sprintf("Rata-rata Nilai: %.2f", dashData.Summary.AverageScore), "1", 1, "L", false, 0, "")
-	pdf.CellFormat(50, 8, fmt.Sprintf("User Dinilai: %d", dashData.Summary.TotalUsers), "1", 1, "L", false, 0, "")
-	pdf.Ln(10)
-
-	// Detail Tabel
+	// Ringkasan statistik
+	pdf.SetFillColor(30, 58, 95)
+	pdf.SetTextColor(255, 255, 255)
 	pdf.SetFont("Arial", "B", 10)
-	cols := []struct {
+	pdf.CellFormat(0, 8, "RINGKASAN STATISTIK", "0", 1, "C", true, 0, "")
+	pdf.SetTextColor(0, 0, 0)
+	pdf.SetFillColor(217, 225, 242)
+	pdf.SetFont("Arial", "", 9)
+	pdf.CellFormat(60, 7, fmt.Sprintf("Total Sesi Penilaian: %d", dashData.Summary.TotalAssessments), "1", 0, "L", true, 0, "")
+	pdf.CellFormat(60, 7, fmt.Sprintf("Jumlah Pegawai Dinilai: %d", dashData.Summary.TotalUsers), "1", 0, "L", true, 0, "")
+	pdf.CellFormat(60, 7, fmt.Sprintf("Rata-rata Nilai: %.2f", dashData.Summary.AverageScore), "1", 0, "L", true, 0, "")
+	pdf.CellFormat(60, 7, fmt.Sprintf("Nilai Tertinggi: %.2f | Terendah: %.2f", dashData.Summary.HighestScore, dashData.Summary.LowestScore), "1", 1, "L", true, 0, "")
+	pdf.Ln(6)
+
+	// Kolom header tabel penilai
+	type col struct {
 		Text  string
 		Width float64
-	}{
-		{"No", 10}, {"Bulan", 20}, {"Tanggal", 22}, {"Nama Pegawai", 45}, {"NIP", 30}, {"Peran", 22}, {"Unit Kerja", 43}, {"Nilai", 15}, {"Komentar", 68},
 	}
-	for _, col := range cols {
-		pdf.CellFormat(col.Width, 10, col.Text, "1", 0, "C", true, 0, "")
+	cols := []col{
+		{"No", 8}, {"Bulan", 18}, {"Tanggal", 20}, {"Nama Penilai", 42},
+		{"B.Pelayanan", 18}, {"Akuntabel", 18}, {"Kompeten", 18},
+		{"Harmonis", 18}, {"Loyal", 16}, {"Adaptif", 16}, {"Kolaboratif", 20},
+		{"Rata-rata", 18}, {"Komentar", 45},
 	}
-	pdf.Ln(-1)
 
-	pdf.SetFont("Arial", "", 9)
-	for i, row := range details {
-		bulanNama := fmt.Sprintf("Ke-%d", row.AssessmentMonth)
-		if row.AssessmentMonth >= 1 {
-			bulanID := []string{"Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"}
-			bulanNama = bulanID[(row.AssessmentMonth-1)%12]
+	for _, name := range empOrder {
+		block := empMap[name]
+
+		// Nama pegawai yang dinilai
+		pdf.SetFillColor(30, 58, 95)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetFont("Arial", "B", 10)
+		pdf.CellFormat(0, 8, fmt.Sprintf("  Pegawai: %s", block.Name), "0", 1, "L", true, 0, "")
+		pdf.SetTextColor(0, 0, 0)
+
+		// Header kolom
+		pdf.SetFillColor(46, 117, 182)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetFont("Arial", "B", 7)
+		for _, c := range cols {
+			pdf.CellFormat(c.Width, 8, c.Text, "1", 0, "C", true, 0, "")
+		}
+		pdf.Ln(-1)
+		pdf.SetTextColor(0, 0, 0)
+
+		// Baris data penilai
+		var tBer, tAku, tKom, tHar, tLoy, tAda, tKol, tAvg float64
+		n := float64(len(block.Rows))
+		pdf.SetFont("Arial", "", 7)
+		for i, r := range block.Rows {
+			pdf.SetFillColor(255, 255, 255)
+			if i%2 == 1 {
+				pdf.SetFillColor(242, 245, 250)
+			}
+			pdf.CellFormat(8, 7, fmt.Sprintf("%d", i+1), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, r.Bulan, "1", 0, "C", true, 0, "")
+			pdf.CellFormat(20, 7, r.Tanggal, "1", 0, "C", true, 0, "")
+			pdf.CellFormat(42, 7, r.EvaluatorName, "1", 0, "L", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%d", r.BerorientasiPelayanan), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%d", r.Akuntabel), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%d", r.Kompeten), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%d", r.Harmonis), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(16, 7, fmt.Sprintf("%d", r.Loyal), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(16, 7, fmt.Sprintf("%d", r.Adaptif), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(20, 7, fmt.Sprintf("%d", r.Kolaboratif), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%.2f", r.AverageScore), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(45, 7, r.Comment, "1", 1, "L", true, 0, "")
+			tBer += float64(r.BerorientasiPelayanan)
+			tAku += float64(r.Akuntabel)
+			tKom += float64(r.Kompeten)
+			tHar += float64(r.Harmonis)
+			tLoy += float64(r.Loyal)
+			tAda += float64(r.Adaptif)
+			tKol += float64(r.Kolaboratif)
+			tAvg += r.AverageScore
+
+			if pdf.GetY() > 188 {
+				pdf.AddPage()
+			}
 		}
 
-		pdf.CellFormat(10, 8, fmt.Sprintf("%d", i+1), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(20, 8, bulanNama, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(22, 8, row.Date.Format("02-01-2006"), "1", 0, "L", false, 0, "")
-		pdf.CellFormat(45, 8, row.TargetUserName, "1", 0, "L", false, 0, "")
-		pdf.CellFormat(30, 8, row.TargetNIP, "1", 0, "L", false, 0, "")
-		pdf.CellFormat(22, 8, row.GroupRole, "1", 0, "L", false, 0, "")
-		pdf.CellFormat(43, 8, row.UnitKerja, "1", 0, "L", false, 0, "")
-		pdf.CellFormat(15, 8, fmt.Sprintf("%.2f", row.AverageScore), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(68, 8, row.Comment, "1", 1, "L", false, 0, "")
+		// Baris rata-rata per pegawai
+		if n > 0 {
+			pdf.SetFillColor(46, 117, 182)
+			pdf.SetTextColor(255, 255, 255)
+			pdf.SetFont("Arial", "B", 7)
+			pdf.CellFormat(8, 7, "", "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, "RERATA", "1", 0, "C", true, 0, "")
+			pdf.CellFormat(20, 7, "", "1", 0, "C", true, 0, "")
+			pdf.CellFormat(42, 7, fmt.Sprintf("%d Penilai", int(n)), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%.1f", tBer/n), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%.1f", tAku/n), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%.1f", tKom/n), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%.1f", tHar/n), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(16, 7, fmt.Sprintf("%.1f", tLoy/n), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(16, 7, fmt.Sprintf("%.1f", tAda/n), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(20, 7, fmt.Sprintf("%.1f", tKol/n), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(18, 7, fmt.Sprintf("%.2f", tAvg/n), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(45, 7, "", "1", 1, "C", true, 0, "")
+			pdf.SetTextColor(0, 0, 0)
+		}
+		pdf.Ln(5)
 
-		if pdf.GetY() > 180 {
+		if pdf.GetY() > 185 {
 			pdf.AddPage()
 		}
 	}
 
 	var buf bytes.Buffer
-	err = pdf.Output(&buf)
-	if err != nil {
+	if err := pdf.Output(&buf); err != nil {
 		return nil, err
 	}
-
-	// Log Audit
-	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, "Export Global PDF Report", nil)
-
+	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, "Export Global PDF Report (Enhanced)", nil)
 	return buf.Bytes(), nil
 }
+
 
 func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminID uint, ip, ua string) ([]byte, error) {
 	details, _, err := s.GetDetailedReports(filter)
 	if err != nil {
 		return nil, fmt.Errorf("Gagal mengambil detail laporan: %v", err)
 	}
-
 	if len(details) == 0 {
 		return nil, fmt.Errorf("Tidak ada data laporan yang ditemukan untuk pengguna ini")
 	}
 
 	targetName := details[0].TargetUserName
-	targetNIP := details[0].TargetNIP
-	unitKerja := details[0].UnitKerja
 
-	// Ambil Jawaban
+	// Ambil jawaban per pertanyaan
 	var detailIDs []uint
 	for _, raw := range details {
 		detailIDs = append(detailIDs, raw.ID)
@@ -458,8 +706,7 @@ func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminI
 			return nil, fmt.Errorf("Gagal memuat jawaban: %v", err)
 		}
 	}
-
-	answerMap := make(map[uint]map[uint]models.AssessmentAnswer) // peer_assessment_id -> question_id -> Answer
+	answerMap := make(map[uint]map[uint]models.AssessmentAnswer)
 	for _, a := range answers {
 		if answerMap[a.PeerAssessmentID] == nil {
 			answerMap[a.PeerAssessmentID] = make(map[uint]models.AssessmentAnswer)
@@ -471,81 +718,75 @@ func (s *ReportService) generateUserDetailPDF(filter models.ReportFilter, adminI
 
 	for _, p := range details {
 		pdf.AddPage()
-		
-		pdf.SetFont("Arial", "B", 16)
-		pdf.CellFormat(0, 10, "RAPOR EVALUASI KINERJA BERAKHLAK", "", 1, "C", false, 0, "")
+
+		// Header
+		pdf.SetFillColor(30, 58, 95)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetFont("Arial", "B", 14)
+		pdf.CellFormat(0, 10, "RAPOR EVALUASI KINERJA BerAKHLAK", "0", 1, "C", true, 0, "")
+		pdf.SetTextColor(0, 0, 0)
 		pdf.Ln(4)
 
-		// Detail Target
+		// Nama pegawai yang dinilai
 		pdf.SetFont("Arial", "B", 10)
 		pdf.CellFormat(40, 6, "Nama Pegawai:", "", 0, "L", false, 0, "")
 		pdf.SetFont("Arial", "", 10)
 		pdf.CellFormat(0, 6, targetName, "", 1, "L", false, 0, "")
-		
+
+		// Nama penilai
 		pdf.SetFont("Arial", "B", 10)
-		pdf.CellFormat(40, 6, "NIP:", "", 0, "L", false, 0, "")
+		pdf.CellFormat(40, 6, "Dinilai Oleh:", "", 0, "L", false, 0, "")
 		pdf.SetFont("Arial", "", 10)
-		pdf.CellFormat(0, 6, targetNIP, "", 1, "L", false, 0, "")
+		pdf.CellFormat(0, 6, fmt.Sprintf("%s — Grup: %s", p.EvaluatorName, p.GroupName), "", 1, "L", false, 0, "")
 
+		// Tanggal dan skor rata-rata
 		pdf.SetFont("Arial", "B", 10)
-		pdf.CellFormat(40, 6, "Unit Kerja:", "", 0, "L", false, 0, "")
+		pdf.CellFormat(40, 6, "Tanggal Penilaian:", "", 0, "L", false, 0, "")
 		pdf.SetFont("Arial", "", 10)
-		pdf.CellFormat(0, 6, unitKerja, "", 1, "L", false, 0, "")
+		pdf.CellFormat(0, 6, fmt.Sprintf("%s  |  Bulan: %s  |  Rata-rata Skor: %.2f", p.Date.Format("02 January 2006"), bulanIndonesia(p.AssessmentMonth), p.AverageScore), "", 1, "L", false, 0, "")
 
-		// Detail Penilai (Evaluator)
-		pdf.Ln(1)
-		pdf.SetLineWidth(0.5)
-		pdf.Line(10, pdf.GetY(), 200, pdf.GetY())
-		pdf.Ln(4)
-
-		pdf.SetFont("Arial", "I", 9)
-		pdf.CellFormat(0, 5, fmt.Sprintf("Evaluasi oleh %s (Peran: %s) - Grup: %s", p.EvaluatorName, p.GroupRole, p.GroupName), "", 1, "L", false, 0, "")
-		pdf.CellFormat(0, 5, fmt.Sprintf("Tanggal Penilaian: %s | Skor Rata-rata: %.2f", p.Date.Format("02 Jan 2006"), p.AverageScore), "", 1, "L", false, 0, "")
-		
+		// Komentar
 		if p.Comment != "" {
-			pdf.Ln(2)
 			pdf.SetFont("Arial", "B", 9)
-			pdf.CellFormat(20, 5, "Komentar: ", "", 0, "L", false, 0, "")
+			pdf.CellFormat(25, 5, "Komentar:", "", 0, "L", false, 0, "")
 			pdf.SetFont("Arial", "", 9)
 			pdf.MultiCell(0, 5, p.Comment, "", "L", false)
 		}
 		pdf.Ln(3)
 
-		// Header Tabel Jawaban
+		// Header tabel pertanyaan
+		pdf.SetFillColor(46, 117, 182)
+		pdf.SetTextColor(255, 255, 255)
 		pdf.SetFont("Arial", "B", 9)
-		pdf.SetFillColor(230, 230, 240)
 		pdf.CellFormat(45, 8, "Indikator", "1", 0, "C", true, 0, "")
 		pdf.CellFormat(125, 8, "Kriteria / Pertanyaan", "1", 0, "C", true, 0, "")
 		pdf.CellFormat(20, 8, "Nilai", "1", 1, "C", true, 0, "")
+		pdf.SetTextColor(0, 0, 0)
 
+		// Baris jawaban per pertanyaan
 		pdf.SetFont("Arial", "", 8)
-		pdf.SetFillColor(255, 255, 255)
 		pAnswers := answerMap[p.ID]
 		for _, a := range pAnswers {
-			// Simpan Y saat ini
 			curY := pdf.GetY()
+			pdf.SetX(55) // Lebar indikator (45) + margin (10)
 			pdf.MultiCell(125, 6, a.Question.Text, "1", "L", false)
-			// Gambar Indikator dan Skor
 			newY := pdf.GetY()
 			height := newY - curY
-			
 			pdf.SetXY(10, curY)
 			pdf.CellFormat(45, height, a.Question.Indicator, "1", 0, "C", false, 0, "")
-			
 			pdf.SetXY(180, curY)
 			pdf.CellFormat(20, height, fmt.Sprintf("%d", a.Score), "1", 1, "C", false, 0, "")
 		}
 	}
 
 	var buf bytes.Buffer
-	err = pdf.Output(&buf)
-	if err != nil {
+	if err := pdf.Output(&buf); err != nil {
 		return nil, err
 	}
-
-	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, fmt.Sprintf("Export Personalized PDF Report User %v", *filter.UserID), nil)
+	models.CreateAuditLog(s.db, &adminID, models.AuditActionReportExport, models.AuditStatusSuccess, ip, ua, fmt.Sprintf("Export Personal PDF Report User %v", *filter.UserID), nil)
 	return buf.Bytes(), nil
 }
+
 
 func (s *ReportService) GetUnitKerjaOptions() ([]string, error) {
 	var options []string
