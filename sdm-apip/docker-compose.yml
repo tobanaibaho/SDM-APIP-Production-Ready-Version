@@ -45,7 +45,9 @@ services:
       - SMTP_FROM_NAME=${SMTP_FROM_NAME:-SDM APIP System}
       - FRONTEND_URL=${FRONTEND_URL}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost,http://localhost:80}
-      # Password bootstrap admin — wajib diatur sebelum dijalankan pertama kali di production
+      # Konfigurasi bootstrap admin — wajib diatur sebelum dijalankan pertama kali di production
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@kemenko.go.id}
       - ADMIN_DEFAULT_PASSWORD=${ADMIN_DEFAULT_PASSWORD}
       - LOG_FILE_PATH=logs/app.log
       # Konfigurasi SSO Internal Kemenko Infra
